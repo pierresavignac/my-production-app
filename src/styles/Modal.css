@@ -1,0 +1,52 @@
+/* Styles globaux pour toutes les modales */
+.modal-dialog {
+    max-width: calc(500px * 1.25) !important; /* Taille standard * 1.25 */
+    width: calc(100% * 1.25) !important;
+    margin: 1.75rem auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Pour les grandes modales */
+.modal-dialog.modal-lg {
+    max-width: calc(800px * 1.25) !important; /* Taille large * 1.25 */
+}
+
+/* Pour les très grandes modales */
+.modal-dialog.modal-xl {
+    max-width: calc(1140px * 1.25) !important; /* Taille extra large * 1.25 */
+}
+
+.modal {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.modal-content {
+    width: 100% !important;
+}
+
+/* Styles pour les formulaires */
+.form-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    align-items: flex-end;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 0.5rem;
+}
+
+.form-label {
+    margin-bottom: 0.25rem;
+}
+
+/* Pour éviter que les longs textes ne débordent */
+.form-select {
+    text-overflow: ellipsis;
+} 

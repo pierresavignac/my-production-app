@@ -1,0 +1,225 @@
+# Documentation d'intégration de l'API ProgressionLive (Version originale)
+
+## Table des matières
+1. Structure de l'API
+2. Configuration et Installation
+3. Authentification
+4. Opérations principales
+5. Modèles de données
+6. Exemples d'utilisation
+
+## 1. Structure de l'API
+
+L'API ProgressionLive est structurée en plusieurs composants principaux :
+
+### 1.1 Classes principales
+- `ProgressionPortType` : Point d'entrée principal pour toutes les opérations API
+- `Credentials` : Gestion des identifiants
+- `Task` : Gestion des tâches
+- `Client` : Gestion des clients
+- `HumanResource` : Gestion des ressources humaines
+- `Location` : Gestion des emplacements
+
+### 1.2 Types d'enregistrements (RecordType)
+- TASK : Tâches
+- CLIENT : Clients
+- HUMAN_RESOURCE : Ressources humaines
+- LOCATION : Emplacements
+- TASK_TYPE : Types de tâches
+- ATTACHMENT_TYPE : Types de pièces jointes
+
+## 2. Configuration et Installation
+
+### 2.1 Prérequis
+- PHP 7.0 ou supérieur
+- Extension SOAP activée
+- Extension OpenSSL pour HTTPS
+
+### 2.2 Installation
+1. Copier le dossier ProgressionWebServiceV2 dans votre projet
+2. Inclure l'autoloader :
+```php
+require_once __DIR__ . '/ProgressionWebServiceV2/autoload.php';
+require_once __DIR__ . '/ProgressionWebServiceV2/Utils.php';
+```
+
+### 2.3 Configuration initiale
+```php
+$serverUrl = 'https://[votre-domaine].progressionlive.com';
+$serviceUrl = $serverUrl . '/server/ws/v2/ProgressionWebService';
+$wsdlUrl = $serviceUrl . '?wsdl';
+
+$options = [
+    'trace' => true,
+    'exceptions' => true,
+    'cache_wsdl' => WSDL_CACHE_NONE,
+    'features' => SOAP_SINGLE_ELEMENT_ARRAYS
+];
+
+$service = new ProgressionPortType($options, $wsdlUrl);
+```
+
+## 3. Authentification
+
+### 3.1 Login
+```php
+$credentials = new Credentials();
+$credentials->setUsername('votre_username');
+$credentials->setPassword('votre_password');
+
+$loginRequest = new LoginRequest($credentials);
+$loginResponse = $service->Login($loginRequest);
+$credentials = $loginResponse->getCredentials();
+```
+
+### 3.2 Logout
+```php
+$logoutRequest = new LogoutRequest($credentials);
+$service->Logout($logoutRequest);
+```
+
+## 4. Opérations principales
+
+### 4.1 Recherche d'enregistrements
+```php
+$searchRequest = new SearchRecordsRequest();
+$searchRequest->setCredentials($credentials);
+$searchRequest->setRecordType(RecordType::TASK);
+$searchRequest->setQuery('votre_requete');
+
+$searchResponse = $service->SearchRecords($searchRequest);
+```
+
+### 4.2 Création de tâche
+```php
+$task = new Task();
+$task->setTypeRef($taskTypeRef);
+$task->setClientRef($clientRef);
+$task->setRv(new DateTime());
+$task->setSummary('Sommaire');
+$task->setDescription('Description');
+
+$createRequest = new CreateTaskRequest();
+$createRequest->setCredentials($credentials);
+$createRequest->setTask($task);
+
+$response = $service->CreateTask($createRequest);
+```
+
+### 4.3 Ajout de pièce jointe
+```php
+$attachment = new TaskAttachment();
+$attachment->setTypeRef($attachmentTypeRef);
+$attachment->setName('nom_fichier.ext');
+$attachment->setContentType('mime/type');
+$attachment->setSize(filesize($filePath));
+$attachment->setData(file_get_contents($filePath));
+
+$createAttachmentRequest = new CreateRecordRequest();
+$createAttachmentRequest->setCredentials($credentials);
+$createAttachmentRequest->setParentRecordRef($taskRef);
+$createAttachmentRequest->setRecord($attachment);
+
+$response = $service->CreateRecord($createAttachmentRequest);
+```
+
+## 5. Modèles de données
+
+### 5.1 Task (Tâche)
+Propriétés principales :
+- typeRef : Référence au type de tâche
+- clientRef : Référence au client
+- rv : Date/heure du rendez-vous
+- summary : Résumé
+- description : Description détaillée
+- state : État de la tâche
+- priority : Priorité
+- assignedTo : Ressource assignée
+
+### 5.2 Client
+Propriétés principales :
+- name : Nom du client
+- number : Numéro de client
+- address : Adresse
+- contacts : Liste des contacts
+- type : Type de client
+
+### 5.3 Location (Emplacement)
+Propriétés principales :
+- address : Adresse complète
+- city : Ville
+- state : État/Province
+- country : Pays
+- coordinates : Coordonnées GPS
+
+## 6. Exemples d'utilisation
+
+### 6.1 Recherche de client par étiquette
+```php
+$searchRequest = new SearchRecordsRequest();
+$searchRequest->setCredentials($credentials);
+$searchRequest->setRecordType(RecordType::CLIENT);
+$searchRequest->setQuery('label = :label');
+
+$params = new ArrayOfProperty();
+$labelProperty = new Property();
+$labelProperty->setName('label');
+$labelProperty->setValue('NomClient');
+$params->setProperty([$labelProperty]);
+
+$searchRequest->setParameters($params);
+$response = $service->SearchRecords($searchRequest);
+```
+
+### 6.2 Création de tâche avec propriétés personnalisées
+```php
+$task = new Task();
+$task->setTypeRef($taskTypeRef);
+$task->setClientRef($clientRef);
+$task->setRv(new DateTime());
+$task->setSummary('Sommaire');
+
+$properties = new ArrayOfProperty();
+$properties->setProperty([
+    (new Property())
+        ->setName('infos.customerOrderNumber')
+        ->setValue('12345'),
+    (new Property())
+        ->setName('infos.comment')
+        ->setValue('Commentaire')
+]);
+
+$task->setProperties($properties);
+
+$createRequest = new CreateTaskRequest();
+$createRequest->setCredentials($credentials);
+$createRequest->setTask($task);
+
+$response = $service->CreateTask($createRequest);
+```
+
+## Notes importantes
+
+1. Gestion des erreurs
+- Toujours utiliser try/catch pour gérer les exceptions SOAP
+- Vérifier les réponses des requêtes pour les erreurs spécifiques à l'API
+- Implémenter une journalisation appropriée
+
+2. Bonnes pratiques
+- Mettre en cache le WSDL en production
+- Gérer correctement les sessions
+- Implémenter un mécanisme de reconnexion en cas d'expiration de session
+- Valider les données avant l'envoi
+- Utiliser des timeouts appropriés
+
+3. Sécurité
+- Ne jamais stocker les identifiants en clair
+- Utiliser HTTPS en production
+- Implémenter une gestion sécurisée des sessions
+- Valider toutes les entrées utilisateur
+
+4. Performance
+- Limiter le nombre de requêtes
+- Utiliser la mise en cache quand c'est possible
+- Optimiser les requêtes de recherche
+- Gérer efficacement les ressources (fermer les connexions, etc.)
