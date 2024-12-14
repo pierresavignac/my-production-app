@@ -376,7 +376,42 @@ const ProductionCalendar = () => {
             setShowEditEventModal(false);
             setSelectedEvent(null);
           }}
-          onSubmit={handleAddEventSubmit}
+          onSubmit={async (formData) => {
+            try {
+              const eventData = {
+                id: selectedEvent.id,
+                type: formData.type,
+                date: formData.date,
+                installation_time: formData.installation_time,
+                full_name: formData.full_name,
+                phone: formData.phone,
+                address: formData.address,
+                city: formData.city,
+                Sommaire: formData.summary,
+                Description: formData.description,
+                equipment: formData.equipment,
+                amount: formData.amount,
+                technician1_id: formData.technician1_id,
+                technician2_id: formData.technician2_id,
+                technician3_id: formData.technician3_id,
+                technician4_id: formData.technician4_id,
+                employee_id: formData.employee_id,
+                progression_task_id: formData.progression_task_id,
+                client_number: formData.client_number,
+                quote_number: formData.quote_number,
+                representative: formData.representative,
+                'Numéro de soumission': formData.installation_number
+              };
+              
+              await updateEvent(eventData);
+              setShowEditEventModal(false);
+              setSelectedEvent(null);
+              // Rafraîchir les événements après la mise à jour
+              fetchEvents().then(setEvents);
+            } catch (error) {
+              console.error('Erreur lors de la mise à jour:', error);
+            }
+          }}
           event={selectedEvent}
           mode="edit"
           employees={employees}

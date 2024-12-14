@@ -2,9 +2,22 @@ const API_BASE_URL = 'https://app.vivreenliberte.org/api';
 
 export const fetchEvents = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/events.php`);
+    const response = await fetch(`${API_BASE_URL}/events.php`, {
+      credentials: 'include'
+    });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const text = await response.text();
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const jsonResponse = JSON.parse(text);
+        if (jsonResponse.message) {
+          errorMessage = jsonResponse.message;
+        }
+      } catch (e) {
+        console.error('La réponse n\'est pas du JSON valide:', text);
+        throw new Error('Réponse invalide du serveur');
+      }
+      throw new Error(errorMessage);
     }
     const text = await response.text();
     const data = JSON.parse(text);
@@ -22,9 +35,22 @@ export const fetchEvents = async () => {
 
 export const fetchEmployees = async () => {
   try {
-    const response = await fetch('/api/employees.php');
+    const response = await fetch('/api/employees.php', {
+      credentials: 'include'
+    });
     if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des employés');
+      const text = await response.text();
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const jsonResponse = JSON.parse(text);
+        if (jsonResponse.message) {
+          errorMessage = jsonResponse.message;
+        }
+      } catch (e) {
+        console.error('La réponse n\'est pas du JSON valide:', text);
+        throw new Error('Réponse invalide du serveur');
+      }
+      throw new Error(errorMessage);
     }
     return await response.json();
   } catch (error) {
@@ -35,9 +61,22 @@ export const fetchEmployees = async () => {
 
 export const fetchTechnicians = async () => {
   try {
-    const response = await fetch('/api/employees.php?type=technicians');
+    const response = await fetch('/api/employees.php?type=technicians', {
+      credentials: 'include'
+    });
     if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des techniciens');
+      const text = await response.text();
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const jsonResponse = JSON.parse(text);
+        if (jsonResponse.message) {
+          errorMessage = jsonResponse.message;
+        }
+      } catch (e) {
+        console.error('La réponse n\'est pas du JSON valide:', text);
+        throw new Error('Réponse invalide du serveur');
+      }
+      throw new Error(errorMessage);
     }
     return await response.json();
   } catch (error) {
@@ -48,9 +87,22 @@ export const fetchTechnicians = async () => {
 
 export const fetchRegions = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/regions.php?type=regions`);
+    const response = await fetch(`${API_BASE_URL}/regions.php?type=regions`, {
+      credentials: 'include'
+    });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const text = await response.text();
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const jsonResponse = JSON.parse(text);
+        if (jsonResponse.message) {
+          errorMessage = jsonResponse.message;
+        }
+      } catch (e) {
+        console.error('La réponse n\'est pas du JSON valide:', text);
+        throw new Error('Réponse invalide du serveur');
+      }
+      throw new Error(errorMessage);
     }
     return await response.json();
   } catch (error) {
@@ -61,9 +113,22 @@ export const fetchRegions = async () => {
 
 export const fetchCitiesForRegion = async (regionId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/regions.php?region_id=${regionId}`);
+    const response = await fetch(`${API_BASE_URL}/regions.php?region_id=${regionId}`, {
+      credentials: 'include'
+    });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const text = await response.text();
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const jsonResponse = JSON.parse(text);
+        if (jsonResponse.message) {
+          errorMessage = jsonResponse.message;
+        }
+      } catch (e) {
+        console.error('La réponse n\'est pas du JSON valide:', text);
+        throw new Error('Réponse invalide du serveur');
+      }
+      throw new Error(errorMessage);
     }
     return await response.json();
   } catch (error) {
@@ -74,9 +139,22 @@ export const fetchCitiesForRegion = async (regionId) => {
 
 export const fetchEquipment = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/equipment.php`);
+    const response = await fetch(`${API_BASE_URL}/equipment.php`, {
+      credentials: 'include'
+    });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const text = await response.text();
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const jsonResponse = JSON.parse(text);
+        if (jsonResponse.message) {
+          errorMessage = jsonResponse.message;
+        }
+      } catch (e) {
+        console.error('La réponse n\'est pas du JSON valide:', text);
+        throw new Error('Réponse invalide du serveur');
+      }
+      throw new Error(errorMessage);
     }
     return await response.json();
   } catch (error) {
@@ -87,26 +165,38 @@ export const fetchEquipment = async () => {
 
 export const createEvent = async (eventData) => {
   try {
+    console.log('Envoi des données:', eventData);
     const response = await fetch(`${API_BASE_URL}/events.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify(eventData)
     });
 
     const text = await response.text();
+    console.log('Réponse brute:', text);
+
     let jsonResponse;
     try {
       jsonResponse = JSON.parse(text);
+      console.log('Réponse JSON:', jsonResponse);
     } catch (e) {
       console.error('La réponse n\'est pas du JSON valide:', text);
       throw new Error('Réponse invalide du serveur');
     }
 
-    if (!response.ok || !jsonResponse.success) {
+    if (!response.ok) {
+      if (jsonResponse.debug) {
+        console.log('Détails de validation:', jsonResponse.debug);
+      }
       throw new Error(jsonResponse.message || `Erreur HTTP: ${response.status}`);
+    }
+
+    if (!jsonResponse.success) {
+      throw new Error(jsonResponse.message || 'Erreur lors de la création de l\'événement');
     }
 
     return jsonResponse;
@@ -143,12 +233,23 @@ export const updateEvent = async (eventData) => {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify(normalizedData)
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(errorText || `Erreur HTTP: ${response.status}`);
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const jsonResponse = JSON.parse(errorText);
+        if (jsonResponse.message) {
+          errorMessage = jsonResponse.message;
+        }
+      } catch (e) {
+        console.error('La réponse n\'est pas du JSON valide:', errorText);
+        throw new Error('Réponse invalide du serveur');
+      }
+      throw new Error(errorMessage);
     }
 
     const text = await response.text();
@@ -166,11 +267,23 @@ export const deleteEvent = async (eventId, deleteMode = 'single') => {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({ deleteMode })
     });
     
     if (!response.ok) {
-      throw new Error('Erreur lors de la suppression');
+      const text = await response.text();
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const jsonResponse = JSON.parse(text);
+        if (jsonResponse.message) {
+          errorMessage = jsonResponse.message;
+        }
+      } catch (e) {
+        console.error('La réponse n\'est pas du JSON valide:', text);
+        throw new Error('Réponse invalide du serveur');
+      }
+      throw new Error(errorMessage);
     }
     
     return await response.json();
@@ -186,21 +299,20 @@ export const fetchInstallationData = async (installationNumber) => {
     // Nettoyer et formater le numéro d'installation
     const cleanNumber = installationNumber.replace(/[^0-9A-Za-z]/g, '');
     
-    // Vérifier si le numéro est déjà au format INSxxxxxxx
-    if (cleanNumber.startsWith('INS')) {
-        return cleanNumber;
-    }
-    
     // Vérification préliminaire
     if (!cleanNumber) {
       throw new Error('Numéro d\'installation invalide');
     }
 
+    // Formater le code d'installation
+    const formattedCode = cleanNumber.startsWith('INS') ? cleanNumber : `INS${cleanNumber.padStart(6, '0')}`;
+
     // Utiliser URLSearchParams pour encoder correctement les paramètres
     const params = new URLSearchParams({
-      code: `INS0${cleanNumber}`
+      code: formattedCode
     });
 
+    console.log('Calling API with code:', formattedCode);
     const response = await fetch(`${API_BASE_URL}/progression/tasks.php?${params}`, {
       method: 'GET',
       headers: {
@@ -212,7 +324,6 @@ export const fetchInstallationData = async (installationNumber) => {
     // Log pour le débogage
     console.log('URL appelée:', `${API_BASE_URL}/progression/tasks.php?${params}`);
     console.log('Status:', response.status);
-    console.log('Headers:', [...response.headers.entries()]);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -226,96 +337,29 @@ export const fetchInstallationData = async (installationNumber) => {
         throw new Error('Erreur interne du serveur. Veuillez réessayer plus tard.');
       }
       
-      throw new Error(
-        `Erreur lors de la récupération des données (${response.status})`
-      );
+      throw new Error(`Erreur lors de la récupération des données (${response.status})`);
     }
 
-    let data;
+    // Récupérer d'abord le texte brut
+    const responseText = await response.text();
+    console.log('Réponse brute de l\'API:', responseText);
+
+    // Essayer de parser le JSON
     try {
-      const text = await response.text();
-      console.log('=== DÉBUT DE LA RÉPONSE BRUTE ===');
-      console.log(text);
-      console.log('=== FIN DE LA RÉPONSE BRUTE ===');
-      
-      console.log('Tentative de parsing JSON...');
-      data = JSON.parse(text);
-      
-      console.log('=== DONNÉES PARSÉES ===');
-      console.dir(data, { depth: null });
-      console.log('=== FIN DES DONNÉES PARSÉES ===');
+      const data = JSON.parse(responseText);
+      console.log('API response data:', data);
 
-      // Vérification détaillée de la structure
-      if (!data?.success) {
-        console.error('Erreur: success non trouvé', data);
-        throw new Error('Réponse invalide du serveur');
+      if (!data.success) {
+        throw new Error(data.message || 'Erreur lors de la récupération des données');
       }
 
-      if (!data?.data?.customer || !data?.data?.task) {
-        console.error('Erreur: données client ou tâche manquantes', {
-          hasCustomer: !!data?.data?.customer,
-          hasTask: !!data?.data?.task,
-          data: data?.data
-        });
-        throw new Error('Les informations client sont incomplètes ou invalides');
-      }
-
-      const { customer, task } = data.data;
-
-      // Vérification des champs requis
-      const requiredCustomerFields = ['name', 'phoneNumber', 'address', 'clientNumber'];
-      const requiredTaskFields = ['id', 'title', 'description', 'priceWithTaxes', 'quoteNumber', 'representative'];
-
-      const missingCustomerFields = requiredCustomerFields.filter(field => !customer[field]);
-      const missingTaskFields = requiredTaskFields.filter(field => !task[field]);
-
-      if (missingCustomerFields.length > 0 || missingTaskFields.length > 0) {
-        console.error('Champs manquants:', {
-          customer: missingCustomerFields,
-          task: missingTaskFields
-        });
-        throw new Error('Certains champs requis sont manquants');
-      }
-
-      if (!customer.address.street || !customer.address.city) {
-        console.error('Adresse incomplète:', customer.address);
-        throw new Error('L\'adresse du client est incomplète');
-      }
-
-      const result = {
-        customer: {
-          name: customer.name,
-          phoneNumber: customer.phoneNumber,
-          address: {
-            street: customer.address.street,
-            city: customer.address.city
-          },
-          clientNumber: customer.clientNumber
-        },
-        task: {
-          id: task.id,
-          title: task.title,
-          description: task.description,
-          priceWithTaxes: task.priceWithTaxes,
-          quoteNumber: task.quoteNumber,
-          representative: task.representative
-        }
-      };
-
-      console.log('Résultat final:', result);
-      return result;
-    } catch (e) {
-      console.error('Erreur parsing JSON:', e);
-      throw new Error('Format de réponse invalide');
+      return data;
+    } catch (parseError) {
+      console.error('Erreur de parsing JSON:', parseError);
+      throw new Error('La réponse du serveur n\'est pas au format JSON valide');
     }
-
   } catch (error) {
     console.error('Erreur complète:', error);
-    // Remonter une erreur plus conviviale
-    throw new Error(
-      error.message === 'Failed to fetch' 
-        ? 'Impossible de contacter le serveur. Vérifiez votre connexion.'
-        : error.message
-    );
+    throw error;
   }
 };

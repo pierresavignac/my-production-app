@@ -31,8 +31,8 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
         date: '',
         time: '',
         installation_number: installation?.installation_number ? installation.installation_number : '',
-        summary: '',
-        description: '',
+        Sommaire: '',
+        Description: '',
         amount: '',
         progression_task_id: '',
         client_number: installation?.client_number || '',  // Numéro avantage
@@ -266,8 +266,8 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                 phone: progressionData.customer.phoneNumber,
                 address: progressionData.customer.address.street,
                 city: progressionData.customer.address.city,
-                summary: progressionData.task.title,
-                description: progressionData.task.description,
+                Sommaire: progressionData.task.title,
+                Description: progressionData.task.description,
                 amount: progressionData.task.priceWithTaxes,
                 progression_task_id: progressionData.task.id,
                 client_number: progressionData.customer.clientNumber,
@@ -477,7 +477,6 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         onChange={handleChange}
                                         placeholder="Nom complet"
                                         required
-                                        readOnly={isReadOnly}
                                     />
                                 </Form.Group>
                             </Col>
@@ -491,7 +490,6 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         onChange={handleChange}
                                         placeholder="Téléphone"
                                         required
-                                        readOnly={isReadOnly}
                                     />
                                 </Form.Group>
                             </Col>
@@ -508,7 +506,6 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         onChange={handleChange}
                                         placeholder="Adresse complète"
                                         required
-                                        readOnly={isReadOnly}
                                     />
                                 </Form.Group>
                             </Col>
@@ -522,7 +519,6 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         onChange={handleChange}
                                         placeholder="Ville"
                                         required
-                                        readOnly={isReadOnly}
                                     />
                                 </Form.Group>
                             </Col>
@@ -534,11 +530,10 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                     <Form.Label>Sommaire</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        name="summary"
-                                        value={formData.summary}
+                                        name="Sommaire"
+                                        value={formData.Sommaire}
                                         onChange={handleChange}
                                         placeholder="Sommaire de l'installation"
-                                        readOnly={isReadOnly}
                                     />
                                 </Form.Group>
                             </Col>
@@ -551,12 +546,11 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                     <Form.Control
                                         as="textarea"
                                         rows={5}
-                                        name="description"
-                                        value={formData.description}
+                                        name="Description"
+                                        value={formData.Description}
                                         onChange={handleChange}
                                         placeholder="Description détaillée"
                                         style={{ maxHeight: '200px', overflowY: 'auto' }}
-                                        readOnly={isReadOnly}
                                     />
                                 </Form.Group>
                             </Col>
@@ -570,7 +564,6 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                 value={formData.equipment}
                                 onChange={handleChange}
                                 required
-                                readOnly={isReadOnly}
                             />
                         </Form.Group>
 
@@ -583,7 +576,6 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                 value={formData.amount}
                                 onChange={handleChange}
                                 required
-                                readOnly={isReadOnly}
                             />
                         </Form.Group>
 
@@ -597,7 +589,6 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         value={formData.client_number}
                                         onChange={handleChange}
                                         placeholder="Numéro avantage"
-                                        readOnly={isReadOnly}
                                     />
                                 </Form.Group>
                             </Col>
@@ -610,7 +601,6 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         value={formData.quote_number}
                                         onChange={handleChange}
                                         placeholder="Numéro de soumission"
-                                        readOnly={isReadOnly}
                                     />
                                 </Form.Group>
                             </Col>
@@ -623,7 +613,6 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         value={formData.representative}
                                         onChange={handleChange}
                                         placeholder="Représentant"
-                                        readOnly={isReadOnly}
                                     />
                                 </Form.Group>
                             </Col>

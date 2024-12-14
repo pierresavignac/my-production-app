@@ -1,100 +1,76 @@
 <?php
-
-require_once __DIR__ . '/ProgressionWebServiceV2/autoload.php';
-require_once __DIR__ . '/ProgressionWebServiceV2/Utils.php';
-require_once __DIR__ . '/TaskProxy.php';
-require_once __DIR__ . '/TaskMapper.php';
-
-use ProgressionWebService\TaskProxy;
-use ProgressionWebService\TaskMapper;
-
-// Activer le rapport d'erreurs pour le débogage
-error_reporting(E_ALL);
+// test.php
 ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-// Définir le fuseau horaire
-date_default_timezone_set('America/Montreal');
+require_once 'ProgressionService.php';
 
-// Charger la configuration
-$config = require_once __DIR__ . '/config.php';
+echo "<pre>\n";
+echo "=== Test de connexion ProgressionLive ===\n\n";
+
+// Vérification du dossier logs
+$logsDir = __DIR__ . '/logs';
+if (!file_exists($logsDir)) {
+    echo "Création du dossier logs...\n";
+    if (!mkdir($logsDir, 0777, true)) {
+        echo "❌ ERREUR: Impossible de créer le dossier logs\n";
+        die();
+    }
+}
+
+// Vérification des permissions
+if (!is_writable($logsDir)) {
+    echo "❌ ERREUR: Le dossier logs n'est pas accessible en écriture\n";
+    die();
+}
+
+// Test du fichier de log
+$logFile = $logsDir . '/progression.log';
+echo "Test d'écriture dans le fichier de log...\n";
+if (!file_put_contents($logFile, date('Y-m-d H:i:s') . " Test d'écriture\n", FILE_APPEND)) {
+    echo "❌ ERREUR: Impossible d'écrire dans le fichier de log\n";
+    die();
+}
+
+// Vérification de la configuration
+echo "Vérification de la configuration...\n";
+if (!file_exists(__DIR__ . '/config.php')) {
+    echo "❌ ERREUR: Fichier config.php manquant\n";
+    die();
+}
+
+// Vérification des fichiers ProgressionWebServiceV2
+echo "Vérification des fichiers ProgressionWebServiceV2...\n";
+if (!file_exists(__DIR__ . '/ProgressionWebServiceV2/autoload.php')) {
+    echo "❌ ERREUR: Dossier ProgressionWebServiceV2 manquant ou incomplet\n";
+    die();
+}
 
 try {
-    $taskCode = 'INS010298';
+    echo "Création du service...\n";
+    $service = new ProgressionService();
     
-    echo "Connexion au service...\n";
-    $taskProxy = new TaskProxy(
-        $config['username'],
-        $config['password'],
-        $config['company_domain']
-    );
+    echo "Test de connexion...\n";
+    $service->connect();
     
-    // Activer le mode debug
-    $taskProxy->setDebug(true);
+    echo "✅ Connexion réussie!\n\n";
     
-    echo "Tentative de connexion...\n";
-    $taskProxy->connect();
-
-    echo "Recherche de la tâche {$taskCode}...\n";
-    $tasks = $taskProxy->findTaskByCode($taskCode);
-    
-    // Afficher les résultats
-    $formattedTask = TaskMapper::mapTaskResponse($tasks);
-
-    // Ajout de cette ligne pour voir les données converties
-    echo "\nDonnées converties :\n";
-    echo str_repeat('=', 40) . "\n";
-    print_r($formattedTask);
-    echo str_repeat('=', 40) . "\n\n";
-
-    if ($formattedTask) {
-        echo "\nDétails de la tâche :\n";
-        echo str_repeat('-', 40) . "\n";
-        echo "Code : " . $formattedTask['code'] . "\n";
-        echo "Client : " . $formattedTask['client']['name'] . "\n";
-        echo "Résumé : " . $formattedTask['summary'] . "\n";
-        echo "Description : " . $formattedTask['description'] . "\n";
-        echo "Date : " . date('d/m/Y H:i', strtotime($formattedTask['date'])) . "\n";
-        echo "Adresse : " . $formattedTask['client']['address']['street'] . ", " . 
-             $formattedTask['client']['address']['city'] . " " . $formattedTask['client']['address']['postal_code'] . "\n";
-        echo "Téléphone : " . $formattedTask['client']['phone'] . "\n";
-        echo "Email : " . $formattedTask['client']['email'] . "\n";
-        
-        if (isset($formattedTask['items']) && is_array($formattedTask['items'])) {
-            echo "\nItems :\n";
-            echo str_repeat('-', 40) . "\n";
-            foreach ($formattedTask['items'] as $item) {
-                echo "- " . str_pad($item['label'], 30) . " : " . 
-                     number_format($item['quantity'], 0) . " x " . 
-                     number_format($item['price'], 2) . "$ = " . 
-                     number_format($item['total'], 2) . "$\n";
-            }
-            echo str_repeat('-', 40) . "\n";
-            echo "Sous-total : " . str_pad(number_format($formattedTask['totals']['subtotal'], 2) . "$", 30, ' ', STR_PAD_LEFT) . "\n";
-            
-            if (isset($formattedTask['totals']['taxes']) && is_array($formattedTask['totals']['taxes'])) {
-                foreach ($formattedTask['totals']['taxes'] as $taxLabel => $taxAmount) {
-                    echo $taxLabel . " : " . 
-                         str_pad(number_format($taxAmount, 2) . "$", 30, ' ', STR_PAD_LEFT) . "\n";
-                }
-            }
-            echo str_repeat('-', 40) . "\n";
-            echo "Total : " . str_pad(number_format($formattedTask['totals']['total'], 2) . "$", 31, ' ', STR_PAD_LEFT) . "\n";
-        }
-        echo str_repeat('=', 40) . "\n";
-    } else {
-        echo "Aucune tâche trouvée avec le code {$taskCode}\n";
-    }
-
-    // Déconnexion
-    echo "\nDéconnexion...\n";
-    $taskProxy->disconnect();
-    echo "Test terminé avec succès!\n";
+    echo "Test de récupération d'une tâche...\n";
+    $taskData = $service->getTaskByCode('INS010310');
+    echo "✅ Données reçues:\n";
+    print_r($taskData);
 
 } catch (Exception $e) {
-    echo "ERREUR : " . $e->getMessage() . "\n";
-    if ($config['debug']) {
-        echo "Fichier : " . $e->getFile() . "\n";
-        echo "Ligne : " . $e->getLine() . "\n";
-        echo "Trace :\n" . $e->getTraceAsString() . "\n";
-    }
-} 
+    echo "\n❌ ERREUR: " . $e->getMessage() . "\n";
+    echo "\nStacktrace:\n";
+    echo $e->getTraceAsString() . "\n";
+}
+
+echo "\n=== Contenu du fichier log ===\n";
+if (file_exists($logFile)) {
+    echo file_get_contents($logFile);
+} else {
+    echo "Aucun fichier log trouvé\n";
+}
+
+echo "</pre>";

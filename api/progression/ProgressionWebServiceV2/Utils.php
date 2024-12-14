@@ -2,138 +2,97 @@
 
 namespace ProgressionWebService;
 
-class Utils {
+use ProgressionWebService\Property;
+use ProgressionWebService\ArrayOfProperty;
+
+class Utils
+{
     /**
-     * Convertit une date en format DateTime
+     * Initialize a ProgressionPortType service correctly configured
+     *
+     * @param string $hostname The server hostname to connect to!
+     * @returns ProgressionPortType
      */
-    public static function toDateTime($date) {
-        if ($date instanceof \DateTime) {
-            return $date;
-        }
-        if (is_string($date)) {
-            return new \DateTime($date);
-        }
-        return null;
+    public static function initWebService($hostname = "") {
+        $serverUrl = 'https://' . $hostname;
+        $serviceUrl = $serverUrl . '/server/ws/v1/ProgressionWebService';
+        $wsdlUrl = $serviceUrl . '?wsdl';
+        $service = new ProgressionPortType(array(), $wsdlUrl);
+        $service->__setLocation($serviceUrl);
+        return $service;
     }
 
     /**
-     * Crée une SoapVar pour les paramètres de type string
+     * Set a single Property in an ArrayOfProperty
+     *
+     * @param ArrayOfProperty $arrayOfProperty The list of properties
+     * @param string $name The name of the property to add
+     * @param string $value The value to set
      */
-    public static function createStringParam($value) {
-        return new \SoapVar($value, XSD_STRING, 'string', 'http://www.w3.org/2001/XMLSchema');
-    }
-
-    /**
-     * Crée une SoapVar pour les paramètres de type integer
-     */
-    public static function createIntParam($value) {
-        return new \SoapVar($value, XSD_INTEGER, 'integer', 'http://www.w3.org/2001/XMLSchema');
-    }
-
-    /**
-     * Crée une SoapVar pour les paramètres de type float
-     */
-    public static function createFloatParam($value) {
-        return new \SoapVar($value, XSD_FLOAT, 'float', 'http://www.w3.org/2001/XMLSchema');
-    }
-
-    /**
-     * Crée une SoapVar pour les paramètres de type boolean
-     */
-    public static function createBoolParam($value) {
-        return new \SoapVar($value, XSD_BOOLEAN, 'boolean', 'http://www.w3.org/2001/XMLSchema');
-    }
-
-    /**
-     * Formate une réponse de tâche en format standard
-     */
-    public static function formatTaskResponse($record) {
-        if (!$record) {
-            return null;
-        }
-
-        return [
-            'code' => $record->getCode(),
-            'summary' => $record->getSummary(),
-            'description' => $record->getDescription(),
-            'date' => $record->getRv(),
-            'client' => [
-                'name' => $record->getClientRef() ? $record->getClientRef()->getLabel() : null,
-                'phone' => $record->getClientAddress() ? $record->getClientAddress()->getPhone() : null,
-                'adresse' => $record->getClientAddress() ? $record->getClientAddress()->getAddress() : null,
-                'ville' => $record->getClientAddress() ? $record->getClientAddress()->getCity() : null,
-                'province' => $record->getClientAddress() ? $record->getClientAddress()->getProvince() : null,
-                'code_postal' => $record->getClientAddress() ? $record->getClientAddress()->getPostalCode() : null
-            ],
-            'installation' => $record->getNodeAddress() ? self::addressToArray($record->getNodeAddress()) : null,
-            'task' => [
-                'id' => $record->getId(),
-                'title' => $record->getSummary(),
-                'description' => $record->getDescription(),
-                'price' => $record->getTaskItemList() ? $record->getTaskItemList()->getTotal() : null
-            ]
-        ];
-    }
-
-    /**
-     * Convertit un objet Properties en tableau associatif
-     */
-    public static function propertiesToArray($properties) {
-        if (!$properties) {
-            return [];
-        }
-
-        $result = [];
-        $props = $properties->getProperty();
-
-        if (!$props) {
-            return [];
-        }
-
-        if (is_array($props)) {
-            foreach ($props as $prop) {
-                $result[$prop->getName()] = $prop->getValue();
-            }
+    public static function setProperty(ArrayOfProperty $arrayOfProperty, $name = "", $value = "") {
+        $property = (new Property())->setName($name);
+        $exists = false;
+        if ($arrayOfProperty == null)
+            $arrayOfProperty = new ArrayOfProperty();
+        $properties = $arrayOfProperty->getProperty();
+        if ($properties == null) {
+            $properties = array();
+            $arrayOfProperty->setProperty($properties);
         } else {
-            $result[$props->getName()] = $props->getValue();
-        }
-
-        return $result;
-    }
-
-    /**
-     * Convertit un objet Address en tableau associatif
-     */
-    public static function addressToArray($address) {
-        if (!$address) {
-            return [];
-        }
-
-        return [
-            'nom' => $address->getAddress(),  // On utilise l'adresse comme nom par défaut
-            'telephone' => $address->getPhone(),
-            'adresse' => $address->getAddress(),
-            'ville' => $address->getCity(),
-            'province' => $address->getProvince(),
-            'code_postal' => $address->getPostalCode()
-        ];
-    }
-
-    /**
-     * Récupère une propriété personnalisée d'une tâche
-     */
-    private static function getCustomProperty($task, $propertyName) {
-        if (!$task->getProperties() || !$task->getProperties()->getProperty()) {
-            return null;
-        }
-
-        foreach ($task->getProperties()->getProperty() as $property) {
-            if ($property->getName() === $propertyName) {
-                return $property->getValue();
+            // Check if already exists!!!
+            foreach ($properties as $prop) {
+                if ($prop->getName() == $name) {
+                    $property = $prop;
+                    $exists = true;
+                    break;
+                }
             }
         }
+        $property->setValue(new SoapVar($value, XSD_STRING, 'string', 'http://www.w3.org/2001/XMLSchema'));
+        if (!$exists)
+            array_push($properties, $property);
+        return $arrayOfProperty;
+    }
 
-        return null;
+    /**
+     * Set multiple properties in an ArrayOfProperty
+     *
+     * @param ArrayOfProperty $arrayOfProperty The array of properties to put properties into.
+     * @param array $properties The array of properties to set. ex.:
+     *
+     * array(
+     *   "name1" => "value1"
+     *   "name2" => "value2"
+     * );
+     */
+    public static function setProperties(ArrayOfProperty $arrayOfProperty, array $properties) {
+        if ($arrayOfProperty == null)
+            $arrayOfProperty = new ArrayOfProperty();
+        $propnames = array_keys($properties);
+        foreach ($propnames as $propname) {
+            Utils::setProperty($arrayOfProperty, $propname, $properties[$propname]);
+        }
+        return $arrayOfProperty;
+    }
+
+    /**
+     * Set multiple Properties in the ArrayOfProperty of a Record
+     *
+     * @param Record $record The record to set properties in.
+     * @param array $properties The array of properties to set. ex.:
+     *
+     * array(
+     *   "name1" => "value1"
+     *   "name2" => "value2"
+     * );
+     */
+    public static function setRecordProperties(Record $record, array $properties) {
+        $arrayOfProperty = $record->getProperties();
+        if ($arrayOfProperty == null) {
+            $arrayOfProperty = new ArrayOfProperty();
+            $record->setProperties($arrayOfProperty);
+        }
+        Utils::setProperties($arrayOfProperty, $properties);
     }
 }
 

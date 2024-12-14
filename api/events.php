@@ -1,43 +1,47 @@
 <?php
+// Désactiver l'affichage des erreurs
 ini_set('display_errors', 0);
-error_reporting(E_ALL);
+error_reporting(0);
+
+// Gérer les en-têtes CORS
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Accept');
+header('Access-Control-Allow-Credentials: true');
+
+// Si c'est une requête OPTIONS, on s'arrête ici
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// Définir le type de contenu comme JSON
+header('Content-Type: application/json; charset=utf-8');
 
 require_once 'config.php';
-setCorsHeaders();
+
+// Fonction de logging simplifiée
+function writeLog($message) {
+    error_log($message);
+}
 
 // Ajouter la colonne vacation_group_id si elle n'existe pas
 try {
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS vacation_group_id VARCHAR(36) DEFAULT NULL");
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS vacation_group_start_date DATE DEFAULT NULL");
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS vacation_group_end_date DATE DEFAULT NULL");
+    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS full_name VARCHAR(255) DEFAULT NULL");
+    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS phone VARCHAR(20) DEFAULT NULL");
+    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS address VARCHAR(255) DEFAULT NULL");
+    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS Sommaire TEXT DEFAULT NULL");
+    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS Description TEXT DEFAULT NULL");
+    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS `Numéro de soumission` VARCHAR(50) DEFAULT NULL");
+    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS quote_number VARCHAR(50) DEFAULT NULL");
+    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS representative VARCHAR(100) DEFAULT NULL");
+    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS client_number VARCHAR(50) DEFAULT NULL");
+    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS installation_number VARCHAR(50) DEFAULT NULL");
 } catch(Exception $e) {
     error_log("Erreur lors de l'ajout des colonnes de groupe de vacances : " . $e->getMessage());
-}
-
-// Gérer les requêtes OPTIONS
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
-// Gérer les différentes méthodes HTTP
-switch ($_SERVER['REQUEST_METHOD']) {
-    case 'GET':
-        handleGet($pdo);
-        break;
-    case 'POST':
-        handlePost($pdo);
-        break;
-    case 'PUT':
-        handlePut($pdo);
-        break;
-    case 'DELETE':
-        handleDelete($pdo);
-        break;
-    default:
-        http_response_code(405);
-        echo json_encode(['error' => 'Méthode non autorisée']);
-        break;
 }
 
 // Fonction pour gérer les requêtes GET
@@ -75,10 +79,12 @@ function handleGet($pdo) {
                 'date' => $event['date'] ?? null,
                 'installation_time' => $event['installation_time'] ?? null,
                 'type' => $event['type'] ?? null,
-                'first_name' => $event['first_name'] ?? '',
-                'last_name' => $event['last_name'] ?? '',
-                'installation_number' => $event['installation_number'] ?? '',
+                'full_name' => $event['full_name'] ?? '',
+                'phone' => $event['phone'] ?? '',
+                'address' => $event['address'] ?? '',
                 'city' => $event['city'] ?? '',
+                'Sommaire' => $event['Sommaire'] ?? '',
+                'Description' => $event['Description'] ?? '',
                 'equipment' => $event['equipment'] ?? '',
                 'amount' => $event['amount'] ?? null,
                 'employee_name' => $event['employee_name'] ?? '',
@@ -93,6 +99,10 @@ function handleGet($pdo) {
                 'region_name' => $event['region_name'] ?? '',
                 'region_id' => $event['region_id'] ?? null,
                 'employee_id' => $event['employee_id'] ?? null,
+                'quote_number' => $event['quote_number'] ?? '',
+                'representative' => $event['representative'] ?? '',
+                'client_number' => $event['client_number'] ?? '',
+                'installation_number' => $event['installation_number'] ?? '',
                 'vacation_group_id' => $event['vacation_group_id'] ?? null,
                 'vacation_group_start_date' => $event['vacation_group_start_date'] ?? null,
                 'vacation_group_end_date' => $event['vacation_group_end_date'] ?? null
@@ -118,251 +128,167 @@ function handleGet($pdo) {
 // Fonction pour gérer les requêtes POST
 function handlePost($pdo) {
     try {
-        $data = json_decode(file_get_contents('php://input'), true);
-        if (!$data) {
-            throw new Exception("Données JSON invalides");
+        // Lire le contenu brut du corps de la requête
+        $rawData = file_get_contents('php://input');
+        writeLog("=== DÉBUT DEBUG INSERTION ===");
+        writeLog("1. Données brutes reçues : " . $rawData);
+        
+        // Décoder les données JSON
+        $data = json_decode($rawData, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("Erreur de décodage JSON: " . json_last_error_msg());
         }
-        error_log("Données POST reçues : " . json_encode($data));
+        
+        writeLog("2. Données décodées : " . print_r($data, true));
 
-        // Pour les vacances, vérifier le vacation_group_id
-        if (isset($data['type']) && $data['type'] === 'vacances') {
-            if (!isset($data['vacation_group_id'])) {
-                // Si pas de vacation_group_id fourni, en générer un nouveau
-                $data['vacation_group_id'] = uniqid('vac_', true);
-            }
-            error_log("Création événement vacances avec vacation_group_id: " . $data['vacation_group_id']);
+        // Vérifier les champs requis pour une installation
+        if (isset($data['type']) && $data['type'] === 'installation') {
+            writeLog("Validation des champs pour une installation");
+            $requiredFields = [
+                'date', 'installation_time', 'full_name', 'phone', 'address',
+                'city', 'equipment', 'amount', 'installation_number', 'quote_number'
+            ];
             
-            // Utiliser les dates fournies
-            $data['vacation_group_start_date'] = $data['startDate'] ?? $data['date'];
-            $data['vacation_group_end_date'] = $data['endDate'] ?? $data['date'];
+            $missingFields = [];
+            foreach ($requiredFields as $field) {
+                $value = isset($data[$field]) ? $data[$field] : null;
+                writeLog("Vérification du champ '$field': " . var_export($value, true));
+                
+                $isEmpty = false;
+                if ($value === null || $value === '') {
+                    $isEmpty = true;
+                } else if (is_string($value)) {
+                    $isEmpty = trim($value) === '';
+                } else if (is_numeric($value)) {
+                    $isEmpty = floatval($value) === 0.0;
+                }
+                
+                if ($isEmpty) {
+                    writeLog("Le champ '$field' est vide ou manquant");
+                    $missingFields[] = $field;
+                } else {
+                    writeLog("Le champ '$field' est valide: " . var_export($value, true));
+                }
+            }
+            
+            if (!empty($missingFields)) {
+                $errorMsg = "Champs requis manquants : " . implode(', ', $missingFields);
+                writeLog("ERREUR: " . $errorMsg);
+                writeLog("Données reçues : " . print_r($data, true));
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'message' => $errorMsg,
+                    'debug' => [
+                        'received_data' => $data,
+                        'missing_fields' => $missingFields,
+                        'validation_details' => array_map(function($field) use ($data) {
+                            return [
+                                'field' => $field,
+                                'value' => isset($data[$field]) ? $data[$field] : null,
+                                'type' => isset($data[$field]) ? gettype($data[$field]) : 'undefined'
+                            ];
+                        }, $missingFields)
+                    ]
+                ]);
+                return;
+            }
+            
+            writeLog("Tous les champs requis sont présents et valides");
         }
 
-        // Préparer la requête SQL
+        // Préparer les paramètres avec vérification d'existence et nettoyage
+        $params = [
+            ':type' => isset($data['type']) ? trim($data['type']) : null,
+            ':date' => isset($data['date']) ? trim($data['date']) : null,
+            ':full_name' => isset($data['full_name']) ? trim($data['full_name']) : null,
+            ':phone' => isset($data['phone']) ? trim($data['phone']) : null,
+            ':address' => isset($data['address']) ? trim($data['address']) : null,
+            ':installation_time' => isset($data['installation_time']) ? trim($data['installation_time']) : null,
+            ':city' => isset($data['city']) ? trim($data['city']) : null,
+            ':Sommaire' => isset($data['Sommaire']) ? trim($data['Sommaire']) : null,
+            ':Description' => isset($data['Description']) ? trim($data['Description']) : null,
+            ':equipment' => isset($data['equipment']) ? trim($data['equipment']) : null,
+            ':amount' => isset($data['amount']) ? floatval($data['amount']) : null,
+            ':technician1_id' => !empty($data['technician1_id']) ? intval($data['technician1_id']) : null,
+            ':technician2_id' => !empty($data['technician2_id']) ? intval($data['technician2_id']) : null,
+            ':technician3_id' => !empty($data['technician3_id']) ? intval($data['technician3_id']) : null,
+            ':technician4_id' => !empty($data['technician4_id']) ? intval($data['technician4_id']) : null,
+            ':employee_id' => !empty($data['employee_id']) ? intval($data['employee_id']) : null,
+            ':region_id' => !empty($data['region_id']) ? intval($data['region_id']) : null,
+            ':vacation_group_id' => null,
+            ':vacation_group_start_date' => null,
+            ':vacation_group_end_date' => null,
+            ':numero_soumission' => isset($data['quote_number']) ? trim($data['quote_number']) : null,
+            ':quote_number' => isset($data['quote_number']) ? trim($data['quote_number']) : null,
+            ':representative' => isset($data['representative']) ? trim($data['representative']) : null,
+            ':client_number' => isset($data['client_number']) ? trim($data['client_number']) : null,
+            ':installation_number' => isset($data['installation_number']) ? trim($data['installation_number']) : null
+        ];
+
+        writeLog("3. Paramètres préparés : " . print_r($params, true));
+
+        // Insérer les données dans la base de données
         $sql = "INSERT INTO events (
-            type, date, first_name, last_name, 
-            installation_number, installation_time, city, 
-            equipment, amount, technician1_id, technician2_id, 
-            technician3_id, technician4_id, employee_id, region_id,
-            vacation_group_id, vacation_group_start_date, vacation_group_end_date
+            type, date, full_name, phone, address, installation_time, city,
+            Sommaire, Description, equipment, amount,
+            technician1_id, technician2_id, technician3_id, technician4_id,
+            employee_id, region_id, vacation_group_id,
+            vacation_group_start_date, vacation_group_end_date,
+            numero_soumission, quote_number, representative, client_number,
+            installation_number
         ) VALUES (
-            :type, :date, :first_name, :last_name, 
-            :installation_number, :installation_time, :city, 
-            :equipment, :amount, :technician1_id, :technician2_id, 
-            :technician3_id, :technician4_id, :employee_id, :region_id,
-            :vacation_group_id, :vacation_group_start_date, :vacation_group_end_date
+            :type, :date, :full_name, :phone, :address, :installation_time, :city,
+            :Sommaire, :Description, :equipment, :amount,
+            :technician1_id, :technician2_id, :technician3_id, :technician4_id,
+            :employee_id, :region_id, :vacation_group_id,
+            :vacation_group_start_date, :vacation_group_end_date,
+            :numero_soumission, :quote_number, :representative, :client_number,
+            :installation_number
         )";
 
+        writeLog("4. Requête SQL préparée : " . $sql);
+        
         $stmt = $pdo->prepare($sql);
+        $result = $stmt->execute($params);
         
-        // Préparer les paramètres
-        $params = [
-            ':type' => $data['type'],
-            ':date' => $data['date'],
-            ':first_name' => $data['first_name'] ?? '',
-            ':last_name' => $data['last_name'] ?? '',
-            ':installation_number' => $data['installation_number'] ?? '',
-            ':installation_time' => $data['installation_time'] ?? '',
-            ':city' => $data['city'] ?? '',
-            ':equipment' => $data['equipment'] ?? '',
-            ':amount' => $data['amount'] ?? '',
-            ':technician1_id' => $data['technician1_id'] ?? null,
-            ':technician2_id' => $data['technician2_id'] ?? null,
-            ':technician3_id' => $data['technician3_id'] ?? null,
-            ':technician4_id' => $data['technician4_id'] ?? null,
-            ':employee_id' => $data['employee_id'] ?? null,
-            ':region_id' => $data['region_id'] ?? null,
-            ':vacation_group_id' => $data['vacation_group_id'] ?? null,
-            ':vacation_group_start_date' => $data['vacation_group_start_date'] ?? null,
-            ':vacation_group_end_date' => $data['vacation_group_end_date'] ?? null
-        ];
-
-        error_log("Paramètres de l'insertion : " . json_encode($params));
-
-        if (!$stmt->execute($params)) {
-            throw new Exception("Erreur lors de l'exécution de la requête");
+        if ($result) {
+            $eventId = $pdo->lastInsertId();
+            writeLog("5. Insertion réussie. ID de l'événement : " . $eventId);
+            
+            http_response_code(200);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Événement créé avec succès',
+                'data' => ['id' => $eventId]
+            ]);
+        } else {
+            throw new Exception("Erreur lors de l'insertion dans la base de données");
         }
-
-        $newId = $pdo->lastInsertId();
-        $response = [
-            'success' => true,
-            'message' => 'Événement ajouté avec succès',
-            'id' => $newId,
-            'vacation_group_id' => $data['vacation_group_id'] ?? null
-        ];
         
-        error_log("Réponse envoyée : " . json_encode($response));
-        echo json_encode($response);
-
-    } catch(Exception $e) {
-        error_log("Erreur dans handlePost : " . $e->getMessage());
+    } catch (Exception $e) {
+        writeLog("ERREUR: " . $e->getMessage() . "\n" . $e->getTraceAsString());
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'message' => $e->getMessage()
+            'message' => 'Erreur lors de la création de l\'événement: ' . $e->getMessage(),
+            'debug' => [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]
         ]);
     }
 }
 
-// Fonction pour gérer les requêtes PUT
-function handlePut($pdo) {
-    try {
-        $data = json_decode(file_get_contents('php://input'), true);
-        error_log("Données PUT reçues : " . json_encode($data));
-
-        if (!isset($data['id'])) {
-            throw new Exception("ID manquant pour la modification");
-        }
-
-        if ($data['type'] === 'vacances' && isset($data['updateMode'])) {
-            if ($data['updateMode'] === 'group') {
-                // Mise à jour groupée
-                $sql = "UPDATE events SET 
-                    vacation_group_start_date = :start_date,
-                    vacation_group_end_date = :end_date
-                    WHERE vacation_group_id = :group_id";
-                
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    ':start_date' => $data['startDate'],
-                    ':end_date' => $data['endDate'],
-                    ':group_id' => $data['vacation_group_id']
-                ]);
-            } else {
-                // Mise à jour individuelle
-                $sql = "UPDATE events SET 
-                    date = :date,
-                    vacation_group_id = NULL,
-                    vacation_group_start_date = NULL,
-                    vacation_group_end_date = NULL
-                    WHERE id = :id";
-                
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    ':date' => $data['date'],
-                    ':id' => $data['id']
-                ]);
-            }
-        } else {
-            // Mise à jour normale pour les autres types d'événements
-            $sql = "UPDATE events SET 
-                type = :type,
-                date = :date,
-                first_name = :first_name,
-                last_name = :last_name,
-                installation_number = :installation_number,
-                installation_time = :installation_time,
-                city = :city,
-                equipment = :equipment,
-                amount = :amount,
-                technician1_id = :technician1_id,
-                technician2_id = :technician2_id,
-                technician3_id = :technician3_id,
-                technician4_id = :technician4_id,
-                employee_id = :employee_id,
-                region_id = :region_id
-                WHERE id = :id";
-
-            $stmt = $pdo->prepare($sql);
-            $params = [
-                ':id' => $data['id'],
-                ':type' => $data['type'],
-                ':date' => $data['date'],
-                ':first_name' => $data['first_name'] ?? null,
-                ':last_name' => $data['last_name'] ?? null,
-                ':installation_number' => $data['installation_number'] ?? null,
-                ':installation_time' => $data['installation_time'] ?? null,
-                ':city' => $data['city'] ?? null,
-                ':equipment' => $data['equipment'] ?? null,
-                ':amount' => $data['amount'] ?? null,
-                ':technician1_id' => $data['technician1_id'] ?? null,
-                ':technician2_id' => $data['technician2_id'] ?? null,
-                ':technician3_id' => $data['technician3_id'] ?? null,
-                ':technician4_id' => $data['technician4_id'] ?? null,
-                ':employee_id' => $data['employee_id'] ?? null,
-                ':region_id' => $data['region_id'] ?? null
-            ];
-            $stmt->execute($params);
-        }
-
-        echo json_encode([
-            'success' => true,
-            'message' => 'Événement modifié avec succès'
-        ]);
-
-    } catch(Exception $e) {
-        error_log("Erreur dans handlePut : " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage()
-        ]);
-    }
+// Gérer les différents types de requêtes
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    handleGet($pdo);
+} else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    handlePost($pdo);
+} else {
+    http_response_code(405);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Méthode non autorisée'
+    ]);
 }
-
-// Fonction pour gérer les requêtes DELETE
-function handleDelete($pdo) {
-    try {
-        // Lire les données JSON du corps de la requête
-        $rawData = file_get_contents('php://input');
-        $data = json_decode($rawData, true);
-        
-        // Récupérer l'ID de l'URL
-        $id = $_GET['id'] ?? null;
-        
-        if (!$id) {
-            throw new Exception("ID manquant");
-        }
-        
-        error_log("DEBUG Suppression - ID: " . $id);
-        error_log("DEBUG Suppression - Données reçues: " . $rawData);
-        error_log("DEBUG Suppression - Mode de suppression: " . ($data['deleteMode'] ?? 'non spécifié'));
-
-        if (isset($data['deleteMode']) && $data['deleteMode'] === 'group') {
-            error_log("DEBUG Vacances - Tentative de suppression en groupe");
-            
-            // Récupérer d'abord le vacation_group_id
-            $stmt = $pdo->prepare("SELECT vacation_group_id FROM events WHERE id = ?");
-            $stmt->execute([$id]);
-            $event = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            error_log("DEBUG Vacances - Event trouvé: " . json_encode($event));
-            
-            if ($event && $event['vacation_group_id']) {
-                error_log("DEBUG Vacances - Tentative de suppression du groupe: " . $event['vacation_group_id']);
-                
-                // Compter combien d'événements sont dans le groupe
-                $countStmt = $pdo->prepare("SELECT COUNT(*) FROM events WHERE vacation_group_id = ?");
-                $countStmt->execute([$event['vacation_group_id']]);
-                $count = $countStmt->fetchColumn();
-                error_log("DEBUG Vacances - Nombre d'événements dans le groupe: " . $count);
-                
-                // Supprimer tous les événements du même groupe
-                $stmt = $pdo->prepare("DELETE FROM events WHERE vacation_group_id = ?");
-                $result = $stmt->execute([$event['vacation_group_id']]);
-                error_log("DEBUG Vacances - Résultat de la suppression: " . ($result ? 'succès' : 'échec'));
-            } else {
-                error_log("DEBUG Vacances - Pas de vacation_group_id trouvé pour l'événement " . $id);
-                // Supprimer juste l'événement individuel si pas de groupe
-                $stmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
-                $stmt->execute([$id]);
-            }
-        } else {
-            // Suppression individuelle
-            $stmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
-            $stmt->execute([$id]);
-        }
-
-        echo json_encode([
-            'success' => true,
-            'message' => 'Événement supprimé avec succès'
-        ]);
-
-    } catch(Exception $e) {
-        error_log("Erreur dans handleDelete : " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage()
-        ]);
-    }
-} 

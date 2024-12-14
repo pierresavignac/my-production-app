@@ -12,8 +12,8 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
         phone: '',
         address: '',
         city: '',
-        summary: '',
-        description: '',
+        Sommaire: '',
+        Description: '',
         installation_number: '',
         equipment: '',
         amount: '',
@@ -27,7 +27,7 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
         endDate: '',
         client_number: '',  // Numéro avantage
         quote_number: '',   // Numéro de soumission
-        representative: '', // Représentant
+        representative: '' // Représentant
     });
 
     const [regions, setRegions] = useState([]);
@@ -39,6 +39,7 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
     const [isLoading, setIsLoading] = useState(false);
     const [fetchError, setFetchError] = useState('');
     const [errors, setErrors] = useState({});
+    const [isFetching, setIsFetching] = useState(false);
 
     useEffect(() => {
         if (show) {
@@ -50,15 +51,15 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                     type: event.type || '',
                     date: event.date || '',
                     installation_time: event.installation_time || '',
-                    full_name: `${event.first_name || ''} ${event.last_name || ''}`.trim(),
+                    full_name: event.full_name || '',
                     phone: event.phone || '',
                     address: event.address || '',
                     city: event.city || '',
-                    summary: event.summary || '',
-                    description: event.description || '',
-                    installation_number: event.installation_number ? event.installation_number : '',
+                    Sommaire: event.Sommaire || '',
+                    Description: event.Description || '',
+                    installation_number: event.installation_number || '',
                     equipment: event.equipment || '',
-                    amount: event.amount_with_taxes || '',
+                    amount: event.amount || '',
                     technician1_id: event.technician1_id || '',
                     technician2_id: event.technician2_id || '',
                     technician3_id: event.technician3_id || '',
@@ -67,7 +68,7 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                     progression_task_id: event.progression_task_id || '',
                     client_number: event.client_number || '',
                     quote_number: event.quote_number || '',
-                    representative: event.representative || '',
+                    representative: event.representative || ''
                 };
                 setFormData(normalizedEvent);
             }
@@ -118,31 +119,49 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
         e.preventDefault();
         
         try {
+            console.log('Form Data avant soumission:', formData);
+            
+            // Validation des champs requis pour une installation
+            if (formData.type === 'installation') {
+                const requiredFields = {
+                    'full_name': 'Nom complet',
+                    'phone': 'Téléphone',
+                    'address': 'Adresse',
+                    'quote_number': 'Numéro de soumission'
+                };
+
+                const missingFields = [];
+                for (const [field, label] of Object.entries(requiredFields)) {
+                    const value = formData[field];
+                    if (!value || (typeof value === 'string' && !value.trim())) {
+                        missingFields.push(label);
+                    }
+                }
+
+                if (missingFields.length > 0) {
+                    const errorMessage = `Veuillez remplir les champs suivants : \n${missingFields.join('\n')}`;
+                    console.error(errorMessage);
+                    alert(errorMessage);
+                    return;
+                }
+            }
+            
+            // Nettoyer les données avant l'envoi
             const submissionData = {
-                type: formData.type,
-                date: formData.date,
-                installation_time: formData.installation_time,
-                full_name: formData.full_name,
-                phone: formData.phone,
-                address: formData.address,
-                city: formData.city,
-                equipment: formData.equipment,
-                amount: formData.amount,
-                technician1_id: formData.technician1_id,
-                technician2_id: formData.technician2_id,
-                technician3_id: formData.technician3_id,
-                technician4_id: formData.technician4_id,
-                employee_id: formData.employee_id,
-                progression_task_id: formData.progression_task_id,
-                startDate: formData.type === 'vacances' ? formData.startDate : undefined,
-                endDate: formData.type === 'vacances' ? formData.endDate : undefined,
-                client_number: formData.client_number,
-                quote_number: formData.quote_number,
-                representative: formData.representative,
+                ...formData,
+                full_name: formData.full_name?.trim() || '',
+                phone: formData.phone?.trim() || '',
+                address: formData.address?.trim() || '',
+                quote_number: formData.quote_number?.trim() || '',
+                type: formData.type || 'installation'
             };
-            onSubmit(submissionData);
+            
+            console.log('Données à envoyer:', submissionData);
+            await onSubmit(submissionData);
+            onHide();
         } catch (error) {
             console.error('Erreur lors de la soumission:', error);
+            alert(error.message || 'Erreur lors de la soumission du formulaire. Veuillez réessayer.');
         }
     };
 
@@ -197,42 +216,66 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
         }
     };
 
-    const handleFetchData = async () => {
-        setIsLoading(true);
+    const handleFetch = async () => {
+        setIsFetching(true);
         setFetchError('');
         
         try {
-            const installationNumber = formData.installation_number;
-            if (!installationNumber) {
-                throw new Error('Veuillez entrer un numéro d\'installation valide');
+            const installationCode = formData.installation_number;
+            if (!installationCode) {
+                setFetchError('Veuillez entrer un numéro d\'installation');
+                return;
             }
 
-            const progressionData = await fetchInstallationData(installationNumber);
-
-            if (!progressionData?.customer?.name) {
-                throw new Error('Les informations client sont incomplètes ou invalides');
+            console.log('Fetching data for installation:', installationCode);
+            const response = await fetchInstallationData(installationCode);
+            console.log('API Response:', response);
+            
+            // Vérifier si nous avons des données valides
+            if (!response.data) {
+                throw new Error('Aucune donnée reçue de l\'API');
             }
 
-            setFormData(prev => ({
-                ...prev,
-                full_name: progressionData.customer.name,
-                phone: progressionData.customer.phoneNumber,
-                address: progressionData.customer.address.street,
-                city: progressionData.customer.address.city,
-                summary: progressionData.task.title,
-                description: progressionData.task.description,
-                amount: progressionData.task.priceWithTaxes,
-                progression_task_id: progressionData.task.id
-            }));
+            const data = response.data;
+            console.log('Data to be set:', data);
+            
+            // Conserver toutes les données existantes du formulaire
+            setFormData(prev => {
+                const newData = {
+                    ...prev, // Garder toutes les données existantes
+                    full_name: data.client_name || prev.full_name || '',
+                    phone: data.phone || prev.phone || '',
+                    address: data.address || prev.address || '',
+                    city: data.city || prev.city || '',
+                    Sommaire: data.Sommaire || prev.Sommaire || '',
+                    Description: data.Description || prev.Description || '',
+                    amount: data.amount || prev.amount || '',
+                    quote_number: data.quote_number || prev.quote_number || '',
+                    representative: data.representative || prev.representative || '',
+                    installation_number: data.task_code || installationCode,
+                    // Conserver les valeurs existantes si elles ne sont pas dans la réponse API
+                    technician1_id: prev.technician1_id || null,
+                    technician2_id: prev.technician2_id || null,
+                    technician3_id: prev.technician3_id || null,
+                    technician4_id: prev.technician4_id || null,
+                    employee_id: prev.employee_id || null,
+                    type: prev.type || 'installation',
+                    date: prev.date || '',
+                    installation_time: prev.installation_time || ''
+                };
+                console.log('New form data after merge:', newData);
+                return newData;
+            });
+
+            // Afficher un message de succès
+            alert('Données récupérées avec succès ! Veuillez vérifier et compléter les informations si nécessaire.');
+
         } catch (error) {
-            console.error('Erreur Fetch:', error);
-            setFetchError(
-                error.message.includes('500') 
-                    ? 'Le serveur rencontre des difficultés. Veuillez réessayer dans quelques instants.'
-                    : error.message
-            );
+            console.error('Fetch error:', error);
+            setFetchError(error.message || 'Erreur lors de la récupération des données');
+            alert('Erreur : ' + (error.message || 'Erreur lors de la récupération des données'));
         } finally {
-            setIsLoading(false);
+            setIsFetching(false);
         }
     };
 
@@ -344,34 +387,37 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
 
                         {formData.type === 'installation' && (
                             <>
+                                <Form.Group as={Row} className="mb-3">
+                                    <Form.Label column sm={3}>Numéro d'installation</Form.Label>
+                                    <Col sm={7}>
+                                        <Form.Control
+                                            type="text"
+                                            name="installation_number"
+                                            value={formData.installation_number}
+                                            onChange={handleChange}
+                                            isInvalid={!!errors.installation_number}
+                                        />
+                                        <Form.Control.Feedback type="invalid">
+                                            {errors.installation_number}
+                                        </Form.Control.Feedback>
+                                    </Col>
+                                    <Col sm={2}>
+                                        <Button 
+                                            variant="primary" 
+                                            onClick={handleFetch}
+                                            disabled={isFetching}
+                                        >
+                                            {isFetching ? 'Chargement...' : 'Fetch'}
+                                        </Button>
+                                    </Col>
+                                </Form.Group>
+                                {fetchError && (
+                                    <Alert variant="danger" className="mt-2">
+                                        {fetchError}
+                                    </Alert>
+                                )}
                                 <Row className="mb-3">
                                     <Col md={6}>
-                                        <Form.Group>
-                                            <Form.Label>Numéro d'installation</Form.Label>
-                                            <input
-                                                type="text"
-                                                className={`form-control ${errors.installation_number ? 'is-invalid' : ''}`}
-                                                id="installation_number"
-                                                name="installation_number"
-                                                value={formData.installation_number}
-                                                onChange={handleChange}
-                                                placeholder="Numéro d'installation"
-                                            />
-                                            <Button 
-                                                variant="primary" 
-                                                onClick={handleFetchData}
-                                                disabled={isLoading}
-                                            >
-                                                {isLoading ? 'Chargement...' : 'Fetch'}
-                                            </Button>
-                                            {fetchError && (
-                                                <div className="invalid-feedback">
-                                                    {fetchError}
-                                                </div>
-                                            )}
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={3}>
                                         <Form.Group>
                                             <Form.Label>Date</Form.Label>
                                             <Form.Control
@@ -395,6 +441,24 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                                             />
                                         </Form.Group>
                                     </Col>
+                                    <Col md={3}>
+                                        <Form.Group>
+                                            <Form.Label>Équipement</Form.Label>
+                                            <Form.Select
+                                                name="equipment"
+                                                value={formData.equipment}
+                                                onChange={handleChange}
+                                                required
+                                            >
+                                                <option value="">Sélectionner un équipement</option>
+                                                {equipment.map(item => (
+                                                    <option key={item.id} value={item.name}>
+                                                        {item.name}
+                                                    </option>
+                                                ))}
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
                                 </Row>
 
                                 <Row className="mb-3">
@@ -408,7 +472,6 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                                                 onChange={handleChange}
                                                 placeholder="Nom complet"
                                                 required
-                                                readOnly
                                             />
                                         </Form.Group>
                                     </Col>
@@ -422,7 +485,6 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                                                 onChange={handleChange}
                                                 placeholder="Téléphone"
                                                 required
-                                                readOnly
                                             />
                                         </Form.Group>
                                     </Col>
@@ -439,7 +501,6 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                                                 onChange={handleChange}
                                                 placeholder="Adresse complète"
                                                 required
-                                                readOnly
                                             />
                                         </Form.Group>
                                     </Col>
@@ -453,7 +514,6 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                                                 onChange={handleChange}
                                                 placeholder="Ville"
                                                 required
-                                                readOnly
                                             />
                                         </Form.Group>
                                     </Col>
@@ -465,11 +525,10 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                                             <Form.Label>Sommaire</Form.Label>
                                             <Form.Control
                                                 type="text"
-                                                name="summary"
-                                                value={formData.summary}
+                                                name="Sommaire"
+                                                value={formData.Sommaire}
                                                 onChange={handleChange}
                                                 placeholder="Sommaire de l'installation"
-                                                readOnly
                                             />
                                         </Form.Group>
                                     </Col>
@@ -482,41 +541,15 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                                             <Form.Control
                                                 as="textarea"
                                                 rows={5}
-                                                name="description"
-                                                value={formData.description}
+                                                name="Description"
+                                                value={formData.Description}
                                                 onChange={handleChange}
                                                 placeholder="Description détaillée"
                                                 style={{ maxHeight: '200px', overflowY: 'auto' }}
-                                                readOnly
                                             />
                                         </Form.Group>
                                     </Col>
                                 </Row>
-
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Équipement</Form.Label>
-                                    <div className="d-flex gap-2">
-                                        <Form.Select
-                                            name="equipment"
-                                            value={formData.equipment}
-                                            onChange={handleChange}
-                                            required
-                                        >
-                                            <option value="">Sélectionner un équipement</option>
-                                            {equipment.map(item => (
-                                                <option key={item.id} value={item.name}>
-                                                    {item.name}
-                                                </option>
-                                            ))}
-                                        </Form.Select>
-                                        <Button 
-                                            variant="outline-primary"
-                                            onClick={handleEquipmentManagement}
-                                        >
-                                            Gérer
-                                        </Button>
-                                    </div>
-                                </Form.Group>
 
                                 <Form.Group className="mb-3">
                                     <Form.Label>Montant à percevoir</Form.Label>
@@ -527,7 +560,6 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                                         value={formData.amount}
                                         onChange={handleChange}
                                         required
-                                        readOnly
                                     />
                                 </Form.Group>
 

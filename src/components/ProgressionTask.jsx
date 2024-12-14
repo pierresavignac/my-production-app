@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { fetchInstallationData } from '../utils/progressionApi';
 import './ProgressionTask.css';
 
 const ProgressionTask = () => {
@@ -18,18 +19,12 @@ const ProgressionTask = () => {
     setTask(null);
 
     try {
-      const response = await fetch(`/api/progression/tasks.php?code=${encodeURIComponent(taskCode)}`);
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || 'Erreur lors de la recherche');
+      const response = await fetchInstallationData(taskCode);
+      if (!response.success) {
+        throw new Error(response.message || 'Erreur lors de la recherche');
       }
 
-      if (data.data && data.data.length > 0) {
-        setTask(data.data[0]);
-      } else {
-        setError('Aucune tâche trouvée avec ce code');
-      }
+      setTask(response.data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -79,7 +74,7 @@ const ProgressionTask = () => {
         <div className="task-details">
           <h2>Détails de la tâche</h2>
           <div className="task-header">
-            <div className="task-code">Code: {task.code}</div>
+            <div className="task-code">Code: {task.task_code}</div>
             <div className="task-summary">{task.summary}</div>
           </div>
 
@@ -89,13 +84,28 @@ const ProgressionTask = () => {
 
           <div className="task-info">
             <div className="info-item">
-              <strong>Date:</strong> {formatDate(task.date)}
+              <strong>Client:</strong> {task.client_name}
             </div>
             <div className="info-item">
-              <strong>Client:</strong> {task.client}
+              <strong>Téléphone:</strong> {task.phone || 'Non spécifié'}
             </div>
             <div className="info-item">
-              <strong>Ressource:</strong> {task.resource}
+              <strong>Adresse:</strong> {task.address}
+            </div>
+            <div className="info-item">
+              <strong>Ville:</strong> {task.city}
+            </div>
+            <div className="info-item">
+              <strong>Montant:</strong> {formatPrice(task.amount)}
+            </div>
+            <div className="info-item">
+              <strong>Numéro de soumission:</strong> {task.quote_number}
+            </div>
+            <div className="info-item">
+              <strong>Représentant:</strong> {task.representative}
+            </div>
+            <div className="info-item">
+              <strong>Statut:</strong> {task.status}
             </div>
           </div>
 
