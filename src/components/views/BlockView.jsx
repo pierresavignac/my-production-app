@@ -96,7 +96,8 @@ const BlockView = ({
   isCurrentWeek, 
   isCurrentDay,
   getEventsForDay,
-  formatDayHeader 
+  formatDayHeader,
+  renderEvent 
 }) => {
   const dayStyle = {
     flex: '1',
@@ -161,40 +162,29 @@ const BlockView = ({
                         <AddInlineButton onClick={() => handleDateClick(day)}>+</AddInlineButton>
                       </span>
                     </h3>
-                    {dayEvents.map((event, eventIndex) => (
-                      <div
-                        key={eventIndex}
-                        className={`event-block ${event.type}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEventClick(event);
-                        }}
-                      >
-                        {event.type === 'installation' ? (
-                          <div className="installation-details">
-                            <strong>Installation</strong>
-                            <div>{event.first_name} {event.last_name}</div>
-                            <div>{event.installation_number}</div>
-                            <div>{event.city}</div>
-                            <div>
-                              <small>
-                                {formatTechnicians(event)}
-                              </small>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <strong>
-                              {event.type === 'conge' ? 'Congé' : 
-                               event.type === 'maladie' ? 'Maladie' : 
-                               event.type === 'vacances' ? 'Vacances' :
-                               'Formation'}
-                            </strong>
-                            <div>{event.employee_name}</div>
-                          </>
-                        )}
-                      </div>
-                    ))}
+                    {dayEvents.map((event, eventIndex) => {
+                      const normalizedType = {
+                        'conge': 'conge',
+                        'congé': 'conge',
+                        'maladie': 'maladie',
+                        'formation': 'formation',
+                        'vacances': 'vacances',
+                        'installation': 'installation'
+                      }[event.type.toLowerCase()] || event.type.toLowerCase();
+
+                      return (
+                        <div
+                          key={eventIndex}
+                          className={`event-block ${normalizedType}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEventClick(event);
+                          }}
+                        >
+                          {renderEvent(event)}
+                        </div>
+                      );
+                    })}
                   </DayBlock>
                 );
               })}
@@ -214,40 +204,29 @@ const BlockView = ({
                         <AddInlineButton onClick={() => handleDateClick(saturday)}>+</AddInlineButton>
                       </span>
                     </h3>
-                    {saturdayEvents.map((event, eventIndex) => (
-                      <div
-                        key={eventIndex}
-                        className={`event-block ${event.type}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEventClick(event);
-                        }}
-                      >
-                        {event.type === 'installation' ? (
-                          <div className="installation-details">
-                            <strong>Installation</strong>
-                            <div>{event.first_name} {event.last_name}</div>
-                            <div>{event.installation_number}</div>
-                            <div>{event.city}</div>
-                            <div>
-                              <small>
-                                {formatTechnicians(event)}
-                              </small>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <strong>
-                              {event.type === 'conge' ? 'Congé' : 
-                               event.type === 'maladie' ? 'Maladie' : 
-                               event.type === 'vacances' ? 'Vacances' :
-                               'Formation'}
-                            </strong>
-                            <div>{event.employee_name}</div>
-                          </>
-                        )}
-                      </div>
-                    ))}
+                    {saturdayEvents.map((event, eventIndex) => {
+                      const normalizedType = {
+                        'conge': 'conge',
+                        'congé': 'conge',
+                        'maladie': 'maladie',
+                        'formation': 'formation',
+                        'vacances': 'vacances',
+                        'installation': 'installation'
+                      }[event.type.toLowerCase()] || event.type.toLowerCase();
+
+                      return (
+                        <div
+                          key={eventIndex}
+                          className={`event-block ${normalizedType}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEventClick(event);
+                          }}
+                        >
+                          {renderEvent(event)}
+                        </div>
+                      );
+                    })}
                   </DayBlock>
                 )}
 
@@ -263,40 +242,29 @@ const BlockView = ({
                         <AddInlineButton onClick={() => handleDateClick(sunday)}>+</AddInlineButton>
                       </span>
                     </h3>
-                    {sundayEvents.map((event, eventIndex) => (
-                      <div
-                        key={eventIndex}
-                        className={`event-block ${event.type}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEventClick(event);
-                        }}
-                      >
-                        {event.type === 'installation' ? (
-                          <div className="installation-details">
-                            <strong>Installation</strong>
-                            <div>{event.first_name} {event.last_name}</div>
-                            <div>{event.installation_number}</div>
-                            <div>{event.city}</div>
-                            <div>
-                              <small>
-                                {formatTechnicians(event)}
-                              </small>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <strong>
-                              {event.type === 'conge' ? 'Congé' : 
-                               event.type === 'maladie' ? 'Maladie' : 
-                               event.type === 'vacances' ? 'Vacances' :
-                               'Formation'}
-                            </strong>
-                            <div>{event.employee_name}</div>
-                          </>
-                        )}
-                      </div>
-                    ))}
+                    {sundayEvents.map((event, eventIndex) => {
+                      const normalizedType = {
+                        'conge': 'conge',
+                        'congé': 'conge',
+                        'maladie': 'maladie',
+                        'formation': 'formation',
+                        'vacances': 'vacances',
+                        'installation': 'installation'
+                      }[event.type.toLowerCase()] || event.type.toLowerCase();
+
+                      return (
+                        <div
+                          key={eventIndex}
+                          className={`event-block ${normalizedType}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEventClick(event);
+                          }}
+                        >
+                          {renderEvent(event)}
+                        </div>
+                      );
+                    })}
                   </DayBlock>
                 )}
               </WeekendContainer>

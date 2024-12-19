@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { fr } from 'date-fns/locale';
@@ -27,9 +27,9 @@ const VacationActionModal = ({ show, onHide, onConfirm, event, mode }) => {
             </Modal.Header>
             <Modal.Body>
                 {mode === 'edit' ? (
-                    <Form onSubmit={handleSubmit}>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Date de début</Form.Label>
+                    <form onSubmit={handleSubmit}>
+                        <div className="mb-3">
+                            <label className="form-label">Date de début</label>
                             <DatePicker
                                 selected={startDate}
                                 onChange={date => setStartDate(date)}
@@ -40,9 +40,9 @@ const VacationActionModal = ({ show, onHide, onConfirm, event, mode }) => {
                                 locale={fr}
                                 className="form-control"
                             />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Date de fin</Form.Label>
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Date de fin</label>
                             <DatePicker
                                 selected={endDate}
                                 onChange={date => setEndDate(date)}
@@ -54,8 +54,8 @@ const VacationActionModal = ({ show, onHide, onConfirm, event, mode }) => {
                                 locale={fr}
                                 className="form-control"
                             />
-                        </Form.Group>
-                    </Form>
+                        </div>
+                    </form>
                 ) : (
                     <p>Êtes-vous sûr de vouloir supprimer toutes les vacances de ce groupe ?</p>
                 )}
@@ -75,4 +75,4 @@ const VacationActionModal = ({ show, onHide, onConfirm, event, mode }) => {
     );
 };
 
-export default VacationActionModal; 
+export default VacationActionModal;

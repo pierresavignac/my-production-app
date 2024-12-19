@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Row, Col, Alert } from 'react-bootstrap';
+import { Modal, Button, Row, Col, Alert } from 'react-bootstrap';
 import { fetchRegions, fetchTechnicians, fetchCitiesForRegion, fetchEquipment, fetchInstallationData } from '../../utils/apiUtils';
 
 const HOUSE_TYPES = [
@@ -147,7 +147,7 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
         setAluminumColors(aluminumColors.filter(color => color.id !== colorId));
     };
 
-    const handleSave = async () => {
+    const handleSubmit = async () => {
         try {
             setIsSubmitting(true);
             setNotification({ type: '', message: '' });
@@ -295,10 +295,10 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                 {error && (
                     <div className="alert alert-danger">{error}</div>
                 )}
-                <Form.Group>
-                    <Form.Label>Ajouter un nouveau panneau</Form.Label>
+                <div className="mb-3">
+                    <label>Ajouter un nouveau panneau</label>
                     <div className="d-flex gap-2">
-                        <Form.Control
+                        <input
                             type="text"
                             value={newPanelName}
                             onChange={(e) => setNewPanelName(e.target.value)}
@@ -312,7 +312,7 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                             Ajouter
                         </Button>
                     </div>
-                </Form.Group>
+                </div>
                 <div className="mt-3">
                     <h6>Panneaux existants</h6>
                     {isLoading ? (
@@ -348,10 +348,10 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                 {error && (
                     <div className="alert alert-danger">{error}</div>
                 )}
-                <Form.Group>
-                    <Form.Label>Ajouter une nouvelle couleur</Form.Label>
+                <div className="mb-3">
+                    <label>Ajouter une nouvelle couleur</label>
                     <div className="d-flex gap-2">
-                        <Form.Control
+                        <input
                             type="text"
                             value={newColorName}
                             onChange={(e) => setNewColorName(e.target.value)}
@@ -365,7 +365,7 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                             Ajouter
                         </Button>
                     </div>
-                </Form.Group>
+                </div>
                 <div className="mt-3">
                     <h6>Couleurs existantes</h6>
                     {isLoading ? (
@@ -414,11 +414,11 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                             {notification.message}
                         </div>
                     )}
-                    <Form>
+                    <form>
                         <Row className="mb-3">
                             <Col md={6}>
-                                <Form.Group>
-                                    <Form.Label>Numéro d'installation</Form.Label>
+                                <div className="mb-3">
+                                    <label>Numéro d'installation</label>
                                     <input
                                         type="text"
                                         className={`form-control ${fetchError ? 'is-invalid' : ''}`}
@@ -440,37 +440,37 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                     >
                                         {isLoading ? 'Chargement...' : 'Fetch'}
                                     </Button>
-                                </Form.Group>
+                                </div>
                             </Col>
                             <Col md={3}>
-                                <Form.Group>
-                                    <Form.Label>Date</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Date</label>
+                                    <input
                                         type="date"
                                         name="date"
                                         value={formData.date}
                                         onChange={handleChange}
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                             <Col md={3}>
-                                <Form.Group>
-                                    <Form.Label>Heure</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Heure</label>
+                                    <input
                                         type="time"
                                         name="time"
                                         value={formData.time}
                                         onChange={handleChange}
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                         </Row>
 
                         <Row className="mb-3">
                             <Col md={8}>
-                                <Form.Group>
-                                    <Form.Label>Nom complet</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Nom complet</label>
+                                    <input
                                         type="text"
                                         name="full_name"
                                         value={formData.full_name}
@@ -478,12 +478,12 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         placeholder="Nom complet"
                                         required
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                             <Col md={4}>
-                                <Form.Group>
-                                    <Form.Label>Téléphone</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Téléphone</label>
+                                    <input
                                         type="tel"
                                         name="phone"
                                         value={formData.phone}
@@ -491,15 +491,15 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         placeholder="Téléphone"
                                         required
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                         </Row>
 
                         <Row className="mb-3">
                             <Col md={8}>
-                                <Form.Group>
-                                    <Form.Label>Adresse</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Adresse</label>
+                                    <input
                                         type="text"
                                         name="address"
                                         value={formData.address}
@@ -507,12 +507,12 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         placeholder="Adresse complète"
                                         required
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                             <Col md={4}>
-                                <Form.Group>
-                                    <Form.Label>Ville</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Ville</label>
+                                    <input
                                         type="text"
                                         name="city"
                                         value={formData.city}
@@ -520,31 +520,30 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         placeholder="Ville"
                                         required
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                         </Row>
 
                         <Row className="mb-3">
                             <Col md={12}>
-                                <Form.Group>
-                                    <Form.Label>Sommaire</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Sommaire</label>
+                                    <input
                                         type="text"
                                         name="Sommaire"
                                         value={formData.Sommaire}
                                         onChange={handleChange}
                                         placeholder="Sommaire de l'installation"
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                         </Row>
 
                         <Row className="mb-3">
                             <Col md={12}>
-                                <Form.Group>
-                                    <Form.Label>Description</Form.Label>
-                                    <Form.Control
-                                        as="textarea"
+                                <div className="mb-3">
+                                    <label>Description</label>
+                                    <textarea
                                         rows={5}
                                         name="Description"
                                         value={formData.Description}
@@ -552,24 +551,24 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         placeholder="Description détaillée"
                                         style={{ maxHeight: '200px', overflowY: 'auto' }}
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                         </Row>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Équipement</Form.Label>
-                            <Form.Control
+                        <div className="mb-3">
+                            <label>Équipement</label>
+                            <input
                                 type="text"
                                 name="equipment"
                                 value={formData.equipment}
                                 onChange={handleChange}
                                 required
                             />
-                        </Form.Group>
+                        </div>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Montant</Form.Label>
-                            <Form.Control
+                        <div className="mb-3">
+                            <label>Montant</label>
+                            <input
                                 type="number"
                                 step="0.01"
                                 name="amount"
@@ -577,66 +576,66 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                 onChange={handleChange}
                                 required
                             />
-                        </Form.Group>
+                        </div>
 
                         <Row className="mb-3">
                             <Col md={4}>
-                                <Form.Group>
-                                    <Form.Label>Numéro avantage</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Numéro avantage</label>
+                                    <input
                                         type="text"
                                         name="client_number"
                                         value={formData.client_number}
                                         onChange={handleChange}
                                         placeholder="Numéro avantage"
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                             <Col md={4}>
-                                <Form.Group>
-                                    <Form.Label>Numéro de soumission</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Numéro de soumission</label>
+                                    <input
                                         type="text"
                                         name="quote_number"
                                         value={formData.quote_number}
                                         onChange={handleChange}
                                         placeholder="Numéro de soumission"
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                             <Col md={4}>
-                                <Form.Group>
-                                    <Form.Label>Représentant</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Représentant</label>
+                                    <input
                                         type="text"
                                         name="representative"
                                         value={formData.representative}
                                         onChange={handleChange}
                                         placeholder="Représentant"
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                         </Row>
 
                         <Row className="mb-3">
                             <Col md={6}>
-                                <Form.Group>
-                                    <Form.Label>Visite</Form.Label>
-                                    <Form.Select
+                                <div className="mb-3">
+                                    <label>Visite</label>
+                                    <select
                                         name="hasVisit"
                                         value={formData.hasVisit}
                                         onChange={handleChange}
                                     >
                                         <option value={false}>Non</option>
                                         <option value={true}>Oui</option>
-                                    </Form.Select>
-                                </Form.Group>
+                                    </select>
+                                </div>
                             </Col>
                             {formData.hasVisit && (
                                 <Col md={6}>
-                                    <Form.Group>
-                                        <Form.Label>Nom du visiteur</Form.Label>
-                                        <Form.Select
+                                    <div className="mb-3">
+                                        <label>Nom du visiteur</label>
+                                        <select
                                             name="visitorName"
                                             value={formData.visitorName}
                                             onChange={handleChange}
@@ -647,15 +646,15 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                                     {`${employee.first_name} ${employee.last_name}`}
                                                 </option>
                                             ))}
-                                        </Form.Select>
-                                    </Form.Group>
+                                        </select>
+                                    </div>
                                 </Col>
                             )}
                         </Row>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Type de construction</Form.Label>
-                            <Form.Select
+                        <div className="mb-3">
+                            <label>Type de construction</label>
+                            <select
                                 name="houseType"
                                 value={formData.houseType}
                                 onChange={handleChange}
@@ -664,15 +663,15 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                 {HOUSE_TYPES.map(type => (
                                     <option key={type} value={type}>{type}</option>
                                 ))}
-                            </Form.Select>
-                        </Form.Group>
+                            </select>
+                        </div>
 
                         <Row className="mb-3">
                             <Col md={8}>
-                                <Form.Group>
-                                    <Form.Label>Aluminium #1</Form.Label>
+                                <div className="mb-3">
+                                    <label>Aluminium #1</label>
                                     <div className="d-flex gap-2">
-                                        <Form.Select
+                                        <select
                                             name="aluminum1"
                                             value={formData.aluminum1}
                                             onChange={handleChange}
@@ -683,17 +682,17 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                                     {color.name}
                                                 </option>
                                             ))}
-                                        </Form.Select>
+                                        </select>
                                         <Button variant="outline-primary" onClick={handleAluminumManagement}>
                                             Gérer
                                         </Button>
                                     </div>
-                                </Form.Group>
+                                </div>
                             </Col>
                             <Col md={4}>
-                                <Form.Group>
-                                    <Form.Label>Nombre de longueur #1</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Nombre de longueur #1</label>
+                                    <input
                                         type="number"
                                         name="lengthCount1"
                                         value={formData.lengthCount1}
@@ -701,16 +700,16 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         min="1"
                                         max="5"
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                         </Row>
 
                         <Row className="mb-3">
                             <Col md={8}>
-                                <Form.Group>
-                                    <Form.Label>Aluminium #2</Form.Label>
+                                <div className="mb-3">
+                                    <label>Aluminium #2</label>
                                     <div className="d-flex gap-2">
-                                        <Form.Select
+                                        <select
                                             name="aluminum2"
                                             value={formData.aluminum2}
                                             onChange={handleChange}
@@ -721,17 +720,17 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                                     {color.name}
                                                 </option>
                                             ))}
-                                        </Form.Select>
+                                        </select>
                                         <Button variant="outline-primary" onClick={handleAluminumManagement}>
                                             Gérer
                                         </Button>
                                     </div>
-                                </Form.Group>
+                                </div>
                             </Col>
                             <Col md={4}>
-                                <Form.Group>
-                                    <Form.Label>Nombre de longueur #2</Form.Label>
-                                    <Form.Control
+                                <div className="mb-3">
+                                    <label>Nombre de longueur #2</label>
+                                    <input
                                         type="number"
                                         name="lengthCount2"
                                         value={formData.lengthCount2}
@@ -739,15 +738,15 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         min="1"
                                         max="5"
                                     />
-                                </Form.Group>
+                                </div>
                             </Col>
                         </Row>
 
                         <Row className="mb-3">
                             <Col md={6}>
-                                <Form.Group>
-                                    <Form.Label>Type de support</Form.Label>
-                                    <Form.Select
+                                <div className="mb-3">
+                                    <label>Type de support</label>
+                                    <select
                                         name="supportType"
                                         value={formData.supportType}
                                         onChange={handleChange}
@@ -756,14 +755,14 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         {SUPPORT_TYPES.map(type => (
                                             <option key={type} value={type}>{type}</option>
                                         ))}
-                                    </Form.Select>
-                                </Form.Group>
+                                    </select>
+                                </div>
                             </Col>
                             <Col md={6}>
-                                <Form.Group>
-                                    <Form.Label>Panneau électrique</Form.Label>
+                                <div className="mb-3">
+                                    <label>Panneau électrique</label>
                                     <div className="d-flex gap-2">
-                                        <Form.Select
+                                        <select
                                             name="electricPanel"
                                             value={formData.electricPanel}
                                             onChange={handleChange}
@@ -772,33 +771,33 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                             {panels.map(panel => (
                                                 <option key={panel.id} value={panel.id}>{panel.name}</option>
                                             ))}
-                                        </Form.Select>
+                                        </select>
                                         <Button variant="outline-primary" onClick={handlePanelManagement}>
                                             Gérer
                                         </Button>
                                     </div>
-                                </Form.Group>
+                                </div>
                             </Col>
                         </Row>
 
                         <Row className="mb-3">
                             <Col md={6}>
-                                <Form.Group>
-                                    <Form.Label>Espace disponible dans le panneau</Form.Label>
-                                    <Form.Select
+                                <div className="mb-3">
+                                    <label>Espace disponible dans le panneau</label>
+                                    <select
                                         name="hasPanelSpace"
                                         value={formData.hasPanelSpace}
                                         onChange={handleChange}
                                     >
                                         <option value={true}>Oui</option>
                                         <option value={false}>Non</option>
-                                    </Form.Select>
-                                </Form.Group>
+                                    </select>
+                                </div>
                             </Col>
                             <Col md={6}>
-                                <Form.Group>
-                                    <Form.Label>Sous-sol</Form.Label>
-                                    <Form.Select
+                                <div className="mb-3">
+                                    <label>Sous-sol</label>
+                                    <select
                                         name="basement"
                                         value={formData.basement}
                                         onChange={handleChange}
@@ -807,16 +806,16 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         <option value="Ouvert">Ouvert</option>
                                         <option value="Fermé">Fermé</option>
                                         <option value="Suspendu">Suspendu</option>
-                                    </Form.Select>
-                                </Form.Group>
+                                    </select>
+                                </div>
                             </Col>
                         </Row>
 
                         <Row className="mb-3">
                             <Col md={6}>
-                                <Form.Group>
-                                    <Form.Label>Type d'installation</Form.Label>
-                                    <Form.Select
+                                <div className="mb-3">
+                                    <label>Type d'installation</label>
+                                    <select
                                         name="installationType"
                                         value={formData.installationType}
                                         onChange={handleChange}
@@ -826,14 +825,14 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                         <option value="Murale">Murale</option>
                                         <option value="Addon">Addon</option>
                                         <option value="Complet">Complet</option>
-                                    </Form.Select>
-                                </Form.Group>
+                                    </select>
+                                </div>
                             </Col>
                             {(formData.installationType === 'Addon' || formData.installationType === 'Complet') && (
                                 <Col md={6}>
-                                    <Form.Group>
-                                        <Form.Label>Sous-type d'installation</Form.Label>
-                                        <Form.Select
+                                    <div className="mb-3">
+                                        <label>Sous-type d'installation</label>
+                                        <select
                                             name="subInstallationType"
                                             value={formData.subInstallationType}
                                             onChange={handleChange}
@@ -853,44 +852,44 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                                     <option value="Ventillo Convecteur">Ventillo Convecteur</option>
                                                 </>
                                             )}
-                                        </Form.Select>
-                                    </Form.Group>
+                                        </select>
+                                    </div>
                                 </Col>
                             )}
                         </Row>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Particularités</Form.Label>
+                        <div className="mb-3">
+                            <label>Particularités</label>
                             <div className="d-flex flex-column gap-2">
-                                <Form.Check
+                                <input
                                     type="checkbox"
                                     label="Pompe à Drain"
                                     name="drainPump"
                                     checked={formData.particularities.drainPump}
                                     onChange={handleChange}
                                 />
-                                <Form.Check
+                                <input
                                     type="checkbox"
                                     label="Back à Back"
                                     name="backToBack"
                                     checked={formData.particularities.backToBack}
                                     onChange={handleChange}
                                 />
-                                <Form.Check
+                                <input
                                     type="checkbox"
                                     label="Remplacement"
                                     name="replacement"
                                     checked={formData.particularities.replacement}
                                     onChange={handleChange}
                                 />
-                                <Form.Check
+                                <input
                                     type="checkbox"
                                     label="Grenier"
                                     name="attic"
                                     checked={formData.particularities.attic}
                                     onChange={handleChange}
                                 />
-                                <Form.Check
+                                <input
                                     type="checkbox"
                                     label="Sur le toit"
                                     name="onRoof"
@@ -898,18 +897,14 @@ const WorksheetModal = ({ show, onHide, installation, employees = [], mode = 'wo
                                     onChange={handleChange}
                                 />
                             </div>
-                        </Form.Group>
-                    </Form>
+                        </div>
+                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={onHide} disabled={isSubmitting}>
-                        Fermer
+                        Annuler
                     </Button>
-                    <Button 
-                        variant="primary" 
-                        onClick={handleSave}
-                        disabled={isSubmitting}
-                    >
+                    <Button variant="primary" onClick={handleSubmit} disabled={isSubmitting}>
                         {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
                     </Button>
                 </Modal.Footer>

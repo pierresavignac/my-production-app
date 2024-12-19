@@ -290,31 +290,109 @@ th {
   min-height: 80px;
 }
 
-.installation-details {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.85rem;
-  padding: 4px;
+.event-block {
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.installation-details strong {
-  font-size: 1rem;
-  font-weight: 500;
-  color: inherit;
+.event-block:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.event-block.installation {
+  background-color: #e3f2fd;
+  border-left: 4px solid #1976d2;
+}
+
+.event-block.conge {
+  background-color: #fff3e0;
+  border-left: 4px solid #ff9800;
+}
+
+.event-block.maladie {
+  background-color: #ffebee;
+  border-left: 4px solid #f44336;
+}
+
+.event-block.formation {
+  background-color: #e8f5e9;
+  border-left: 4px solid #4caf50;
+}
+
+.event-block.vacances {
+  background-color: #f3e5f5;
+  border-left: 4px solid #9c27b0;
+}
+
+.event-time {
+  font-weight: bold;
+  color: #1976d2;
   margin-bottom: 4px;
 }
 
-.installation-details div {
+.event-type {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4px;
+  text-transform: capitalize;
+}
+
+.event-technicians {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.installation-details .event-client {
+  margin: 8px 0;
+}
+
+.installation-details .event-client strong {
+  display: block;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.installation-details .event-client div {
+  color: #666;
+  font-size: 0.9em;
   margin-bottom: 2px;
 }
 
-.installation-details small {
-  color: #666;
-  font-size: 0.8rem;
-  margin-top: auto;
-  padding-top: 4px;
-  border-top: 1px solid #eee;
+.special-event {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-block {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.event-block:hover {
+  transform: scale(1.02);
+}
+
+.event-block.conge,
+.event-block.congé {
+  background-color: #ffcdd2;
+}
+
+.event-block.maladie {
+  background-color: #f8bbd0;
+}
+
+.event-block.formation {
+  background-color: #c8e6c9;
+}
+
+.event-block.vacances {
+  background-color: #bbdefb;
 }
 
 .list-view {

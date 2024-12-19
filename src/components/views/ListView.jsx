@@ -71,7 +71,8 @@ const ListView = ({
   handleEventClick, 
   isCurrentWeek, 
   isCurrentDay,
-  getEventsForDay 
+  getEventsForDay,
+  renderEvent 
 }) => {
   const listViewRef = useRef(null);
 
@@ -155,11 +156,7 @@ const ListView = ({
                                 : 'Installation'}
                             </td>
                             <td>
-                              {event.type === 'installation' ? (
-                                <span>{event.first_name} {event.last_name} - {event.installation_number}</span>
-                              ) : (
-                                <span>{event.employee_name}</span>
-                              )}
+                              {renderEvent(event)}
                             </td>
                           </tr>
                         ))}
@@ -204,11 +201,7 @@ const ListView = ({
                             : 'Installation'}
                         </td>
                         <td>
-                          {event.type === 'installation' ? (
-                            <span>{event.first_name} {event.last_name} - {event.installation_number}</span>
-                          ) : (
-                            <span>{event.employee_name}</span>
-                          )}
+                          {renderEvent(event)}
                         </td>
                       </tr>
                     ))}
@@ -251,11 +244,7 @@ const ListView = ({
                             : 'Installation'}
                         </td>
                         <td>
-                          {event.type === 'installation' ? (
-                            <span>{event.first_name} {event.last_name} - {event.installation_number}</span>
-                          ) : (
-                            <span>{event.employee_name}</span>
-                          )}
+                          {renderEvent(event)}
                         </td>
                       </tr>
                     ))}

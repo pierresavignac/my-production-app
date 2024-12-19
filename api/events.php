@@ -5,7 +5,7 @@ error_reporting(0);
 
 // Gérer les en-têtes CORS
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Accept');
 header('Access-Control-Allow-Credentials: true');
 
@@ -35,13 +35,18 @@ try {
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS address VARCHAR(255) DEFAULT NULL");
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS Sommaire TEXT DEFAULT NULL");
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS Description TEXT DEFAULT NULL");
-    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS `Numéro de soumission` VARCHAR(50) DEFAULT NULL");
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS quote_number VARCHAR(50) DEFAULT NULL");
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS representative VARCHAR(100) DEFAULT NULL");
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS client_number VARCHAR(50) DEFAULT NULL");
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS installation_number VARCHAR(50) DEFAULT NULL");
 } catch(Exception $e) {
     error_log("Erreur lors de l'ajout des colonnes de groupe de vacances : " . $e->getMessage());
+}
+
+// Fonction pour valider le type d'événement
+function isValidEventType($type) {
+    $validTypes = ['installation', 'conge', 'maladie', 'formation', 'vacances'];
+    return in_array(strtolower($type), $validTypes);
 }
 
 // Fonction pour gérer les requêtes GET
@@ -74,39 +79,68 @@ function handleGet($pdo) {
         $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         $formattedEvents = array_map(function($event) {
-            return [
+            // Normaliser le type d'événement
+            $type = strtolower($event['type'] ?? '');
+            switch($type) {
+                case 'conge':
+                case 'congé':
+                    $type = 'Congé';
+                    break;
+                case 'maladie':
+                    $type = 'Maladie';
+                    break;
+                case 'formation':
+                    $type = 'Formation';
+                    break;
+                case 'vacances':
+                    $type = 'Vacances';
+                    break;
+                case 'installation':
+                    $type = 'Installation';
+                    break;
+                default:
+                    $type = ucfirst($type);
+            }
+
+            // Champs communs à tous les événements
+            $normalizedEvent = [
                 'id' => $event['id'] ?? null,
                 'date' => $event['date'] ?? null,
                 'installation_time' => $event['installation_time'] ?? null,
-                'type' => $event['type'] ?? null,
-                'full_name' => $event['full_name'] ?? '',
-                'phone' => $event['phone'] ?? '',
-                'address' => $event['address'] ?? '',
-                'city' => $event['city'] ?? '',
-                'Sommaire' => $event['Sommaire'] ?? '',
-                'Description' => $event['Description'] ?? '',
-                'equipment' => $event['equipment'] ?? '',
-                'amount' => $event['amount'] ?? null,
-                'employee_name' => $event['employee_name'] ?? '',
-                'technician1_id' => $event['technician1_id'] ?? null,
-                'technician2_id' => $event['technician2_id'] ?? null,
-                'technician3_id' => $event['technician3_id'] ?? null,
-                'technician4_id' => $event['technician4_id'] ?? null,
+                'type' => $type,
                 'technician1_name' => $event['technician1_name'] ?? '',
                 'technician2_name' => $event['technician2_name'] ?? '',
                 'technician3_name' => $event['technician3_name'] ?? '',
-                'technician4_name' => $event['technician4_name'] ?? '',
-                'region_name' => $event['region_name'] ?? '',
-                'region_id' => $event['region_id'] ?? null,
-                'employee_id' => $event['employee_id'] ?? null,
-                'quote_number' => $event['quote_number'] ?? '',
-                'representative' => $event['representative'] ?? '',
-                'client_number' => $event['client_number'] ?? '',
-                'installation_number' => $event['installation_number'] ?? '',
-                'vacation_group_id' => $event['vacation_group_id'] ?? null,
-                'vacation_group_start_date' => $event['vacation_group_start_date'] ?? null,
-                'vacation_group_end_date' => $event['vacation_group_end_date'] ?? null
+                'technician4_name' => $event['technician4_name'] ?? ''
             ];
+
+            // Ajouter les champs spécifiques uniquement pour les installations
+            if ($type === 'Installation') {
+                $normalizedEvent = array_merge($normalizedEvent, [
+                    'full_name' => $event['full_name'] ?? $event['nom_complet'] ?? '',
+                    'phone' => $event['phone'] ?? $event['telephone'] ?? '',
+                    'address' => $event['address'] ?? $event['adresse'] ?? '',
+                    'city' => $event['city'] ?? $event['ville'] ?? '',
+                    'Sommaire' => $event['Sommaire'] ?? $event['sommaire'] ?? '',
+                    'Description' => $event['Description'] ?? $event['description'] ?? '',
+                    'equipment' => $event['equipment'] ?? $event['equipement'] ?? '',
+                    'amount' => $event['amount'] ?? $event['montant'] ?? null,
+                    'employee_name' => $event['employee_name'] ?? '',
+                    'quote_number' => $event['quote_number'] ?? $event['numero_soumission'] ?? '',
+                    'representative' => $event['representative'] ?? $event['representant'] ?? '',
+                    'client_number' => $event['client_number'] ?? $event['numero_client'] ?? '',
+                    'installation_number' => $event['installation_number'] ?? $event['numero_installation'] ?? '',
+                    'region_name' => $event['region_name'] ?? '',
+                    'region_id' => $event['region_id'] ?? null,
+                    'employee_id' => $event['employee_id'] ?? null
+                ]);
+            }
+
+            // Ajouter des logs pour le débogage
+            error_log("Données brutes de l'événement : " . print_r($event, true));
+            error_log("Événement normalisé : " . print_r($normalizedEvent, true));
+
+            return $normalizedEvent;
         }, $events);
         
         echo json_encode([
@@ -128,163 +162,242 @@ function handleGet($pdo) {
 // Fonction pour gérer les requêtes POST
 function handlePost($pdo) {
     try {
-        // Lire le contenu brut du corps de la requête
-        $rawData = file_get_contents('php://input');
-        writeLog("=== DÉBUT DEBUG INSERTION ===");
-        writeLog("1. Données brutes reçues : " . $rawData);
-        
-        // Décoder les données JSON
-        $data = json_decode($rawData, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception("Erreur de décodage JSON: " . json_last_error_msg());
-        }
-        
-        writeLog("2. Données décodées : " . print_r($data, true));
+        $data = json_decode(file_get_contents('php://input'), true);
+        writeLog("Données reçues: " . json_encode($data));
 
-        // Vérifier les champs requis pour une installation
-        if (isset($data['type']) && $data['type'] === 'installation') {
-            writeLog("Validation des champs pour une installation");
-            $requiredFields = [
-                'date', 'installation_time', 'full_name', 'phone', 'address',
-                'city', 'equipment', 'amount', 'installation_number', 'quote_number'
-            ];
-            
-            $missingFields = [];
-            foreach ($requiredFields as $field) {
-                $value = isset($data[$field]) ? $data[$field] : null;
-                writeLog("Vérification du champ '$field': " . var_export($value, true));
-                
-                $isEmpty = false;
-                if ($value === null || $value === '') {
-                    $isEmpty = true;
-                } else if (is_string($value)) {
-                    $isEmpty = trim($value) === '';
-                } else if (is_numeric($value)) {
-                    $isEmpty = floatval($value) === 0.0;
-                }
-                
-                if ($isEmpty) {
-                    writeLog("Le champ '$field' est vide ou manquant");
-                    $missingFields[] = $field;
-                } else {
-                    writeLog("Le champ '$field' est valide: " . var_export($value, true));
-                }
-            }
-            
-            if (!empty($missingFields)) {
-                $errorMsg = "Champs requis manquants : " . implode(', ', $missingFields);
-                writeLog("ERREUR: " . $errorMsg);
-                writeLog("Données reçues : " . print_r($data, true));
-                http_response_code(400);
-                echo json_encode([
-                    'success' => false,
-                    'message' => $errorMsg,
-                    'debug' => [
-                        'received_data' => $data,
-                        'missing_fields' => $missingFields,
-                        'validation_details' => array_map(function($field) use ($data) {
-                            return [
-                                'field' => $field,
-                                'value' => isset($data[$field]) ? $data[$field] : null,
-                                'type' => isset($data[$field]) ? gettype($data[$field]) : 'undefined'
-                            ];
-                        }, $missingFields)
-                    ]
-                ]);
-                return;
-            }
-            
-            writeLog("Tous les champs requis sont présents et valides");
+        // Valider les données requises
+        if (!isset($data['type'])) {
+            throw new Exception("Le type d'événement est requis");
         }
 
-        // Préparer les paramètres avec vérification d'existence et nettoyage
-        $params = [
-            ':type' => isset($data['type']) ? trim($data['type']) : null,
-            ':date' => isset($data['date']) ? trim($data['date']) : null,
-            ':full_name' => isset($data['full_name']) ? trim($data['full_name']) : null,
-            ':phone' => isset($data['phone']) ? trim($data['phone']) : null,
-            ':address' => isset($data['address']) ? trim($data['address']) : null,
-            ':installation_time' => isset($data['installation_time']) ? trim($data['installation_time']) : null,
-            ':city' => isset($data['city']) ? trim($data['city']) : null,
-            ':Sommaire' => isset($data['Sommaire']) ? trim($data['Sommaire']) : null,
-            ':Description' => isset($data['Description']) ? trim($data['Description']) : null,
-            ':equipment' => isset($data['equipment']) ? trim($data['equipment']) : null,
-            ':amount' => isset($data['amount']) ? floatval($data['amount']) : null,
-            ':technician1_id' => !empty($data['technician1_id']) ? intval($data['technician1_id']) : null,
-            ':technician2_id' => !empty($data['technician2_id']) ? intval($data['technician2_id']) : null,
-            ':technician3_id' => !empty($data['technician3_id']) ? intval($data['technician3_id']) : null,
-            ':technician4_id' => !empty($data['technician4_id']) ? intval($data['technician4_id']) : null,
-            ':employee_id' => !empty($data['employee_id']) ? intval($data['employee_id']) : null,
-            ':region_id' => !empty($data['region_id']) ? intval($data['region_id']) : null,
-            ':vacation_group_id' => null,
-            ':vacation_group_start_date' => null,
-            ':vacation_group_end_date' => null,
-            ':numero_soumission' => isset($data['quote_number']) ? trim($data['quote_number']) : null,
-            ':quote_number' => isset($data['quote_number']) ? trim($data['quote_number']) : null,
-            ':representative' => isset($data['representative']) ? trim($data['representative']) : null,
-            ':client_number' => isset($data['client_number']) ? trim($data['client_number']) : null,
-            ':installation_number' => isset($data['installation_number']) ? trim($data['installation_number']) : null
+        // Valider le type d'événement
+        if (!isValidEventType($data['type'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Type d\'événement invalide']);
+            return;
+        }
+
+        // Normaliser le type d'événement
+        $data['type'] = strtolower($data['type']);
+
+        // Définir les valeurs par défaut
+        $currentDate = date('Y-m-d');
+        $defaultTime = '08:00:00';
+
+        // Préparer les données pour l'insertion
+        $eventData = [
+            'type' => $data['type'],
+            'date' => !empty($data['date']) ? $data['date'] : $currentDate,
+            'installation_time' => !empty($data['installation_time']) ? $data['installation_time'] : $defaultTime,
+            'full_name' => $data['full_name'] ?? '',
+            'phone' => $data['phone'] ?? '',
+            'address' => $data['address'] ?? '',
+            'city' => $data['city'] ?? '',
+            'Sommaire' => $data['Sommaire'] ?? '',
+            'Description' => $data['Description'] ?? '',
+            'equipment' => $data['equipment'] ?? '',
+            'amount' => $data['amount'] ?? '0.00',
+            'technician1_id' => $data['technician1_id'] ?? null,
+            'technician2_id' => $data['technician2_id'] ?? null,
+            'technician3_id' => $data['technician3_id'] ?? null,
+            'technician4_id' => $data['technician4_id'] ?? null,
+            'quote_number' => $data['quote_number'] ?? '',
+            'representative' => $data['representative'] ?? '',
+            'client_number' => $data['client_number'] ?? '',
+            'installation_number' => $data['installation_number'] ?? ''
         ];
 
-        writeLog("3. Paramètres préparés : " . print_r($params, true));
-
-        // Insérer les données dans la base de données
+        // Construire la requête SQL
         $sql = "INSERT INTO events (
-            type, date, full_name, phone, address, installation_time, city,
+            type, date, installation_time, full_name, phone, address, city,
             Sommaire, Description, equipment, amount,
             technician1_id, technician2_id, technician3_id, technician4_id,
-            employee_id, region_id, vacation_group_id,
-            vacation_group_start_date, vacation_group_end_date,
-            numero_soumission, quote_number, representative, client_number,
-            installation_number
+            quote_number, representative, client_number, installation_number
         ) VALUES (
-            :type, :date, :full_name, :phone, :address, :installation_time, :city,
+            :type, :date, :installation_time, :full_name, :phone, :address, :city,
             :Sommaire, :Description, :equipment, :amount,
             :technician1_id, :technician2_id, :technician3_id, :technician4_id,
-            :employee_id, :region_id, :vacation_group_id,
-            :vacation_group_start_date, :vacation_group_end_date,
-            :numero_soumission, :quote_number, :representative, :client_number,
-            :installation_number
+            :quote_number, :representative, :client_number, :installation_number
         )";
 
-        writeLog("4. Requête SQL préparée : " . $sql);
-        
         $stmt = $pdo->prepare($sql);
-        $result = $stmt->execute($params);
-        
+        $result = $stmt->execute($eventData);
+
         if ($result) {
-            $eventId = $pdo->lastInsertId();
-            writeLog("5. Insertion réussie. ID de l'événement : " . $eventId);
-            
-            http_response_code(200);
+            $id = $pdo->lastInsertId();
+            http_response_code(201);
             echo json_encode([
                 'success' => true,
                 'message' => 'Événement créé avec succès',
-                'data' => ['id' => $eventId]
+                'id' => $id
             ]);
         } else {
-            throw new Exception("Erreur lors de l'insertion dans la base de données");
+            throw new Exception("Erreur lors de la création de l'événement");
         }
-        
     } catch (Exception $e) {
-        writeLog("ERREUR: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+        writeLog("ERREUR POST: " . $e->getMessage());
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'message' => 'Erreur lors de la création de l\'événement: ' . $e->getMessage(),
-            'debug' => [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]
+            'message' => $e->getMessage()
         ]);
     }
 }
+
+// Fonction pour gérer les requêtes POST de mise à jour
+function handleUpdate($pdo) {
+    try {
+        $data = json_decode(file_get_contents('php://input'), true);
+        writeLog("Données de mise à jour reçues: " . json_encode($data));
+
+        if (!isset($data['id'])) {
+            throw new Exception("L'ID de l'événement est requis pour la mise à jour");
+        }
+
+        // Préparer les données pour la mise à jour
+        $eventData = [
+            'id' => $data['id'],
+            'type' => $data['type'] ?? 'installation',
+            'date' => $data['date'] ?? date('Y-m-d'),
+            'installation_time' => $data['installation_time'] ?? '08:00:00',
+            'full_name' => $data['full_name'] ?? '',
+            'phone' => $data['phone'] ?? '',
+            'address' => $data['address'] ?? '',
+            'city' => $data['city'] ?? '',
+            'Sommaire' => $data['Sommaire'] ?? '',
+            'Description' => $data['Description'] ?? '',
+            'equipment' => $data['equipment'] ?? '',
+            'amount' => $data['amount'] ?? '0.00',
+            'technician1_id' => $data['technician1_id'] ?? null,
+            'technician2_id' => $data['technician2_id'] ?? null,
+            'technician3_id' => $data['technician3_id'] ?? null,
+            'technician4_id' => $data['technician4_id'] ?? null,
+            'quote_number' => $data['quote_number'] ?? '',
+            'representative' => $data['representative'] ?? '',
+            'client_number' => $data['client_number'] ?? '',
+            'installation_number' => $data['installation_number'] ?? ''
+        ];
+
+        // Construire la requête SQL de mise à jour
+        $sql = "UPDATE events SET 
+            type = :type,
+            date = :date,
+            installation_time = :installation_time,
+            full_name = :full_name,
+            phone = :phone,
+            address = :address,
+            city = :city,
+            Sommaire = :Sommaire,
+            Description = :Description,
+            equipment = :equipment,
+            amount = :amount,
+            technician1_id = :technician1_id,
+            technician2_id = :technician2_id,
+            technician3_id = :technician3_id,
+            technician4_id = :technician4_id,
+            quote_number = :quote_number,
+            representative = :representative,
+            client_number = :client_number,
+            installation_number = :installation_number
+            WHERE id = :id";
+
+        $stmt = $pdo->prepare($sql);
+        $result = $stmt->execute($eventData);
+
+        if ($result) {
+            // Récupérer l'événement mis à jour
+            $stmt = $pdo->prepare("SELECT * FROM events WHERE id = ?");
+            $stmt->execute([$data['id']]);
+            $updatedEvent = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Événement mis à jour avec succès',
+                'data' => $updatedEvent
+            ]);
+        } else {
+            throw new Exception("Erreur lors de la mise à jour de l'événement");
+        }
+    } catch (Exception $e) {
+        writeLog("ERREUR UPDATE: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage()
+        ]);
+    }
+}
+
+// Fonction pour gérer les requêtes DELETE
+function handleDelete($pdo) {
+    try {
+        // Récupérer l'ID de l'événement à supprimer
+        $id = isset($_GET['id']) ? $_GET['id'] : null;
+        
+        if (!$id) {
+            throw new Exception("ID de l'événement non spécifié");
+        }
+
+        // Préparer et exécuter la requête de suppression
+        $stmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
+        $result = $stmt->execute([$id]);
+
+        if ($result) {
+            http_response_code(200);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Événement supprimé avec succès'
+            ]);
+        } else {
+            throw new Exception("Erreur lors de la suppression de l'événement");
+        }
+    } catch (Exception $e) {
+        writeLog("ERREUR DELETE: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'message' => "Erreur lors de la suppression de l'événement: " . $e->getMessage()
+        ]);
+    }
+}
+
+// Fonction pour nettoyer les événements invalides
+function cleanInvalidEvents($pdo) {
+    try {
+        // Supprimer les événements avec une date invalide (1969-12-31)
+        $sql = "DELETE FROM events WHERE date = '1969-12-31'";
+        $stmt = $pdo->prepare($sql);
+        $result = $stmt->execute();
+
+        if ($result) {
+            writeLog("Nettoyage des événements invalides réussi");
+            return true;
+        } else {
+            writeLog("Erreur lors du nettoyage des événements invalides");
+            return false;
+        }
+    } catch (Exception $e) {
+        writeLog("ERREUR lors du nettoyage: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Nettoyer les événements invalides au démarrage
+cleanInvalidEvents($pdo);
 
 // Gérer les différents types de requêtes
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     handleGet($pdo);
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    handlePost($pdo);
+    // Vérifier si c'est une mise à jour ou une création
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (isset($data['id']) && isset($data['mode']) && $data['mode'] === 'edit') {
+        handleUpdate($pdo);
+    } else {
+        handlePost($pdo);
+    }
+} else if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    handleDelete($pdo);
 } else {
     http_response_code(405);
     echo json_encode([

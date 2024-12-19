@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Row, Col, Form, Alert } from 'react-bootstrap';
+import { Modal, Button, Row, Col } from 'react-bootstrap';
+import { fetchInstallationData } from '../../utils/apiUtils';
 import '../../styles/Modal.css';
 import VacationActionModal from './VacationActionModal';
 import WorksheetModal from './WorksheetModal';
-import { 
-    fetchProgressionTask, 
-    fetchRegions, 
-    fetchTechnicians, 
-    fetchCitiesForRegion, 
-    fetchEquipment, 
-    fetchInstallationData 
-} from '../../utils/apiUtils';
 
 const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
     const [showVacationModal, setShowVacationModal] = useState(false);
@@ -25,8 +18,8 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
         phone: '',
         address: '',
         city: '',
-        summary: '',
-        description: '',
+        Sommaire: '',
+        Description: '',
         installation_number: '',
         equipment: '',
         amount: '',
@@ -34,8 +27,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
         technician2_id: '',
         technician3_id: '',
         technician4_id: '',
-        employee_id: '',
-        progression_task_id: ''
+        client_number: '',
+        quote_number: '',
+        representative: ''
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -57,8 +51,8 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
                 phone: event.phone || '',
                 address: event.address || '',
                 city: event.city || '',
-                summary: event.summary || '',
-                description: event.description || '',
+                Sommaire: event.Sommaire || event.sommaire || '',
+                Description: event.Description || event.description || '',
                 installation_number: event.installation_number || '',
                 equipment: event.equipment || '',
                 amount: event.amount || '',
@@ -66,8 +60,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
                 technician2_id: event.technician2_id || '',
                 technician3_id: event.technician3_id || '',
                 technician4_id: event.technician4_id || '',
-                employee_id: event.employee_id || '',
-                progression_task_id: event.progression_task_id || ''
+                client_number: event.client_number || '',
+                quote_number: event.quote_number || '',
+                representative: event.representative || ''
             });
         }
     }, [event]);
@@ -102,8 +97,8 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
                 phone: progressionData.customer.phoneNumber,
                 address: progressionData.customer.address.street,
                 city: progressionData.customer.address.city,
-                summary: progressionData.task.title,
-                description: progressionData.task.description,
+                Sommaire: progressionData.task.title,
+                Description: progressionData.task.description,
                 amount: progressionData.task.priceWithTaxes,
                 progression_task_id: progressionData.task.id
             }));
@@ -154,26 +149,34 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
     };
 
     const handleEdit = () => {
-        const formattedEvent = {
-            id: event.id,
-            type: event.type,
+        const normalizedEvent = {
+            ...event,
+            type: event.type.toLowerCase(),
             date: event.date,
-            installation_time: event.installation_time || '',
-            first_name: event.first_name || '',
-            last_name: event.last_name || '',
-            installation_number: event.installation_number || '',
+            installation_time: event.installation_time || '08:00:00',
+            technician1_id: event.technician1_id || '',
+            technician2_id: event.technician2_id || '',
+            technician3_id: event.technician3_id || '',
+            technician4_id: event.technician4_id || '',
+            technician1_name: event.technician1_name || '',
+            technician2_name: event.technician2_name || '',
+            technician3_name: event.technician3_name || '',
+            technician4_name: event.technician4_name || '',
+            full_name: event.full_name || '',
+            phone: event.phone || '',
+            address: event.address || '',
             city: event.city || '',
             equipment: event.equipment || '',
             amount: event.amount || '',
-            region: event.region_id || null,
-            technician1: event.technician1_id || null,
-            technician2: event.technician2_id || null,
-            technician3: event.technician3_id || null,
-            technician4: event.technician4_id || null,
-            employee_id: event.employee_id || null,
-            mode: 'edit'
+            quote_number: event.quote_number || '',
+            installation_number: event.installation_number || '',
+            client_number: event.client_number || '',
+            representative: event.representative || '',
+            Sommaire: event.Sommaire || '',
+            Description: event.Description || ''
         };
-        onEdit(formattedEvent);
+        console.log('Événement normalisé pour édition:', normalizedEvent);
+        onEdit(normalizedEvent);
     };
 
     const handleChange = (e) => {
@@ -208,213 +211,91 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
         }
     };
 
+    const normalizedType = {
+        'conge': 'Congé',
+        'congé': 'Congé',
+        'maladie': 'Maladie',
+        'formation': 'Formation',
+        'vacances': 'Vacances',
+        'installation': 'Installation'
+    }[event.type.toLowerCase()] || event.type;
+
+    const technicians = [
+        event.technician1_name,
+        event.technician2_name,
+        event.technician3_name,
+        event.technician4_name
+    ].filter(Boolean);
+
     const renderEventDetails = () => {
-        if (!event.type) return null;
+        return (
+            <div className="event-details">
+                <div className="detail-section">
+                    <h4>Informations générales</h4>
+                    <p><strong>Type :</strong> {normalizedType}</p>
+                    <p><strong>Date :</strong> {event.date}</p>
+                    {event.type.toLowerCase() === 'installation' && (
+                        <p><strong>Heure :</strong> {event.installation_time}</p>
+                    )}
+                </div>
 
-        switch (event.type) {
-            case 'installation':
-                return (
-                    <div className="details-grid">
-                        <div className="detail-row">
-                            <div className="detail-item">
-                                <label>Type :</label>
-                                <span>{getEventTypeLabel(event.type)}</span>
-                            </div>
-                            <div className="detail-item">
-                                <label>Numéro d'installation :</label>
-                                <span>{event.installation_number}</span>
-                            </div>
-                        </div>
+                <div className="detail-section">
+                    <h4>Techniciens</h4>
+                    {technicians.map((tech, index) => (
+                        <p key={index}>{tech}</p>
+                    ))}
+                </div>
 
-                        <div className="detail-row">
-                            <div className="detail-item">
-                                <label>Date :</label>
-                                <span>{new Date(event.date).toLocaleDateString()}</span>
-                            </div>
-                            <div className="detail-item">
-                                <label>Heure :</label>
-                                <span>{event.installation_time}</span>
-                            </div>
-                        </div>
-
-                        <div className="detail-row">
-                            <div className="detail-item">
-                                <label>Région :</label>
-                                <span>{event.region_name}</span>
-                            </div>
-                            <div className="detail-item">
-                                <label>Ville :</label>
-                                <span>{event.city}</span>
-                            </div>
+                {event.type.toLowerCase() === 'installation' && (
+                    <>
+                        <div className="detail-section">
+                            <h4>Client</h4>
+                            {event.full_name && <p><strong>Nom :</strong> {event.full_name}</p>}
+                            {event.phone && <p><strong>Téléphone :</strong> {event.phone}</p>}
+                            {event.address && <p><strong>Adresse :</strong> {event.address}</p>}
+                            {event.city && <p><strong>Ville :</strong> {event.city}</p>}
                         </div>
 
-                        <div className="detail-row">
-                            <div className="detail-item">
-                                <label>Équipement :</label>
-                                <span>{event.equipment}</span>
-                            </div>
-                            <div className="detail-item">
-                                <label>Montant :</label>
-                                <span>{new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(event.amount)}</span>
-                            </div>
+                        <div className="detail-section">
+                            <h4>Installation</h4>
+                            {event.equipment && <p><strong>Équipement :</strong> {event.equipment}</p>}
+                            {event.installation_number && <p><strong>Numéro d'installation :</strong> {event.installation_number}</p>}
+                            {event.quote_number && <p><strong>Numéro de soumission :</strong> {event.quote_number}</p>}
+                            {event.amount && <p><strong>Montant :</strong> {event.amount}$</p>}
                         </div>
 
-                        <div className="detail-row">
-                            <div className="detail-item">
-                                <label>Numéro avantage :</label>
-                                <span>{event.client_number || '-'}</span>
+                        {(event.Sommaire || event.Description) && (
+                            <div className="detail-section">
+                                <h4>Notes</h4>
+                                {event.Sommaire && <p><strong>Sommaire :</strong> {event.Sommaire}</p>}
+                                {event.Description && <p><strong>Description :</strong> {event.Description}</p>}
                             </div>
-                            <div className="detail-item">
-                                <label>Numéro de soumission :</label>
-                                <span>{event.quote_number || '-'}</span>
-                            </div>
-                        </div>
-
-                        <div className="detail-row">
-                            <div className="detail-item">
-                                <label>Représentant :</label>
-                                <span>{event.representative || '-'}</span>
-                            </div>
-                        </div>
-
-                        <div className="detail-row">
-                            <div className="detail-item">
-                                <label>Technicien 1 :</label>
-                                <span>{event.technician1_name || '-'}</span>
-                            </div>
-                            <div className="detail-item">
-                                <label>Technicien 2 :</label>
-                                <span>{event.technician2_name || '-'}</span>
-                            </div>
-                        </div>
-
-                        <div className="detail-row">
-                            <div className="detail-item">
-                                <label>Technicien 3 :</label>
-                                <span>{event.technician3_name || '-'}</span>
-                            </div>
-                            <div className="detail-item">
-                                <label>Technicien 4 :</label>
-                                <span>{event.technician4_name || '-'}</span>
-                            </div>
-                        </div>
-
-                        <Row className="mb-3">
-                            <Col md={8}>
-                                <Form.Group>
-                                    <Form.Label>Adresse</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleChange}
-                                        placeholder="Adresse complète"
-                                        required
-                                    />
-                                </Form.Group>
-                            </Col>
-                            <Col md={4}>
-                                <Form.Group>
-                                    <Form.Label>Ville</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="city"
-                                        value={formData.city}
-                                        onChange={handleChange}
-                                        placeholder="Ville"
-                                        required
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                    </div>
-                );
-            case 'formation':
-            case 'maladie':
-            case 'conge':
-                return (
-                    <div className="details-grid">
-                        <div className="detail-item">
-                            <label>Type :</label>
-                            <span>{getEventTypeLabel(event.type)}</span>
-                        </div>
-                        <div className="detail-item">
-                            <label>Date :</label>
-                            <span>{new Date(event.date).toLocaleDateString()}</span>
-                        </div>
-                        <div className="detail-item">
-                            <label>Commercial :</label>
-                            <span>{event.employee_name}</span>
-                        </div>
-                    </div>
-                );
-            case 'vacances':
-                return (
-                    <div className="details-grid">
-                        <div className="detail-item">
-                            <label>Type :</label>
-                            <span>{getEventTypeLabel(event.type)}</span>
-                        </div>
-                        <div className="detail-item">
-                            <label>Date :</label>
-                            <span>{new Date(event.date).toLocaleDateString()}</span>
-                        </div>
-                        <div className="detail-item">
-                            <label>Commercial :</label>
-                            <span>{event.employee_name}</span>
-                        </div>
-                        {event.vacation_group_id && (
-                            <>
-                                <div className="detail-item">
-                                    <label>Période de vacances :</label>
-                                    <span>
-                                        Du {new Date(event.vacation_group_start_date).toLocaleDateString()} au {new Date(event.vacation_group_end_date).toLocaleDateString()}
-                                    </span>
-                                </div>
-                            </>
                         )}
-                    </div>
-                );
-            default:
-                return null;
-        }
+                    </>
+                )}
+            </div>
+        );
     };
 
     return (
         <>
-            <Modal show={show} onHide={onHide} centered className="custom-modal">
+            <Modal show={show} onHide={onHide} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>Détails de l'événement</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {renderEventDetails()}
                 </Modal.Body>
-                <Modal.Footer className="d-flex justify-content-between">
-                    <div>
-                        {event.type === 'installation' && (
-                            <Button 
-                                variant="primary" 
-                                onClick={handleOpenWorksheet}
-                            >
-                                Feuille de travail
-                            </Button>
-                        )}
-                    </div>
-                    <div>
-                        <Button 
-                            variant="primary" 
-                            onClick={handleEdit}
-                            className="me-2"
-                        >
-                            Modifier
-                        </Button>
-                        <Button variant="danger" onClick={() => onDelete(event)} className="me-2">
-                            Supprimer
-                        </Button>
-                        <Button variant="secondary" onClick={onHide}>
-                            Fermer
-                        </Button>
-                    </div>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={onHide}>
+                        Fermer
+                    </Button>
+                    <Button variant="primary" onClick={handleEdit}>
+                        Modifier
+                    </Button>
+                    <Button variant="danger" onClick={() => onDelete(event)}>
+                        Supprimer
+                    </Button>
                 </Modal.Footer>
             </Modal>
 
@@ -441,4 +322,4 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
     );
 };
 
-export default EventDetailsModal; 
+export default EventDetailsModal;

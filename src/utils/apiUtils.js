@@ -1,5 +1,7 @@
-const API_BASE_URL = 'https://app.vivreenliberte.org/api';
+// Configuration de l'API
+export const API_BASE_URL = import.meta.env.VITE_API_URL;
 
+// Fonctions d'API
 export const fetchEvents = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/events.php`, {
@@ -20,13 +22,73 @@ export const fetchEvents = async () => {
       throw new Error(errorMessage);
     }
     const text = await response.text();
+    console.log('Réponse brute de l\'API:', text);
+    
     const data = JSON.parse(text);
+    console.log('Données parsées de l\'API:', data);
     
     if (!data.success || !Array.isArray(data.data)) {
       throw new Error('Format de données invalide');
     }
     
-    return data.data;
+    // Normaliser les données reçues
+    const normalizedEvents = data.data.map(event => {
+      console.log('Normalisation de l\'événement:', event);
+      
+      const normalizedEvent = {
+        id: event.id,
+        type: event.type || 'installation',
+        date: event.date || '',
+        installation_time: event.installation_time || event.heure_installation || '',
+        full_name: event.full_name || event.nom_complet || '',
+        phone: event.phone || event.telephone || '',
+        address: event.address || event.adresse || '',
+        city: event.city || event.ville || '',
+        Sommaire: event.Sommaire || event.sommaire || '',
+        Description: event.Description || event.description || '',
+        installation_number: event.installation_number || event.numero_installation || '',
+        equipment: event.equipment || event.equipement || '',
+        amount: event.amount || event.montant || '0.00',
+        technician1_id: event.technician1_id || event.technicien1_id || '',
+        technician2_id: event.technician2_id || event.technicien2_id || '',
+        technician3_id: event.technician3_id || event.technicien3_id || '',
+        technician4_id: event.technician4_id || event.technicien4_id || '',
+        client_number: event.client_number || event.numero_client || '',
+        quote_number: event.quote_number || event.numero_soumission || '',
+        representative: event.representative || event.representant || '',
+        progression_task_id: event.progression_task_id || '',
+        technician1_name: event.technician1_name || '',
+        technician2_name: event.technician2_name || '',
+        technician3_name: event.technician3_name || '',
+        technician4_name: event.technician4_name || '',
+        region_name: event.region_name || '',
+        region_id: event.region_id || null,
+        employee_name: event.employee_name || '',
+        employee_id: event.employee_id || null
+      };
+
+      // Ajouter start_date et end_date uniquement pour les vacances
+      if (event.type === 'vacances') {
+        normalizedEvent.start_date = event.start_date || event.startDate || event.date_debut || event.date || '';
+        normalizedEvent.end_date = event.end_date || event.endDate || event.date_fin || event.date || '';
+      }
+
+      // Convertir les valeurs null en chaînes vides
+      Object.keys(normalizedEvent).forEach(key => {
+        if (normalizedEvent[key] === null || normalizedEvent[key] === undefined) {
+          if (typeof normalizedEvent[key] === 'number') {
+            normalizedEvent[key] = 0;
+          } else {
+            normalizedEvent[key] = '';
+          }
+        }
+      });
+      
+      console.log('Événement normalisé:', normalizedEvent);
+      return normalizedEvent;
+    });
+    
+    return normalizedEvents;
   } catch (error) {
     console.error('Erreur lors du chargement des événements:', error);
     throw error;
@@ -60,29 +122,31 @@ export const fetchEmployees = async () => {
 };
 
 export const fetchTechnicians = async () => {
-  try {
-    const response = await fetch('/api/employees.php?type=technicians', {
-      credentials: 'include'
-    });
-    if (!response.ok) {
-      const text = await response.text();
-      let errorMessage = `HTTP error! status: ${response.status}`;
-      try {
-        const jsonResponse = JSON.parse(text);
-        if (jsonResponse.message) {
-          errorMessage = jsonResponse.message;
+    try {
+        console.log('Appel à fetchTechnicians...');
+        const response = await fetch(`${API_BASE_URL}/employees.php?type=technicians`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        // En cas d'erreur, retournons un tableau vide
+        if (!response.ok) {
+            console.error('Erreur HTTP:', response.status);
+            return [];
         }
-      } catch (e) {
-        console.error('La réponse n\'est pas du JSON valide:', text);
-        throw new Error('Réponse invalide du serveur');
-      }
-      throw new Error(errorMessage);
+
+        try {
+            const data = await response.json();
+            console.log('Données des techniciens reçues:', data);
+            return Array.isArray(data) ? data : [];
+        } catch (parseError) {
+            console.error('Erreur de parsing JSON:', parseError);
+            return [];
+        }
+    } catch (error) {
+        console.error('Erreur lors de la récupération des techniciens:', error);
+        return [];
     }
-    return await response.json();
-  } catch (error) {
-    console.error('Erreur:', error);
-    throw error;
-  }
 };
 
 export const fetchRegions = async () => {
@@ -165,7 +229,37 @@ export const fetchEquipment = async () => {
 
 export const createEvent = async (eventData) => {
   try {
-    console.log('Envoi des données:', eventData);
+    // Nettoyer et formater les données avant l'envoi
+    const cleanedData = {
+      type: eventData.type || 'installation',
+      date: eventData.date || '',
+      installation_time: eventData.installation_time || eventData.heure_installation || '',
+      full_name: eventData.full_name?.trim() || eventData.nom_complet?.trim() || '',
+      phone: eventData.phone?.trim() || eventData.telephone?.trim() || '',
+      address: eventData.address?.trim() || eventData.adresse?.trim() || '',
+      city: eventData.city?.trim() || eventData.ville?.trim() || '',
+      Sommaire: eventData.Sommaire?.trim() || eventData.sommaire?.trim() || '',
+      Description: eventData.Description?.trim() || eventData.description?.trim() || '',
+      installation_number: eventData.installation_number?.trim() || eventData.numero_installation?.trim() || '',
+      equipment: eventData.equipment?.trim() || eventData.equipement?.trim() || '',
+      amount: eventData.amount || eventData.montant || '',
+      technician1_id: eventData.technician1_id || eventData.technicien1_id || null,
+      technician2_id: eventData.technician2_id || eventData.technicien2_id || null,
+      technician3_id: eventData.technician3_id || eventData.technicien3_id || null,
+      technician4_id: eventData.technician4_id || eventData.technicien4_id || null,
+      client_number: eventData.client_number?.trim() || eventData.numero_client?.trim() || '',
+      quote_number: eventData.quote_number?.trim() || eventData.numero_soumission?.trim() || '',
+      representative: eventData.representative?.trim() || eventData.representant?.trim() || '',
+      progression_task_id: eventData.progression_task_id || ''
+    };
+
+    // Ajouter start_date et end_date uniquement pour les vacances
+    if (eventData.type === 'vacances') {
+      cleanedData.start_date = eventData.start_date || eventData.startDate || eventData.date_debut || eventData.date || '';
+      cleanedData.end_date = eventData.end_date || eventData.endDate || eventData.date_fin || eventData.date || '';
+    }
+
+    console.log('Envoi des données:', cleanedData);
     const response = await fetch(`${API_BASE_URL}/events.php`, {
       method: 'POST',
       headers: {
@@ -173,7 +267,7 @@ export const createEvent = async (eventData) => {
         'Accept': 'application/json'
       },
       credentials: 'include',
-      body: JSON.stringify(eventData)
+      body: JSON.stringify(cleanedData)
     });
 
     const text = await response.text();
@@ -208,87 +302,83 @@ export const createEvent = async (eventData) => {
 
 export const updateEvent = async (eventData) => {
   try {
-    const normalizedData = {
-      id: eventData.id,
-      type: eventData.type,
-      date: eventData.date,
-      installation_time: eventData.installation_time,
-      first_name: eventData.first_name,
-      last_name: eventData.last_name,
-      installation_number: eventData.installation_number,
-      city: eventData.city,
-      equipment: eventData.equipment,
-      amount: eventData.amount,
-      region_id: eventData.region,
-      technician1_id: eventData.technician1,
-      technician2_id: eventData.technician2,
-      technician3_id: eventData.technician3,
-      technician4_id: eventData.technician4,
-      employee_id: eventData.employee_id
+    console.log('Données reçues pour la mise à jour:', eventData);
+    
+    // Vérifier que l'ID est présent
+    if (!eventData.id) {
+      throw new Error('ID manquant pour la mise à jour de l\'événement');
+    }
+    
+    // Nettoyer et formater les données avant l'envoi
+    const cleanedData = {
+      ...eventData,
+      mode: 'edit'  // Définir le mode d'édition ici
     };
 
+    // Ajouter start_date et end_date uniquement pour les vacances
+    if (eventData.type === 'vacances') {
+      cleanedData.start_date = eventData.start_date || eventData.startDate || eventData.date_debut || '';
+      cleanedData.end_date = eventData.end_date || eventData.endDate || eventData.date_fin || '';
+    }
+
+    console.log('Données nettoyées pour la mise à jour:', cleanedData);
+
     const response = await fetch(`${API_BASE_URL}/events.php`, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      credentials: 'include',
-      body: JSON.stringify(normalizedData)
+      body: JSON.stringify(cleanedData),
+      credentials: 'include'
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage = `HTTP error! status: ${response.status}`;
-      try {
-        const jsonResponse = JSON.parse(errorText);
-        if (jsonResponse.message) {
-          errorMessage = jsonResponse.message;
-        }
-      } catch (e) {
-        console.error('La réponse n\'est pas du JSON valide:', errorText);
-        throw new Error('Réponse invalide du serveur');
-      }
-      throw new Error(errorMessage);
+    // Log de la réponse brute
+    const responseText = await response.text();
+    console.log('Réponse brute du serveur:', responseText);
+
+    let jsonResponse;
+    try {
+      jsonResponse = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Erreur lors du parsing de la réponse:', e);
+      throw new Error('Réponse invalide du serveur');
     }
 
-    const text = await response.text();
-    return JSON.parse(text);
+    console.log('Réponse parsée du serveur:', jsonResponse);
+
+    if (!response.ok) {
+      throw new Error(jsonResponse.message || `Erreur HTTP: ${response.status}`);
+    }
+
+    if (!jsonResponse.success) {
+      throw new Error(jsonResponse.message || 'Erreur lors de la mise à jour de l\'événement');
+    }
+
+    return jsonResponse;
   } catch (error) {
-    console.error('Erreur lors de la modification de l\'événement:', error);
+    console.error('Erreur lors de la mise à jour de l\'événement:', error);
     throw error;
   }
 };
 
-export const deleteEvent = async (eventId, deleteMode = 'single') => {
+export const deleteEvent = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/events.php?id=${eventId}`, {
+    const response = await fetch(`${API_BASE_URL}/events.php?id=${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
-      body: JSON.stringify({ deleteMode })
     });
-    
+
     if (!response.ok) {
-      const text = await response.text();
-      let errorMessage = `HTTP error! status: ${response.status}`;
-      try {
-        const jsonResponse = JSON.parse(text);
-        if (jsonResponse.message) {
-          errorMessage = jsonResponse.message;
-        }
-      } catch (e) {
-        console.error('La réponse n\'est pas du JSON valide:', text);
-        throw new Error('Réponse invalide du serveur');
-      }
-      throw new Error(errorMessage);
+      throw new Error(`Erreur HTTP: ${response.status}`);
     }
-    
-    return await response.json();
+
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error('Erreur:', error);
+    console.error('Erreur lors de la suppression:', error);
     throw error;
   }
 };
