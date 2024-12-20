@@ -4,9 +4,10 @@ import {
     Button, 
     Form, 
     Row, 
-    Col, 
-    Alert 
+    Col 
 } from 'react-bootstrap';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { 
@@ -17,14 +18,15 @@ import {
     fetchInstallationData 
 } from '../../utils/apiUtils';
 import ManageEquipmentModal from './ManageEquipmentModal';
+import '../../styles/Modal.css';
 
 const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', employees = [], selectedDate = null }) => {
-    // Utiliser la date sélectionnée si elle existe, sinon utiliser la date du jour
-    const initialDate = selectedDate ? new Date(selectedDate) : new Date();
+    // Utiliser uniquement la date sélectionnée
+    const initialDate = selectedDate ? new Date(selectedDate + 'T00:00:00') : new Date();
 
     const [formData, setFormData] = useState({
         type: '',  
-        date: initialDate,
+        date: format(initialDate, 'yyyy-MM-dd'),
         installation_time: '08:00:00',
         technician1_id: '',
         technician2_id: '',
@@ -206,11 +208,11 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                                             <Form.Label>Date</Form.Label>
                                             <div className="date-picker-container">
                                                 <DatePicker
-                                                    selected={formData.date}
+                                                    selected={new Date(formData.date)}
                                                     onChange={(date) => handleChange({
                                                         target: {
                                                             name: 'date',
-                                                            value: date
+                                                            value: format(date, 'yyyy-MM-dd')
                                                         }
                                                     })}
                                                     dateFormat="yyyy-MM-dd"
@@ -331,7 +333,7 @@ const AddEventModal = ({ show, onHide, onSubmit, event = null, mode = 'add', emp
                                     </Col>
                                 </Row>
 
-                                <div className="border border-dark p-2 mb-2">
+                                <div className="client-section">
                                     <Row className="mb-2">
                                         <Col md={6}>
                                             <Form.Group>

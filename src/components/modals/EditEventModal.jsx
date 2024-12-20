@@ -1,28 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Modal, 
-    Button, 
-    Row, 
-    Col, 
-    Alert,
-    Form
-} from 'react-bootstrap';
+import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { 
     fetchRegions, 
     fetchTechnicians, 
     fetchCitiesForRegion, 
     fetchEquipment, 
-    deleteEvent,
-    updateEvent,
-    API_BASE_URL,
     fetchInstallationData
 } from '../../utils/apiUtils';
-import '../../styles/Modal.css';
-import DatePicker from 'react-datepicker';
-import { fr } from 'date-fns/locale';
-import 'react-datepicker/dist/react-datepicker.css';
-import { format } from 'date-fns';
 import ManageEquipmentModal from './ManageEquipmentModal';
+import '../../styles/Modal.css';
 
 const EditEventModal = ({ show, onHide, onSave, event }) => {
     const [formData, setFormData] = useState({});
@@ -472,7 +462,7 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
                                     </Col>
                                 </Row>
 
-                                <div className="border border-dark p-2 mb-2">
+                                <div className="client-section">
                                     <Row className="mb-2">
                                         <Col md={6}>
                                             <Form.Group>

@@ -117,7 +117,9 @@ const ProductionCalendar = () => {
 
   // Gestionnaires d'événements
   const handleDateClick = (date) => {
-    setSelectedDate(date);
+    // Formater la date en YYYY-MM-DD en utilisant la date exacte cliquée
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    setSelectedDate(formattedDate);
     setShowAddEventModal(true);
   };
 
@@ -131,11 +133,14 @@ const ProductionCalendar = () => {
 
     console.log('Type d\'événement trouvé:', eventType);
 
+    // S'assurer que la date est au bon format
+    const eventDate = new Date(event.date + 'T00:00:00');
+    
     // Normaliser l'événement avant de l'ouvrir dans le modal
     const normalizedEvent = {
       ...event,
-      type: eventType,  // Utiliser la valeur normalisée
-      date: event.date,
+      type: eventType,
+      date: format(eventDate, 'yyyy-MM-dd'),
       technician1_name: event.technician1_name || '',
       technician2_name: event.technician2_name || '',
       technician3_name: event.technician3_name || '',

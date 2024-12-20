@@ -38,15 +38,36 @@
     width: 100%;
 }
 
-.form-group {
-    margin-bottom: 0.5rem;
+.form-label {
+    margin-bottom: 0.25rem !important;  /* Réduit de moitié (par défaut c'est 0.5rem) */
 }
 
-.form-label {
-    margin-bottom: 0.25rem;
+.form-group {
+    margin-bottom: 0.5rem !important;  /* Réduit de moitié (par défaut c'est 1rem) */
+}
+
+.form-control-plaintext {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+}
+
+.modal-body .row {
+    margin-bottom: 0.5rem !important;
+}
+
+.border.border-dark {
+    padding: 0.5rem !important;
 }
 
 /* Pour éviter que les longs textes ne débordent */
 .form-select {
     text-overflow: ellipsis;
-} 
+}
+
+.client-section {
+    border: 1px solid #c0c0c0 !important;  /* Gris à 25% */
+    background-color: #f0f0f0 !important;  /* Gris un peu plus foncé */
+    padding: 0.5rem !important;
+    border-radius: 4px;
+    margin-bottom: 0.5rem !important;
+}

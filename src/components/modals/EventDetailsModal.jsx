@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Row, Col, Form } from 'react-bootstrap';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { fetchInstallationData } from '../../utils/apiUtils';
 import '../../styles/Modal.css';
 import VacationActionModal from './VacationActionModal';
 import WorksheetModal from './WorksheetModal';
-import { format } from 'date-fns';
 
 const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
     const [showVacationModal, setShowVacationModal] = useState(false);
@@ -245,7 +246,7 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
                                     <Form.Control 
                                         plaintext 
                                         readOnly 
-                                        value={event.date ? format(new Date(event.date), 'yyyy-MM-dd') : ''}
+                                        value={formData.date ? format(new Date(formData.date + 'T00:00:00'), 'yyyy-MM-dd', { locale: fr }) : ''}
                                     />
                                 </Form.Group>
                             </Col>
@@ -284,7 +285,7 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
                             </Col>
                         </Row>
 
-                        <div className="border border-dark p-2 mb-2">
+                        <div className="client-section">
                             <Row className="mb-2">
                                 <Col md={6}>
                                     <Form.Group>
@@ -433,7 +434,7 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
                                 <Form.Control 
                                     plaintext 
                                     readOnly 
-                                    value={event.date ? format(new Date(event.date), 'yyyy-MM-dd') : ''}
+                                    value={formData.date ? format(new Date(formData.date + 'T00:00:00'), 'yyyy-MM-dd', { locale: fr }) : ''}
                                 />
                             </Form.Group>
                         </Col>
