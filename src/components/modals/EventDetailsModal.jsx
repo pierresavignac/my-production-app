@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Row, Col } from 'react-bootstrap';
+import { Modal, Button, Row, Col, Form } from 'react-bootstrap';
 import { fetchInstallationData } from '../../utils/apiUtils';
 import '../../styles/Modal.css';
 import VacationActionModal from './VacationActionModal';
 import WorksheetModal from './WorksheetModal';
+import { format } from 'date-fns';
 
 const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
     const [showVacationModal, setShowVacationModal] = useState(false);
@@ -229,51 +230,236 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
 
     const renderEventDetails = () => {
         return (
-            <div className="event-details">
-                <div className="detail-section">
-                    <h4>Informations générales</h4>
-                    <p><strong>Type :</strong> {normalizedType}</p>
-                    <p><strong>Date :</strong> {event.date}</p>
-                    {event.type.toLowerCase() === 'installation' && (
-                        <p><strong>Heure :</strong> {event.installation_time}</p>
-                    )}
-                </div>
-
-                <div className="detail-section">
-                    <h4>Techniciens</h4>
-                    {technicians.map((tech, index) => (
-                        <p key={index}>{tech}</p>
-                    ))}
-                </div>
+            <Form>
+                <Form.Group className="mb-2">
+                    <Form.Label>Type d'événement</Form.Label>
+                    <Form.Control plaintext readOnly value={normalizedType} />
+                </Form.Group>
 
                 {event.type.toLowerCase() === 'installation' && (
                     <>
-                        <div className="detail-section">
-                            <h4>Client</h4>
-                            {event.full_name && <p><strong>Nom :</strong> {event.full_name}</p>}
-                            {event.phone && <p><strong>Téléphone :</strong> {event.phone}</p>}
-                            {event.address && <p><strong>Adresse :</strong> {event.address}</p>}
-                            {event.city && <p><strong>Ville :</strong> {event.city}</p>}
+                        <Row className="mb-2">
+                            <Col md={2}>
+                                <Form.Group>
+                                    <Form.Label>Date</Form.Label>
+                                    <Form.Control 
+                                        plaintext 
+                                        readOnly 
+                                        value={event.date ? format(new Date(event.date), 'yyyy-MM-dd') : ''}
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={2}>
+                                <Form.Group>
+                                    <Form.Label>Heure</Form.Label>
+                                    <Form.Control 
+                                        plaintext 
+                                        readOnly 
+                                        value={event.installation_time ? event.installation_time.slice(0, 5) : ''}
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={8}>
+                                <Form.Group>
+                                    <Form.Label>Équipement</Form.Label>
+                                    <Form.Control 
+                                        plaintext 
+                                        readOnly 
+                                        value={event.equipment || ''}
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        <Row className="mb-2">
+                            <Col>
+                                <Form.Group>
+                                    <Form.Label>Numéro d'installation</Form.Label>
+                                    <Form.Control 
+                                        plaintext 
+                                        readOnly 
+                                        value={event.installation_number || ''}
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        <div className="border border-dark p-2 mb-2">
+                            <Row className="mb-2">
+                                <Col md={6}>
+                                    <Form.Group>
+                                        <Form.Label>Nom complet</Form.Label>
+                                        <Form.Control 
+                                            plaintext 
+                                            readOnly 
+                                            value={event.full_name || ''}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col md={6}>
+                                    <Form.Group>
+                                        <Form.Label>Téléphone</Form.Label>
+                                        <Form.Control 
+                                            plaintext 
+                                            readOnly 
+                                            value={event.phone || ''}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+
+                            <Row className="mb-2">
+                                <Col md={6}>
+                                    <Form.Group>
+                                        <Form.Label>Adresse</Form.Label>
+                                        <Form.Control 
+                                            plaintext 
+                                            readOnly 
+                                            value={event.address || ''}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col md={6}>
+                                    <Form.Group>
+                                        <Form.Label>Ville</Form.Label>
+                                        <Form.Control 
+                                            plaintext 
+                                            readOnly 
+                                            value={event.city || ''}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+
+                            <Form.Group className="mb-2">
+                                <Form.Label>Sommaire</Form.Label>
+                                <Form.Control 
+                                    plaintext 
+                                    readOnly 
+                                    value={event.Sommaire || ''}
+                                />
+                            </Form.Group>
+
+                            <Form.Group className="mb-2">
+                                <Form.Label>Description</Form.Label>
+                                <Form.Control
+                                    as="textarea"
+                                    rows={3}
+                                    plaintext
+                                    readOnly
+                                    value={event.Description || ''}
+                                    style={{ maxHeight: '100px', overflowY: 'auto' }}
+                                />
+                            </Form.Group>
+
+                            <Row className="mb-2">
+                                <Col md={6}>
+                                    <Form.Group>
+                                        <Form.Label>Numéro de soumission</Form.Label>
+                                        <Form.Control 
+                                            plaintext 
+                                            readOnly 
+                                            value={event.quote_number || ''}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col md={6}>
+                                    <Form.Group>
+                                        <Form.Label>Montant à percevoir</Form.Label>
+                                        <Form.Control 
+                                            plaintext 
+                                            readOnly 
+                                            value={event.amount || ''}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
                         </div>
 
-                        <div className="detail-section">
-                            <h4>Installation</h4>
-                            {event.equipment && <p><strong>Équipement :</strong> {event.equipment}</p>}
-                            {event.installation_number && <p><strong>Numéro d'installation :</strong> {event.installation_number}</p>}
-                            {event.quote_number && <p><strong>Numéro de soumission :</strong> {event.quote_number}</p>}
-                            {event.amount && <p><strong>Montant :</strong> {event.amount}$</p>}
-                        </div>
+                        <Row className="mb-2">
+                            <Col md={6}>
+                                <Form.Group>
+                                    <Form.Label>Technicien 1</Form.Label>
+                                    <Form.Control 
+                                        plaintext 
+                                        readOnly 
+                                        value={event.technician1_name || ''}
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group>
+                                    <Form.Label>Technicien 2</Form.Label>
+                                    <Form.Control 
+                                        plaintext 
+                                        readOnly 
+                                        value={event.technician2_name || ''}
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
 
-                        {(event.Sommaire || event.Description) && (
-                            <div className="detail-section">
-                                <h4>Notes</h4>
-                                {event.Sommaire && <p><strong>Sommaire :</strong> {event.Sommaire}</p>}
-                                {event.Description && <p><strong>Description :</strong> {event.Description}</p>}
-                            </div>
-                        )}
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-2">
+                                    <Form.Label>Technicien 3</Form.Label>
+                                    <Form.Control 
+                                        plaintext 
+                                        readOnly 
+                                        value={event.technician3_name || ''}
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-2">
+                                    <Form.Label>Technicien 4</Form.Label>
+                                    <Form.Control 
+                                        plaintext 
+                                        readOnly 
+                                        value={event.technician4_name || ''}
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
                     </>
                 )}
-            </div>
+
+                {/* Pour les autres types d'événements */}
+                {event.type.toLowerCase() !== 'installation' && (
+                    <Row className="mb-2">
+                        <Col md={2}>
+                            <Form.Group>
+                                <Form.Label>Date</Form.Label>
+                                <Form.Control 
+                                    plaintext 
+                                    readOnly 
+                                    value={event.date ? format(new Date(event.date), 'yyyy-MM-dd') : ''}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={2}>
+                            <Form.Group>
+                                <Form.Label>Heure</Form.Label>
+                                <Form.Control 
+                                    plaintext 
+                                    readOnly 
+                                    value={event.installation_time ? event.installation_time.slice(0, 5) : ''}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={8}>
+                            <Form.Group>
+                                <Form.Label>Équipement</Form.Label>
+                                <Form.Control 
+                                    plaintext 
+                                    readOnly 
+                                    value={event.equipment || ''}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                )}
+            </Form>
         );
     };
 
@@ -288,9 +474,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={onHide}>
-                        Fermer
+                        Annuler
                     </Button>
-                    <Button variant="primary" onClick={handleEdit}>
+                    <Button variant="primary" onClick={() => onEdit(event)}>
                         Modifier
                     </Button>
                     <Button variant="danger" onClick={() => onDelete(event)}>

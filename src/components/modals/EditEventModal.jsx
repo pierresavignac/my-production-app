@@ -295,6 +295,12 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
         );
     };
 
+    const handleEquipmentChange = async () => {
+        // Rafraîchir la liste des équipements
+        const updatedEquipment = await fetchEquipment();
+        setEquipment(updatedEquipment);
+    };
+
     return (
         <>
             <Modal show={show} onHide={onHide} size="lg">
@@ -383,69 +389,57 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
                         {formData.type === 'installation' && (
                             <>
                                 <Row className="mb-2">
-                                    <Col md={3}>
+                                    <Col md={2}>
                                         <Form.Group>
                                             <Form.Label>Date</Form.Label>
-                                            <div className="date-picker-container">
-                                                <DatePicker
-                                                    selected={formData.date}
-                                                    onChange={(date) => handleChange({
-                                                        target: {
-                                                            name: 'date',
-                                                            value: date
-                                                        }
-                                                    })}
-                                                    dateFormat="yyyy-MM-dd"
-                                                    className="form-control"
-                                                />
-                                            </div>
+                                            <Form.Control
+                                                type="date"
+                                                name="date"
+                                                value={formData.date}
+                                                onChange={handleChange}
+                                                required
+                                            />
                                         </Form.Group>
                                     </Col>
-                                    <Col md={3}>
+                                    <Col md={2}>
                                         <Form.Group>
                                             <Form.Label>Heure</Form.Label>
                                             <Form.Control
                                                 type="time"
-                                                value={formData.installation_time ? formData.installation_time.slice(0, 5) : ''}
-                                                onChange={(e) => handleChange({
-                                                    target: {
-                                                        name: 'installation_time',
-                                                        value: e.target.value + ':00'
-                                                    }
-                                                })}
+                                                name="installation_time"
+                                                value={formData.installation_time}
+                                                onChange={handleChange}
                                             />
                                         </Form.Group>
                                     </Col>
-                                    <Col md={6}>
+                                    <Col md={8}>
                                         <Form.Group>
                                             <Form.Label>Équipement</Form.Label>
-                                            <div>
-                                                <Form.Select
-                                                    value={formData.equipment || ''}
-                                                    onChange={(e) => handleChange({
-                                                        target: {
-                                                            name: 'equipment',
-                                                            value: e.target.value
-                                                        }
-                                                    })}
-                                                    className="mb-2"
-                                                >
-                                                    <option value="">Sélectionner un équipement</option>
-                                                    {equipment && equipment.map(equip => (
-                                                        <option key={equip.id} value={equip.name}>
-                                                            {equip.name}
-                                                        </option>
-                                                    ))}
-                                                </Form.Select>
-                                                <Button 
-                                                    variant="outline-secondary" 
-                                                    size="sm"
-                                                    onClick={() => setShowEquipmentModal(true)}
-                                                    className="w-100"
-                                                >
-                                                    Modifier les équipements
-                                                </Button>
-                                            </div>
+                                            <Form.Select
+                                                value={formData.equipment || ''}
+                                                onChange={(e) => {
+                                                    if (e.target.value === 'manage') {
+                                                        setShowEquipmentModal(true);
+                                                    } else {
+                                                        handleChange({
+                                                            target: {
+                                                                name: 'equipment',
+                                                                value: e.target.value
+                                                            }
+                                                        });
+                                                    }
+                                                }}
+                                            >
+                                                <option value="">Sélectionner un équipement</option>
+                                                {equipment && equipment.map(equip => (
+                                                    <option key={equip.id} value={equip.name}>
+                                                        {equip.name}
+                                                    </option>
+                                                ))}
+                                                <option value="manage" style={{ fontStyle: 'italic', backgroundColor: '#f8f9fa' }}>
+                                                    ⚙️ Modifier les équipements...
+                                                </option>
+                                            </Form.Select>
                                         </Form.Group>
                                     </Col>
                                 </Row>
@@ -717,9 +711,9 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
                 </Modal.Footer>
             </Modal>
             <ManageEquipmentModal 
-                show={showEquipmentModal}
+                show={showEquipmentModal} 
                 onHide={() => setShowEquipmentModal(false)}
-                onEquipmentChange={loadEquipment}
+                onEquipmentChange={handleEquipmentChange}
             />
         </>
     );

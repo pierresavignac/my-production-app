@@ -1,61 +1,73 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, ListGroup } from 'react-bootstrap';
-import { fetchEquipment } from '../../utils/apiUtils';
 
 const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
-    const [equipment, setEquipment] = useState([]);
     const [newEquipment, setNewEquipment] = useState('');
+    const [equipment, setEquipment] = useState([]);
     const [error, setError] = useState('');
 
     useEffect(() => {
         if (show) {
-            loadEquipment();
+            fetchEquipment();
         }
     }, [show]);
 
-    const loadEquipment = async () => {
+    const fetchEquipment = async () => {
         try {
-            const equipmentList = await fetchEquipment();
-            setEquipment(equipmentList);
+            const response = await fetch('/api/equipment.php');
+            const data = await response.json();
+            setEquipment(data);
         } catch (error) {
-            console.error('Erreur lors du chargement des équipements:', error);
-            setError('Erreur lors du chargement des équipements');
+            console.error('Erreur lors de la récupération des équipements:', error);
+            setError('Erreur lors de la récupération des équipements');
         }
     };
 
     const handleAddEquipment = async () => {
-        if (!newEquipment.trim()) return;
+        if (!newEquipment.trim()) {
+            setError('Veuillez entrer un nom d\'équipement');
+            return;
+        }
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/equipment`, {
+            const response = await fetch('/api/equipment.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name: newEquipment.trim() }),
+                body: JSON.stringify({ name: newEquipment }),
             });
 
-            if (!response.ok) throw new Error('Erreur lors de l\'ajout de l\'équipement');
+            if (!response.ok) {
+                throw new Error('Erreur lors de l\'ajout de l\'équipement');
+            }
 
-            await loadEquipment();
+            await fetchEquipment();
             setNewEquipment('');
-            if (onEquipmentChange) onEquipmentChange();
+            setError('');
+            if (onEquipmentChange) {
+                onEquipmentChange();
+            }
         } catch (error) {
             console.error('Erreur:', error);
             setError('Erreur lors de l\'ajout de l\'équipement');
         }
     };
 
-    const handleDeleteEquipment = async (equipmentId) => {
+    const handleDeleteEquipment = async (id) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/equipment/${equipmentId}`, {
-                method: 'DELETE',
+            const response = await fetch(`/api/equipment.php?id=${id}`, {
+                method: 'DELETE'
             });
 
-            if (!response.ok) throw new Error('Erreur lors de la suppression de l\'équipement');
+            if (!response.ok) {
+                throw new Error('Erreur lors de la suppression de l\'équipement');
+            }
 
-            await loadEquipment();
-            if (onEquipmentChange) onEquipmentChange();
+            await fetchEquipment();
+            if (onEquipmentChange) {
+                onEquipmentChange();
+            }
         } catch (error) {
             console.error('Erreur:', error);
             setError('Erreur lors de la suppression de l\'équipement');
