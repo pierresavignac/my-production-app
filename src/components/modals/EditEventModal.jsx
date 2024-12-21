@@ -12,10 +12,14 @@ import {
     fetchInstallationData
 } from '../../utils/apiUtils';
 import ManageEquipmentModal from './ManageEquipmentModal';
+import InstallationStatusSelect from '../InstallationStatusSelect';
 import '../../styles/Modal.css';
 
 const EditEventModal = ({ show, onHide, onSave, event }) => {
-    const [formData, setFormData] = useState({});
+    const [formData, setFormData] = useState({
+        ...event,
+        installation_status: event?.installation_status || 'En approbation'
+    });
     const [regions, setRegions] = useState([]);
     const [cities, setCities] = useState([]);
     const [technicians, setTechnicians] = useState([]);
@@ -155,33 +159,17 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
         }
     };
 
-    const handleSubmit = async (e) => {
-        if (e) e.preventDefault();
-        
+    const handleSave = async (e) => {
+        e.preventDefault();
         try {
-            console.log('Soumission du formulaire avec les données:', formData);
-            
-            // Préparer les données pour la soumission
-            const eventData = {
+            // Assurez-vous que l'ID est inclus dans les données
+            const dataToSend = {
                 ...formData,
-                date: formData.date instanceof Date ? 
-                    format(formData.date, 'yyyy-MM-dd') : 
-                    formData.date
+                id: event.id,
+                installation_status: formData.installation_status || 'En approbation'
             };
-
-            // Pour les événements de type congé/maladie/formation, copier technician1_id vers employee_id
-            if (['conge', 'maladie', 'formation'].includes(formData.type)) {
-                eventData.employee_id = formData.technician1_id;
-                // Trouver le nom du technicien sélectionné
-                const selectedTech = technicians.find(tech => tech.id === formData.technician1_id);
-                if (selectedTech) {
-                    eventData.employee_name = `${selectedTech.first_name} ${selectedTech.last_name}`;
-                    eventData.technician1_name = `${selectedTech.first_name} ${selectedTech.last_name}`;
-                }
-            }
-
-            console.log('Données préparées pour la soumission:', eventData);
-            await onSave(eventData);
+            
+            await onSave(dataToSend);
             onHide();
         } catch (error) {
             console.error('Erreur lors de la sauvegarde:', error);
@@ -302,23 +290,18 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
                 <Modal.Body>
                     {error && <Alert variant="danger">{error}</Alert>}
                     
-                    <Form onSubmit={handleSubmit} id="eventForm">
+                    <Form onSubmit={handleSave} id="eventForm">
                         <Row className="mb-2">
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>Type d'événement</Form.Label>
                                     <Form.Select
                                         value={formData.type}
-                                        onChange={(e) => handleChange({
-                                            target: {
-                                                name: 'type',
-                                                value: e.target.value
-                                            }
-                                        })}
+                                        onChange={(e) => handleInputChange('type', e.target.value)}
                                         required
                                     >
-                                        <option value="">Sélectionner une tâche</option>
-                                        {eventTypes.map(type => (
+                                        <option value="">Sélectionnez un type</option>
+                                        {eventTypes.map((type) => (
                                             <option key={type.value} value={type.value}>
                                                 {type.label}
                                             </option>
@@ -326,6 +309,17 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
                                     </Form.Select>
                                 </Form.Group>
                             </Col>
+                            {formData.type === 'installation' && (
+                                <Col md={6}>
+                                    <Form.Group>
+                                        <Form.Label>Statut de l'installation</Form.Label>
+                                        <InstallationStatusSelect
+                                            value={formData.installation_status}
+                                            onChange={(e) => handleInputChange('installation_status', e.target.value)}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            )}
                         </Row>
 
                         {/* Champs communs pour tous les types d'événements */}
@@ -434,35 +428,35 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
                                     </Col>
                                 </Row>
 
-                                <Row className="mb-2">
-                                    <Col>
-                                        <Form.Group>
-                                            <Form.Label>Numéro d'installation</Form.Label>
-                                            <div className="d-flex">
-                                                <Form.Control
-                                                    type="text"
-                                                    value={formData.installation_number || ''}
-                                                    onChange={(e) => handleChange({
-                                                        target: {
-                                                            name: 'installation_number',
-                                                            value: e.target.value
-                                                        }
-                                                    })}
-                                                    className="me-2"
-                                                />
-                                                <Button 
-                                                    variant="secondary"
-                                                    onClick={handleFetchInstallation}
-                                                    disabled={isFetchingInstallation}
-                                                >
-                                                    {isFetchingInstallation ? 'Chargement...' : 'Fetch'}
-                                                </Button>
-                                            </div>
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-
                                 <div className="client-section">
+                                    <Row className="mb-2">
+                                        <Col>
+                                            <Form.Group>
+                                                <Form.Label>Numéro d'installation</Form.Label>
+                                                <div className="d-flex">
+                                                    <Form.Control
+                                                        type="text"
+                                                        value={formData.installation_number || ''}
+                                                        onChange={(e) => handleChange({
+                                                            target: {
+                                                                name: 'installation_number',
+                                                                value: e.target.value
+                                                            }
+                                                        })}
+                                                        className="me-2"
+                                                    />
+                                                    <Button 
+                                                        variant="secondary"
+                                                        onClick={handleFetchInstallation}
+                                                        disabled={isFetchingInstallation}
+                                                    >
+                                                        {isFetchingInstallation ? 'Chargement...' : 'Fetch'}
+                                                    </Button>
+                                                </div>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+
                                     <Row className="mb-2">
                                         <Col md={6}>
                                             <Form.Group>
@@ -695,7 +689,7 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
                     <Button variant="secondary" onClick={onHide}>
                         Annuler
                     </Button>
-                    <Button variant="primary" onClick={handleSubmit}>
+                    <Button variant="primary" onClick={handleSave}>
                         {event ? 'Enregistrer' : 'Créer'}
                     </Button>
                 </Modal.Footer>

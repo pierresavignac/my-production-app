@@ -62,7 +62,7 @@ try {
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         // Liste tous les utilisateurs
-        $stmt = $pdo->query("SELECT id, email, role, status FROM users ORDER BY id DESC");
+        $stmt = $pdo->query("SELECT id, email, role, status, installation_status FROM users ORDER BY id DESC");
         $users = $stmt->fetchAll();
         echo json_encode($users);
     }
@@ -98,8 +98,8 @@ try {
 
                 // Insérer le nouvel utilisateur avec le token
                 $stmt = $pdo->prepare("
-                    INSERT INTO users (email, password, role, status, token) 
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO users (email, password, role, status, installation_status, token) 
+                    VALUES (?, ?, ?, ?, ?, ?)
                 ");
                 
                 $stmt->execute([
@@ -107,6 +107,7 @@ try {
                     $hashedPassword,
                     $data['role'] ?? 'user',
                     $data['status'] ?? 'pending',
+                    $data['installation_status'] ?? 'En approbation',
                     $token
                 ]);
 
@@ -148,6 +149,11 @@ try {
                 if (isset($data['status'])) {
                     $updateFields[] = "status = ?";
                     $params[] = $data['status'];
+                }
+
+                if (isset($data['installation_status'])) {
+                    $updateFields[] = "installation_status = ?";
+                    $params[] = $data['installation_status'];
                 }
 
                 if (empty($updateFields)) {

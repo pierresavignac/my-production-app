@@ -79,6 +79,13 @@ const AddInlineButton = styled.button`
   }
 `;
 
+const WeekHeader = styled.div`
+  padding: 1rem;
+  background: #1976d2;
+  color: white;
+  border-radius: 8px 8px 0 0;
+`;
+
 const formatTechnicians = (event) => {
   const technicians = [];
   if (event.technician1_name) technicians.push(event.technician1_name);
@@ -86,6 +93,36 @@ const formatTechnicians = (event) => {
   if (event.technician3_name) technicians.push(event.technician3_name);
   if (event.technician4_name) technicians.push(event.technician4_name);
   return technicians.join(', ');
+};
+
+const getEventColor = (event) => {
+  if (event.type === 'installation') {
+    switch (event.installation_status) {
+      case 'En approbation':
+        return '#ffb6c1'; // Rose
+      case 'En installation':
+        return '#90EE90'; // Vert clair
+      case 'En facturation':
+        return '#FFD700'; // Jaune
+      case 'Paiement reçu':
+        return '#32CD32'; // Vert
+      default:
+        return '#ffb6c1'; // Rose par défaut
+    }
+  }
+  // Couleurs existantes pour les autres types d'événements
+  switch (event.type) {
+    case 'conge':
+      return '#87CEEB';
+    case 'maladie':
+      return '#FFB6C1';
+    case 'formation':
+      return '#DDA0DD';
+    case 'vacances':
+      return '#98FB98';
+    default:
+      return '#E0E0E0';
+  }
 };
 
 const BlockView = ({ 
@@ -120,10 +157,10 @@ const BlockView = ({
         const sunday = new Date(saturday);
         sunday.setDate(sunday.getDate() + 1);
 
-        // Vérifier s'il y a des événements pour le weekend
+        // Récupérer les événements pour le weekend
         const saturdayEvents = getEventsForDay(saturday, events);
         const sundayEvents = getEventsForDay(sunday, events);
-        
+
         return (
           <WeekSection 
             key={weekDays[0].getTime()}
@@ -176,6 +213,7 @@ const BlockView = ({
                         <div
                           key={eventIndex}
                           className={`event-block ${normalizedType}`}
+                          style={{ backgroundColor: getEventColor(event) }}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEventClick(event);
@@ -188,10 +226,8 @@ const BlockView = ({
                   </DayBlock>
                 );
               })}
-            </WeekContainer>
 
-            {(saturdayEvents.length > 0 || sundayEvents.length > 0) && (
-              <WeekendContainer className="week-container">
+              <div className="weekend-blocks">
                 {saturdayEvents.length > 0 && (
                   <DayBlock 
                     key="saturday"
@@ -218,6 +254,7 @@ const BlockView = ({
                         <div
                           key={eventIndex}
                           className={`event-block ${normalizedType}`}
+                          style={{ backgroundColor: getEventColor(event) }}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEventClick(event);
@@ -229,7 +266,6 @@ const BlockView = ({
                     })}
                   </DayBlock>
                 )}
-
                 {sundayEvents.length > 0 && (
                   <DayBlock 
                     key="sunday"
@@ -256,6 +292,7 @@ const BlockView = ({
                         <div
                           key={eventIndex}
                           className={`event-block ${normalizedType}`}
+                          style={{ backgroundColor: getEventColor(event) }}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEventClick(event);
@@ -267,8 +304,8 @@ const BlockView = ({
                     })}
                   </DayBlock>
                 )}
-              </WeekendContainer>
-            )}
+              </div>
+            </WeekContainer>
           </WeekSection>
         );
       })}
@@ -276,4 +313,4 @@ const BlockView = ({
   );
 };
 
-export default BlockView; 
+export default BlockView;

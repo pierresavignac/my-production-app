@@ -6,6 +6,7 @@ import { fetchInstallationData } from '../../utils/apiUtils';
 import '../../styles/Modal.css';
 import VacationActionModal from './VacationActionModal';
 import WorksheetModal from './WorksheetModal';
+import InstallationStatusSelect from '../InstallationStatusSelect';
 
 const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) => {
     const [showVacationModal, setShowVacationModal] = useState(false);
@@ -233,53 +234,67 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
         return (
             <Form>
                 <Form.Group className="mb-2">
-                    <Form.Label>Type d'événement</Form.Label>
-                    <Form.Control plaintext readOnly value={normalizedType} />
+                    <Row>
+                        <Col md={6}>
+                            <Form.Label>Type d'événement</Form.Label>
+                            <Form.Control plaintext readOnly value={normalizedType} />
+                        </Col>
+                        {event.type.toLowerCase() === 'installation' && (
+                            <Col md={6}>
+                                <Form.Label>Statut de l'installation</Form.Label>
+                                <InstallationStatusSelect
+                                    value={event.installation_status}
+                                    readOnly={true}
+                                />
+                            </Col>
+                        )}
+                    </Row>
                 </Form.Group>
 
                 {event.type.toLowerCase() === 'installation' && (
                     <>
-                        <Row className="mb-2">
+                        <Row className="mb-3">
                             <Col md={2}>
                                 <Form.Group>
                                     <Form.Label>Date</Form.Label>
-                                    <Form.Control 
-                                        plaintext 
-                                        readOnly 
-                                        value={formData.date ? format(new Date(formData.date + 'T00:00:00'), 'yyyy-MM-dd', { locale: fr }) : ''}
+                                    <Form.Control
+                                        type="text"
+                                        value={format(new Date(event.date), 'yyyy-MM-dd')}
+                                        readOnly
+                                        plaintext
                                     />
                                 </Form.Group>
                             </Col>
                             <Col md={2}>
                                 <Form.Group>
                                     <Form.Label>Heure</Form.Label>
-                                    <Form.Control 
-                                        plaintext 
-                                        readOnly 
-                                        value={event.installation_time ? event.installation_time.slice(0, 5) : ''}
+                                    <Form.Control
+                                        type="text"
+                                        value={event.installation_time || ''}
+                                        readOnly
+                                        plaintext
                                     />
                                 </Form.Group>
                             </Col>
-                            <Col md={8}>
+                            <Col md={4}>
                                 <Form.Group>
                                     <Form.Label>Équipement</Form.Label>
-                                    <Form.Control 
-                                        plaintext 
-                                        readOnly 
+                                    <Form.Control
+                                        type="text"
                                         value={event.equipment || ''}
+                                        readOnly
+                                        plaintext
                                     />
                                 </Form.Group>
                             </Col>
-                        </Row>
-
-                        <Row className="mb-2">
-                            <Col>
+                            <Col md={4}>
                                 <Form.Group>
                                     <Form.Label>Numéro d'installation</Form.Label>
-                                    <Form.Control 
-                                        plaintext 
-                                        readOnly 
+                                    <Form.Control
+                                        type="text"
                                         value={event.installation_number || ''}
+                                        readOnly
+                                        plaintext
                                     />
                                 </Form.Group>
                             </Col>
@@ -290,9 +305,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                                 <Col md={6}>
                                     <Form.Group>
                                         <Form.Label>Nom complet</Form.Label>
-                                        <Form.Control 
-                                            plaintext 
-                                            readOnly 
+                                        <Form.Control
+                                            plaintext
+                                            readOnly
                                             value={event.full_name || ''}
                                         />
                                     </Form.Group>
@@ -300,9 +315,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                                 <Col md={6}>
                                     <Form.Group>
                                         <Form.Label>Téléphone</Form.Label>
-                                        <Form.Control 
-                                            plaintext 
-                                            readOnly 
+                                        <Form.Control
+                                            plaintext
+                                            readOnly
                                             value={event.phone || ''}
                                         />
                                     </Form.Group>
@@ -313,9 +328,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                                 <Col md={6}>
                                     <Form.Group>
                                         <Form.Label>Adresse</Form.Label>
-                                        <Form.Control 
-                                            plaintext 
-                                            readOnly 
+                                        <Form.Control
+                                            plaintext
+                                            readOnly
                                             value={event.address || ''}
                                         />
                                     </Form.Group>
@@ -323,9 +338,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                                 <Col md={6}>
                                     <Form.Group>
                                         <Form.Label>Ville</Form.Label>
-                                        <Form.Control 
-                                            plaintext 
-                                            readOnly 
+                                        <Form.Control
+                                            plaintext
+                                            readOnly
                                             value={event.city || ''}
                                         />
                                     </Form.Group>
@@ -334,9 +349,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
 
                             <Form.Group className="mb-2">
                                 <Form.Label>Sommaire</Form.Label>
-                                <Form.Control 
-                                    plaintext 
-                                    readOnly 
+                                <Form.Control
+                                    plaintext
+                                    readOnly
                                     value={event.Sommaire || ''}
                                 />
                             </Form.Group>
@@ -357,9 +372,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                                 <Col md={6}>
                                     <Form.Group>
                                         <Form.Label>Numéro de soumission</Form.Label>
-                                        <Form.Control 
-                                            plaintext 
-                                            readOnly 
+                                        <Form.Control
+                                            plaintext
+                                            readOnly
                                             value={event.quote_number || ''}
                                         />
                                     </Form.Group>
@@ -367,9 +382,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                                 <Col md={6}>
                                     <Form.Group>
                                         <Form.Label>Montant à percevoir</Form.Label>
-                                        <Form.Control 
-                                            plaintext 
-                                            readOnly 
+                                        <Form.Control
+                                            plaintext
+                                            readOnly
                                             value={event.amount || ''}
                                         />
                                     </Form.Group>
@@ -381,9 +396,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>Technicien 1</Form.Label>
-                                    <Form.Control 
-                                        plaintext 
-                                        readOnly 
+                                    <Form.Control
+                                        plaintext
+                                        readOnly
                                         value={event.technician1_name || ''}
                                     />
                                 </Form.Group>
@@ -391,9 +406,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>Technicien 2</Form.Label>
-                                    <Form.Control 
-                                        plaintext 
-                                        readOnly 
+                                    <Form.Control
+                                        plaintext
+                                        readOnly
                                         value={event.technician2_name || ''}
                                     />
                                 </Form.Group>
@@ -404,9 +419,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                             <Col md={6}>
                                 <Form.Group className="mb-2">
                                     <Form.Label>Technicien 3</Form.Label>
-                                    <Form.Control 
-                                        plaintext 
-                                        readOnly 
+                                    <Form.Control
+                                        plaintext
+                                        readOnly
                                         value={event.technician3_name || ''}
                                     />
                                 </Form.Group>
@@ -414,9 +429,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                             <Col md={6}>
                                 <Form.Group className="mb-2">
                                     <Form.Label>Technicien 4</Form.Label>
-                                    <Form.Control 
-                                        plaintext 
-                                        readOnly 
+                                    <Form.Control
+                                        plaintext
+                                        readOnly
                                         value={event.technician4_name || ''}
                                     />
                                 </Form.Group>
@@ -431,9 +446,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                         <Col md={2}>
                             <Form.Group>
                                 <Form.Label>Date</Form.Label>
-                                <Form.Control 
-                                    plaintext 
-                                    readOnly 
+                                <Form.Control
+                                    plaintext
+                                    readOnly
                                     value={formData.date ? format(new Date(formData.date + 'T00:00:00'), 'yyyy-MM-dd', { locale: fr }) : ''}
                                 />
                             </Form.Group>
@@ -441,9 +456,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                         <Col md={2}>
                             <Form.Group>
                                 <Form.Label>Heure</Form.Label>
-                                <Form.Control 
-                                    plaintext 
-                                    readOnly 
+                                <Form.Control
+                                    plaintext
+                                    readOnly
                                     value={event.installation_time ? event.installation_time.slice(0, 5) : ''}
                                 />
                             </Form.Group>
@@ -451,9 +466,9 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) =
                         <Col md={8}>
                             <Form.Group>
                                 <Form.Label>Équipement</Form.Label>
-                                <Form.Control 
-                                    plaintext 
-                                    readOnly 
+                                <Form.Control
+                                    plaintext
+                                    readOnly
                                     value={event.equipment || ''}
                                 />
                             </Form.Group>
