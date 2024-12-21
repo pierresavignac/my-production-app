@@ -15,7 +15,7 @@ import ManageEquipmentModal from './ManageEquipmentModal';
 import InstallationStatusSelect from '../InstallationStatusSelect';
 import '../../styles/Modal.css';
 
-const EditEventModal = ({ show, onHide, onSave, event }) => {
+const EditEventModal = ({ show, onHide, onSave, event, user }) => {
     const [formData, setFormData] = useState({
         ...event,
         installation_status: event?.installation_status || 'En approbation'
@@ -162,18 +162,27 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
     const handleSave = async (e) => {
         e.preventDefault();
         try {
-            // Assurez-vous que l'ID est inclus dans les données
+            console.log('Données avant sauvegarde:', formData);
+            // Assurez-vous que l'utilisateur a les droits nécessaires
+            const userRole = user?.role;
+            if (formData.type === 'installation' && 
+                formData.installation_status !== event.installation_status && 
+                (!userRole || (userRole !== 'admin' && userRole !== 'manager'))) {
+                throw new Error('Accès refusé: Seuls les administrateurs et les gestionnaires peuvent modifier le statut');
+            }
+
             const dataToSend = {
                 ...formData,
                 id: event.id,
-                installation_status: formData.installation_status || 'En approbation'
+                status: formData.installation_status, // Ajouter explicitement le champ status
+                installation_status: formData.installation_status
             };
-            
+            console.log('Données à envoyer:', dataToSend);
             await onSave(dataToSend);
             onHide();
         } catch (error) {
             console.error('Erreur lors de la sauvegarde:', error);
-            setError('Erreur lors de la sauvegarde de l\'événement');
+            setError(error.message || 'Erreur lors de la sauvegarde de l\'événement');
         }
     };
 
@@ -248,6 +257,20 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
         }
     };
 
+    const handleStatusChange = (e) => {
+        const newStatus = e.target.value;
+        console.log('EditEventModal - Changement de statut:', newStatus);
+        setFormData(prev => {
+            const updated = {
+                ...prev,
+                installation_status: newStatus,
+                status: newStatus // Ajouter aussi le champ status
+            };
+            console.log('EditEventModal - Données mises à jour:', updated);
+            return updated;
+        });
+    };
+
     const renderTechnicianSelect = (techNumber) => {
         const currentValue = formData[`technician${techNumber}_id`];
         
@@ -277,6 +300,10 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
         // Rafraîchir la liste des équipements
         const updatedEquipment = await fetchEquipment();
         setEquipment(updatedEquipment);
+    };
+
+    const onShowEquipmentModal = () => {
+        setShowEquipmentModal(true);
     };
 
     return (
@@ -315,7 +342,8 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
                                         <Form.Label>Statut de l'installation</Form.Label>
                                         <InstallationStatusSelect
                                             value={formData.installation_status}
-                                            onChange={(e) => handleInputChange('installation_status', e.target.value)}
+                                            onChange={handleStatusChange}
+                                            readOnly={!user || (user.role !== 'admin' && user.role !== 'manager')}
                                         />
                                     </Form.Group>
                                 </Col>
@@ -324,7 +352,7 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
 
                         {/* Champs communs pour tous les types d'événements */}
                         {formData.type && formData.type !== 'installation' && (
-                            <>
+                            <div>
                                 <Row className="mb-2">
                                     <Col md={6}>
                                         <Form.Group>
@@ -367,62 +395,71 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
                                         </Form.Group>
                                     </Col>
                                 </Row>
-                            </>
+                            </div>
                         )}
 
                         {formData.type === 'installation' && (
                             <>
-                                <Row className="mb-2">
-                                    <Col md={2}>
+                                <Row className="mb-3">
+                                    <Col md={4}>
                                         <Form.Group>
                                             <Form.Label>Date</Form.Label>
-                                            <Form.Control
-                                                type="date"
-                                                name="date"
-                                                value={formData.date}
-                                                onChange={handleChange}
-                                                required
-                                            />
+                                            <div className="date-picker-container">
+                                                <DatePicker
+                                                    selected={formData.date instanceof Date ? formData.date : new Date(formData.date)}
+                                                    onChange={(date) => handleChange({
+                                                        target: {
+                                                            name: 'date',
+                                                            value: date
+                                                        }
+                                                    })}
+                                                    dateFormat="yyyy-MM-dd"
+                                                    className="form-control"
+                                                />
+                                            </div>
                                         </Form.Group>
                                     </Col>
-                                    <Col md={2}>
+                                    <Col md={4}>
                                         <Form.Group>
                                             <Form.Label>Heure</Form.Label>
                                             <Form.Control
                                                 type="time"
-                                                name="installation_time"
-                                                value={formData.installation_time}
-                                                onChange={handleChange}
+                                                value={formData.installation_time || '08:00'}
+                                                onChange={(e) => handleChange({
+                                                    target: {
+                                                        name: 'installation_time',
+                                                        value: e.target.value
+                                                    }
+                                                })}
                                             />
                                         </Form.Group>
                                     </Col>
-                                    <Col md={8}>
+                                    <Col md={4}>
                                         <Form.Group>
                                             <Form.Label>Équipement</Form.Label>
                                             <Form.Select
                                                 value={formData.equipment || ''}
                                                 onChange={(e) => {
-                                                    if (e.target.value === 'manage') {
-                                                        setShowEquipmentModal(true);
-                                                    } else {
-                                                        handleChange({
-                                                            target: {
-                                                                name: 'equipment',
-                                                                value: e.target.value
-                                                            }
-                                                        });
+                                                    const value = e.target.value;
+                                                    if (value === 'manage') {
+                                                        onShowEquipmentModal();
+                                                        return;
                                                     }
+                                                    handleChange({
+                                                        target: {
+                                                            name: 'equipment',
+                                                            value: value
+                                                        }
+                                                    });
                                                 }}
                                             >
                                                 <option value="">Sélectionner un équipement</option>
-                                                {equipment && equipment.map(equip => (
-                                                    <option key={equip.id} value={equip.name}>
-                                                        {equip.name}
+                                                {equipment.map((item) => (
+                                                    <option key={item.id} value={item.name}>
+                                                        {item.name}
                                                     </option>
                                                 ))}
-                                                <option value="manage" style={{ fontStyle: 'italic', backgroundColor: '#f8f9fa' }}>
-                                                    ⚙️ Modifier les équipements...
-                                                </option>
+                                                <option value="manage">⚙️ Gérer les équipements...</option>
                                             </Form.Select>
                                         </Form.Group>
                                     </Col>
@@ -433,25 +470,38 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
                                         <Col>
                                             <Form.Group>
                                                 <Form.Label>Numéro d'installation</Form.Label>
-                                                <div className="d-flex">
+                                                <div className="d-flex align-items-center">
                                                     <Form.Control
                                                         type="text"
-                                                        value={formData.installation_number || ''}
+                                                        value={formData.installation_number}
                                                         onChange={(e) => handleChange({
                                                             target: {
                                                                 name: 'installation_number',
                                                                 value: e.target.value
                                                             }
                                                         })}
-                                                        className="me-2"
+                                                        style={{ flex: 1 }}
                                                     />
                                                     <Button 
                                                         variant="secondary"
                                                         onClick={handleFetchInstallation}
                                                         disabled={isFetchingInstallation}
+                                                        style={{ margin: '0 10px' }}
                                                     >
                                                         {isFetchingInstallation ? 'Chargement...' : 'Fetch'}
                                                     </Button>
+                                                    <Form.Control
+                                                        type="text"
+                                                        placeholder="Représentant"
+                                                        value={formData.sales_rep || ''}
+                                                        onChange={(e) => handleChange({
+                                                            target: {
+                                                                name: 'sales_rep',
+                                                                value: e.target.value
+                                                            }
+                                                        })}
+                                                        style={{ flex: 1 }}
+                                                    />
                                                 </div>
                                             </Form.Group>
                                         </Col>
@@ -593,92 +643,19 @@ const EditEventModal = ({ show, onHide, onSave, event }) => {
 
                                 <Row className="mb-2">
                                     <Col md={6}>
-                                        <Form.Group>
-                                            <Form.Label>Technicien 1</Form.Label>
-                                            <Form.Select
-                                                value={formData.technician1_id || ''}
-                                                onChange={(e) => handleChange({
-                                                    target: {
-                                                        name: 'technician1_id',
-                                                        value: e.target.value
-                                                    }
-                                                })}
-                                                required
-                                            >
-                                                <option value="">Sélectionner un technicien</option>
-                                                {technicians.map(tech => (
-                                                    <option key={tech.id} value={tech.id}>
-                                                        {tech.first_name} {tech.last_name}
-                                                    </option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
+                                        {renderTechnicianSelect(1)}
                                     </Col>
                                     <Col md={6}>
-                                        <Form.Group>
-                                            <Form.Label>Technicien 2</Form.Label>
-                                            <Form.Select
-                                                value={formData.technician2_id || ''}
-                                                onChange={(e) => handleChange({
-                                                    target: {
-                                                        name: 'technician2_id',
-                                                        value: e.target.value
-                                                    }
-                                                })}
-                                            >
-                                                <option value="">Sélectionner un technicien</option>
-                                                {technicians.map(tech => (
-                                                    <option key={tech.id} value={tech.id}>
-                                                        {tech.first_name} {tech.last_name}
-                                                    </option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
+                                        {renderTechnicianSelect(2)}
                                     </Col>
                                 </Row>
 
                                 <Row>
                                     <Col md={6}>
-                                        <Form.Group className="mb-2">
-                                            <Form.Label>Technicien 3</Form.Label>
-                                            <Form.Select
-                                                value={formData.technician3_id || ''}
-                                                onChange={(e) => handleChange({
-                                                    target: {
-                                                        name: 'technician3_id',
-                                                        value: e.target.value
-                                                    }
-                                                })}
-                                            >
-                                                <option value="">Sélectionner un technicien</option>
-                                                {technicians.map(tech => (
-                                                    <option key={tech.id} value={tech.id}>
-                                                        {tech.first_name} {tech.last_name}
-                                                    </option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
+                                        {renderTechnicianSelect(3)}
                                     </Col>
                                     <Col md={6}>
-                                        <Form.Group className="mb-2">
-                                            <Form.Label>Technicien 4</Form.Label>
-                                            <Form.Select
-                                                value={formData.technician4_id || ''}
-                                                onChange={(e) => handleChange({
-                                                    target: {
-                                                        name: 'technician4_id',
-                                                        value: e.target.value
-                                                    }
-                                                })}
-                                            >
-                                                <option value="">Sélectionner un technicien</option>
-                                                {technicians.map(tech => (
-                                                    <option key={tech.id} value={tech.id}>
-                                                        {tech.first_name} {tech.last_name}
-                                                    </option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
+                                        {renderTechnicianSelect(4)}
                                     </Col>
                                 </Row>
                             </>

@@ -5,6 +5,8 @@ const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
     const [newEquipment, setNewEquipment] = useState('');
     const [equipment, setEquipment] = useState([]);
     const [error, setError] = useState('');
+    const [editingId, setEditingId] = useState(null);
+    const [editingName, setEditingName] = useState('');
 
     useEffect(() => {
         if (show) {
@@ -74,6 +76,39 @@ const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
         }
     };
 
+    const handleStartEdit = (item) => {
+        setEditingId(item.id);
+        setEditingName(item.name);
+    };
+
+    const handleSaveEdit = async (id) => {
+        try {
+            const response = await fetch(`/api/equipment.php?id=${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: editingName }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de la modification de l\'équipement');
+            }
+
+            await fetchEquipment();
+            setEditingId(null);
+            setEditingName('');
+        } catch (error) {
+            console.error('Erreur:', error);
+            setError('Erreur lors de la modification de l\'équipement');
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingId(null);
+        setEditingName('');
+    };
+
     return (
         <Modal show={show} onHide={onHide}>
             <Modal.Header closeButton>
@@ -95,20 +130,65 @@ const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
                     </Form.Group>
                 </Form>
 
-                <ListGroup>
-                    {equipment.map((item) => (
-                        <ListGroup.Item key={item.id} className="d-flex justify-content-between align-items-center">
-                            {item.name}
-                            <Button 
-                                variant="danger" 
-                                size="sm"
-                                onClick={() => handleDeleteEquipment(item.id)}
-                            >
-                                Supprimer
-                            </Button>
-                        </ListGroup.Item>
-                    ))}
-                </ListGroup>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    <ListGroup>
+                        {equipment.map((item) => (
+                            <ListGroup.Item key={item.id} className="py-1 d-flex justify-content-between align-items-center">
+                                {editingId === item.id ? (
+                                    <Form.Control
+                                        type="text"
+                                        value={editingName}
+                                        onChange={(e) => setEditingName(e.target.value)}
+                                        size="sm"
+                                        className="me-2"
+                                        style={{ width: '200px' }}
+                                    />
+                                ) : (
+                                    <span>{item.name}</span>
+                                )}
+                                <div>
+                                    {editingId === item.id ? (
+                                        <>
+                                            <Button
+                                                variant="success"
+                                                size="sm"
+                                                onClick={() => handleSaveEdit(item.id)}
+                                                className="me-1"
+                                            >
+                                                ✓
+                                            </Button>
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                onClick={handleCancelEdit}
+                                            >
+                                                ✕
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button
+                                                variant="outline-primary"
+                                                size="sm"
+                                                onClick={() => handleStartEdit(item)}
+                                                className="me-1"
+                                            >
+                                                ✎
+                                            </Button>
+                                            <Button
+                                                variant="outline-danger"
+                                                size="sm"
+                                                onClick={() => handleDeleteEquipment(item.id)}
+                                            >
+                                                🗑
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
+                            </ListGroup.Item>
+                        ))}
+                    </ListGroup>
+                </div>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onHide}>Fermer</Button>

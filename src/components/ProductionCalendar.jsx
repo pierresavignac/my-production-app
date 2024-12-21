@@ -375,22 +375,68 @@ const ProductionCalendar = () => {
     loadEmployees();
   }, []);
 
+  const getEventStyle = (event) => {
+    let style = {
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      padding: '4px',
+      overflow: 'hidden',
+      color: 'white',
+      borderRadius: '4px',
+      cursor: 'pointer'
+    };
+
+    // Gérer d'abord les autres types d'événements
+    switch (event.type.toLowerCase()) {
+      case 'conge':
+      case 'congé':
+        style.backgroundColor = '#87CEEB';
+        break;
+      case 'maladie':
+        style.backgroundColor = '#FFB6C1';
+        break;
+      case 'formation':
+        style.backgroundColor = '#DDA0DD';
+        break;
+      case 'vacances':
+        style.backgroundColor = '#98FB98';
+        break;
+      case 'installation':
+        // Pour les installations, utiliser le statut
+        switch (event.status || event.installation_status) {
+          case 'En approbation':
+            style.backgroundColor = '#ffb6c150'; // Rose clair à 50%
+            style.color = 'black';
+            break;
+          case 'En installation':
+            style.backgroundColor = '#28a74550'; // Vert clair à 50%
+            style.color = 'black';
+            break;
+          case 'En facturation':
+            style.backgroundColor = '#ffc10750'; // Jaune clair à 50%
+            style.color = 'black';
+            break;
+          case 'Paiement reçu':
+            style.backgroundColor = '#3174ad50'; // Bleu à 50%
+            style.color = 'black';
+            break;
+          default:
+            style.backgroundColor = '#ffb6c150'; // Rose clair à 50% par défaut
+            style.color = 'black';
+        }
+        break;
+      default:
+        style.backgroundColor = '#3174ad';
+    }
+
+    return style;
+  };
+
   const renderEvent = (event) => {
-    // Log l'événement avant le rendu
-    console.log('Rendu de l\'événement:', event);
-
-    const normalizedType = {
-      'conge': 'Congé',
-      'congé': 'Congé',
-      'maladie': 'Maladie',
-      'formation': 'Formation',
-      'vacances': 'Vacances',
-      'installation': 'Installation'
-    }[event.type.toLowerCase()] || event.type;
-
-    // Log le type normalisé
-    console.log('Type normalisé:', normalizedType);
-
+    const style = getEventStyle(event);
     const technicians = [
       event.technician1_name,
       event.technician2_name,
@@ -399,10 +445,14 @@ const ProductionCalendar = () => {
     ].filter(Boolean);
 
     return (
-      <div className={normalizedType === 'Installation' ? 'installation-details' : 'special-event'}>
+      <div
+        className="calendar-event"
+        style={style}
+        onClick={() => handleEventClick(event)}
+      >
         <div className="event-time">{event.installation_time}</div>
-        <div className="event-type">{normalizedType}</div>
-        {normalizedType === 'Installation' && (
+        <div className="event-type">{event.type}</div>
+        {event.type === 'Installation' && (
           <div className="event-client">
             <strong>{event.full_name}</strong>
             {event.address && <div>{event.address}</div>}
@@ -564,6 +614,7 @@ const ProductionCalendar = () => {
           }}
           onSave={handleEventUpdate}
           event={selectedEvent}
+          user={user}
         />
       )}
 

@@ -64,7 +64,8 @@ export const fetchEvents = async () => {
         region_name: event.region_name || '',
         region_id: event.region_id || null,
         employee_name: event.employee_name || '',
-        employee_id: event.employee_id || null
+        employee_id: event.employee_id || null,
+        installation_status: event.status || event.installation_status || 'En approbation'
       };
 
       // Ajouter start_date et end_date uniquement pour les vacances
@@ -312,7 +313,8 @@ export const updateEvent = async (eventData) => {
     // Nettoyer et formater les données avant l'envoi
     const cleanedData = {
       ...eventData,
-      mode: 'edit'  // Définir le mode d'édition ici
+      mode: 'edit',
+      status: eventData.installation_status // Utiliser 'status' au lieu de 'installation_status' pour le serveur
     };
 
     // Ajouter start_date et end_date uniquement pour les vacances

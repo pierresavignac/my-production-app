@@ -39,8 +39,9 @@ try {
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS representative VARCHAR(100) DEFAULT NULL");
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS client_number VARCHAR(50) DEFAULT NULL");
     $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS installation_number VARCHAR(50) DEFAULT NULL");
+    $pdo->exec("ALTER TABLE events ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'En approbation'");
 } catch(Exception $e) {
-    error_log("Erreur lors de l'ajout des colonnes de groupe de vacances : " . $e->getMessage());
+    error_log("Erreur lors de l'ajout des colonnes : " . $e->getMessage());
 }
 
 // Fonction pour valider le type d'événement
@@ -111,7 +112,8 @@ function handleGet($pdo) {
                 'technician1_name' => $event['technician1_name'] ?? '',
                 'technician2_name' => $event['technician2_name'] ?? '',
                 'technician3_name' => $event['technician3_name'] ?? '',
-                'technician4_name' => $event['technician4_name'] ?? ''
+                'technician4_name' => $event['technician4_name'] ?? '',
+                'status' => $event['status'] ?? 'En approbation'
             ];
 
             // Ajouter les champs spécifiques uniquement pour les installations
@@ -204,7 +206,8 @@ function handlePost($pdo) {
             'quote_number' => $data['quote_number'] ?? '',
             'representative' => $data['representative'] ?? '',
             'client_number' => $data['client_number'] ?? '',
-            'installation_number' => $data['installation_number'] ?? ''
+            'installation_number' => $data['installation_number'] ?? '',
+            'status' => $data['status'] ?? 'En approbation'
         ];
 
         // Construire la requête SQL
@@ -212,12 +215,14 @@ function handlePost($pdo) {
             type, date, installation_time, full_name, phone, address, city,
             Sommaire, Description, equipment, amount,
             technician1_id, technician2_id, technician3_id, technician4_id,
-            quote_number, representative, client_number, installation_number
+            quote_number, representative, client_number, installation_number,
+            status
         ) VALUES (
             :type, :date, :installation_time, :full_name, :phone, :address, :city,
             :Sommaire, :Description, :equipment, :amount,
             :technician1_id, :technician2_id, :technician3_id, :technician4_id,
-            :quote_number, :representative, :client_number, :installation_number
+            :quote_number, :representative, :client_number, :installation_number,
+            :status
         )";
 
         $stmt = $pdo->prepare($sql);
@@ -275,7 +280,8 @@ function handleUpdate($pdo) {
             'quote_number' => $data['quote_number'] ?? '',
             'representative' => $data['representative'] ?? '',
             'client_number' => $data['client_number'] ?? '',
-            'installation_number' => $data['installation_number'] ?? ''
+            'installation_number' => $data['installation_number'] ?? '',
+            'status' => $data['status'] ?? $data['installation_status'] ?? 'En approbation'
         ];
 
         // Construire la requête SQL de mise à jour
@@ -298,7 +304,8 @@ function handleUpdate($pdo) {
             quote_number = :quote_number,
             representative = :representative,
             client_number = :client_number,
-            installation_number = :installation_number
+            installation_number = :installation_number,
+            status = :status
             WHERE id = :id";
 
         $stmt = $pdo->prepare($sql);

@@ -13,6 +13,11 @@ const InstallationStatusSelect = ({ value, onChange, readOnly }) => {
     { value: 'Paiement reçu', label: 'Paiement reçu' }
   ];
 
+  const handleChange = (e) => {
+    console.log('InstallationStatusSelect - Nouveau statut:', e.target.value);
+    onChange(e);
+  };
+
   if (readOnly) {
     return <span>{value || 'En approbation'}</span>;
   }
@@ -20,7 +25,7 @@ const InstallationStatusSelect = ({ value, onChange, readOnly }) => {
   return (
     <Form.Select
       value={value || 'En approbation'}
-      onChange={onChange}
+      onChange={handleChange}
       disabled={!hasEditRights}
     >
       {statuses.map(status => (
