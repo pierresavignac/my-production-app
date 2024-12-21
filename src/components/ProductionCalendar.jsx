@@ -11,6 +11,8 @@ import BlockView from './views/BlockView';
 import ListView from './views/ListView';
 import { API_BASE_URL } from '../config/config';
 import '../styles/ProductionCalendar.css';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const ProductionCalendar = () => {
   // États
@@ -399,6 +401,9 @@ const ProductionCalendar = () => {
     );
   };
 
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
   // Rendu
   return (
     <div>
@@ -406,6 +411,9 @@ const ProductionCalendar = () => {
         <h1 className="app-title">
           Calendrier de production {new Date().getFullYear()}
         </h1>
+        <div style={{ flex: 1, textAlign: 'center', marginLeft: '20px', marginRight: '20px' }}>
+          <span style={{ fontSize: '0.8em', color: 'white' }}>{user?.email}</span>
+        </div>
         <div className="navigation-controls">
           <button
             className="view-toggle-button"
@@ -431,6 +439,21 @@ const ProductionCalendar = () => {
               onClick={goToNextWeek}
             >
               Semaine suivante
+            </button>
+            {user?.role === 'admin' && (
+              <button 
+                className="navigation-button"
+                onClick={() => navigate('/admin')}
+              >
+                Usagers
+              </button>
+            )}
+            <button 
+              className="navigation-button"
+              onClick={logout}
+              style={{ backgroundColor: '#ef4444' }}
+            >
+              Déconnexion
             </button>
           </div>
         </div>
