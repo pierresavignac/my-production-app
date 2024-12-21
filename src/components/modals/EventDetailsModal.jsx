@@ -7,7 +7,7 @@ import '../../styles/Modal.css';
 import VacationActionModal from './VacationActionModal';
 import WorksheetModal from './WorksheetModal';
 
-const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
+const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete, canEdit }) => {
     const [showVacationModal, setShowVacationModal] = useState(false);
     const [vacationModalMode, setVacationModalMode] = useState('edit');
     const [showWorksheet, setShowWorksheet] = useState(false);
@@ -475,14 +475,18 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={onHide}>
-                        Annuler
+                        Fermer
                     </Button>
-                    <Button variant="primary" onClick={() => onEdit(event)}>
-                        Modifier
-                    </Button>
-                    <Button variant="danger" onClick={() => onDelete(event)}>
-                        Supprimer
-                    </Button>
+                    {canEdit && (
+                        <>
+                            <Button variant="primary" onClick={() => onEdit(event)}>
+                                Modifier
+                            </Button>
+                            <Button variant="danger" onClick={() => onDelete(event)}>
+                                Supprimer
+                            </Button>
+                        </>
+                    )}
                 </Modal.Footer>
             </Modal>
 

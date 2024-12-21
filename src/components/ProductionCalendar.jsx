@@ -7,6 +7,7 @@ import { calculateWeeks, isCurrentDay, isCurrentWeek, formatDayHeader, formatDat
 import AddEventModal from './modals/AddEventModal';
 import EventDetailsModal from './modals/EventDetailsModal';
 import EditEventModal from './modals/EditEventModal';
+import ErrorModal from './modals/ErrorModal';
 import BlockView from './views/BlockView';
 import ListView from './views/ListView';
 import { API_BASE_URL } from '../config/config';
@@ -22,6 +23,8 @@ const ProductionCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [error, setError] = useState('');
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [employees, setEmployees] = useState([]);
   const [viewMode, setViewMode] = useState('calendar');
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -29,6 +32,12 @@ const ProductionCalendar = () => {
   
   // Refs
   const scrollRef = useRef(null);
+  const { logout } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Vérifier si l'utilisateur a les droits d'édition
+  const hasEditRights = user && (user.role === 'admin' || user.role === 'manager');
 
   // Variables
   const weeks = calculateWeeks(currentDate);
@@ -84,7 +93,8 @@ const ProductionCalendar = () => {
         setEvents(groupedEvents);
       } catch (error) {
         console.error('Erreur lors de l\'initialisation:', error);
-        setError('Erreur lors du chargement des données. Veuillez rafraîchir la page.');
+        setErrorMessage('Erreur lors du chargement des données. Veuillez rafraîchir la page.');
+        setShowErrorModal(true);
       }
     };
 
@@ -119,6 +129,11 @@ const ProductionCalendar = () => {
 
   // Gestionnaires d'événements
   const handleDateClick = (date) => {
+    if (!hasEditRights) {
+      setErrorMessage("Vous n'avez pas les droits pour créer un événement.");
+      setShowErrorModal(true);
+      return;
+    }
     // Formater la date en YYYY-MM-DD en utilisant la date exacte cliquée
     const formattedDate = format(date, 'yyyy-MM-dd');
     setSelectedDate(formattedDate);
@@ -269,7 +284,8 @@ const ProductionCalendar = () => {
         setEvents(groupedEvents);
     } catch (error) {
         console.error('Erreur lors de l\'opération:', error);
-        setError(error.message);
+        setErrorMessage(error.message);
+        setShowErrorModal(true);
     }
   };
 
@@ -305,7 +321,8 @@ const ProductionCalendar = () => {
       }
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
-      setError('Erreur lors de la mise à jour de l\'événement');
+      setErrorMessage('Erreur lors de la mise à jour de l\'événement');
+      setShowErrorModal(true);
     }
   };
 
@@ -327,7 +344,8 @@ const ProductionCalendar = () => {
       setEvents(groupedEvents);
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
-      setError(`Erreur lors de la suppression : ${error.message}`);
+      setErrorMessage(`Erreur lors de la suppression : ${error.message}`);
+      setShowErrorModal(true);
     }
   };
 
@@ -347,7 +365,8 @@ const ProductionCalendar = () => {
       setEmployees(data);
     } catch (error) {
       console.error('Erreur lors du chargement des employés:', error);
-      setError('Erreur lors du chargement des employés');
+      setErrorMessage('Erreur lors du chargement des employés');
+      setShowErrorModal(true);
     }
   };
 
@@ -401,8 +420,16 @@ const ProductionCalendar = () => {
     );
   };
 
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      setErrorMessage('Erreur lors de la déconnexion');
+      setShowErrorModal(true);
+    }
+  };
 
   // Rendu
   return (
@@ -450,7 +477,7 @@ const ProductionCalendar = () => {
             )}
             <button 
               className="navigation-button"
-              onClick={logout}
+              onClick={handleLogout}
               style={{ backgroundColor: '#ef4444' }}
             >
               Déconnexion
@@ -459,12 +486,11 @@ const ProductionCalendar = () => {
         </div>
       </div>
 
-      {error && (
-        <div className="error-message">
-          {error}
-          <button onClick={() => setError('')}>&times;</button>
-        </div>
-      )}
+      <ErrorModal 
+        show={showErrorModal}
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
 
       <div className="calendar-container" ref={scrollRef} style={{ 
         backgroundColor: '#ff6b00',
@@ -505,17 +531,27 @@ const ProductionCalendar = () => {
             setSelectedEvent(null);
           }}
           event={selectedEvent}
-          onEdit={(event) => {
-            console.log('Événement à éditer:', event);
-            // Conserver l'événement tel quel pour l'édition
-            setSelectedEvent(event);
+          onEdit={() => {
+            if (!hasEditRights) {
+              setErrorMessage("Vous n'avez pas les droits pour modifier un événement.");
+              setShowErrorModal(true);
+              return;
+            }
+            console.log('Événement à éditer:', selectedEvent);
+            setSelectedEvent(selectedEvent);
             setShowEventDetailsModal(false);
             setShowEditEventModal(true);
           }}
-          onDelete={(event) => {
-            handleDeleteEvent(event);
+          onDelete={() => {
+            if (!hasEditRights) {
+              setErrorMessage("Vous n'avez pas les droits pour supprimer un événement.");
+              setShowErrorModal(true);
+              return;
+            }
+            handleDeleteEvent(selectedEvent);
             setShowEventDetailsModal(false);
           }}
+          canEdit={hasEditRights}
         />
       )}
 
