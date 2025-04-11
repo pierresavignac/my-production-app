@@ -1,0 +1,193 @@
+/* src/styles/WorksheetModal.css */
+
+/* Cibler l'élément qui a LES TROIS classes */
+/* Commenté pour test */
+/*
+.modal-dialog.modal-xl.worksheet-modal {
+    max-width: 1300px !important; 
+}
+*/
+
+/* Nouvelle tentative: Forcer la largeur du contenu */
+.worksheet-modal .modal-content {
+    /* Utiliser des unités viewport width pour occuper 90% de la largeur */
+    width: 90vw !important;
+    max-width: 90vw !important;
+}
+
+.worksheet-body {
+    /* Ajouter des styles pour la disposition, peut-être des bordures pour les sections */
+    /* min-height: 750px; */ /* Commenté temporairement pour tester l'impact sur la hauteur */
+    padding: 20px; 
+}
+
+.worksheet-header-section {
+    border-bottom: 1px solid #dee2e6; /* Séparateur */
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.worksheet-main-section {
+    display: flex;
+    flex-wrap: wrap; /* Permet le retour à la ligne sur petits écrans */
+}
+
+.worksheet-plan-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.plan-placeholder {
+    flex-grow: 1; /* Prend l'espace restant */
+    min-height: 300px; /* Hauteur minimale */
+    background-color: #f8f9fa;
+    border: 1px dashed #ced4da;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.worksheet-details-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.particularities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Colonnes responsives */
+    gap: 0.5rem;
+}
+
+.worksheet-footer {
+    /* Styles pour le pied de page si nécessaire */
+}
+
+/* Styles pour l'impression */
+@media print {
+    body {
+        /* Forcer les dimensions pour l'impression */
+        width: 11in;
+        height: 8.5in;
+        margin: 0; /* Ou marges spécifiques */
+        padding: 0.5in; /* Marges d'impression */
+        box-sizing: border-box;
+    }
+    .modal-dialog {
+        max-width: 100% !important; 
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    .modal-content {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .modal-header,
+    .modal-footer,
+    .btn { /* Cacher les éléments non pertinents à l'impression */
+        display: none !important;
+    }
+    .worksheet-body {
+        min-height: auto;
+        padding: 0; /* Retirer le padding pour utiliser celui du body */
+    }
+    .worksheet-plan-area {
+        border-right: 1px solid #dee2e6 !important; 
+    }
+    /* Forcer l'affichage des bordures et couleurs */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+} 
+
+/* Styles généraux pour la modale */
+.worksheet-modal .modal-dialog {
+    /* max-width: 95%; /* Modale plus large */
+}
+
+.worksheet-modal-body {
+    /* Ajuster si nécessaire */
+}
+
+/* Section principale avec plan et détails */
+.worksheet-main-section {
+    /* Styles pour la section principale */
+}
+
+/* Zone pour le plan/croquis */
+.worksheet-plan-area {
+    /* background-color: #e9ecef; /* Fond léger pour distinguer */
+    /* border: 1px solid #dee2e6; */
+    /* padding: 1rem; */
+    /* margin-bottom: 1rem; /* Espace en dessous sur petits écrans */
+}
+
+/* Zone pour les détails techniques */
+.worksheet-details-area {
+    /* background-color: #f8f9fa; /* Fond léger */
+    /* border: 1px solid #dee2e6; */
+    /* padding: 1rem; */
+    /* margin-bottom: 1rem; */
+}
+
+/* Grid pour les particularités (si utilisée) */
+.particularities-grid {
+    /* display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Colonnes responsives */
+    gap: 0.5rem; */
+}
+
+/* Ajustement pour les checkboxes dans la grid (si utilisée) */
+.particularities-grid .form-check {
+    margin-bottom: 0; /* Enlever marge par défaut si dans grid */
+}
+
+/* Styles pour la compacité et labels au-dessus */
+.worksheet-modal-compact {
+  font-size: 75%; /* Réduit la taille de la police pour tout le corps de la modale */
+}
+
+/* Optionnel: Ajustements spécifiques si nécessaire pour certains éléments */
+.worksheet-modal-compact h6 {
+  font-size: 1rem; /* Rétablir une taille raisonnable pour les titres si 75% est trop petit */
+  margin-top: 0.5rem; /* Ajouter un peu d'espace au-dessus des titres */
+}
+
+.worksheet-modal-compact .form-label {
+  margin-bottom: 0.25rem; /* Ajouter un petit espace sous le label */
+  font-weight: 500; /* Optionnel: rendre les labels légèrement plus gras */
+}
+
+/* Réduire la hauteur des champs */
+.worksheet-modal-compact .form-control,
+.worksheet-modal-compact .form-select {
+  padding-top: 0;  /* Padding vertical minimal */
+  padding-bottom: 0; /* Padding vertical minimal */
+  height: auto; /* Laisser la hauteur s'ajuster */
+}
+
+.worksheet-modal-compact .form-check {
+    min-height: auto; /* Éviter une hauteur minimale fixe */
+    padding-left: 1.7em; /* Ajuster si l'alignement du label est affecté */
+    margin-bottom: 0.1rem; /* Espacement réduit pour les checkboxes */
+}
+
+/* Ajuster l'alignement vertical des inputs de check/switch si besoin */
+.worksheet-modal-compact .form-check-input {
+   margin-top: 0.15em;
+}
+
+/* Ajustement pour les switch pour qu'ils ne soient pas minuscules */
+/* Garder les styles précédents pour la taille du switch */
+.worksheet-modal-compact .form-check-input[type="switch"] {
+    font-size: 1rem; /* Rétablir taille standard pour le switch lui-même */
+    height: 1.2em;
+    width: 2.4em;
+    margin-top: 0.2em; /* Peut nécessiter un ajustement différent de .form-check-input général */
+}
+
+.worksheet-modal-compact .form-check-label {
+    padding-left: 0.5em; /* Ajuster l'espacement du label du switch */
+} 

@@ -1,0 +1,143 @@
+:root {
+    --side-menu-width-retracted: 70px;
+    --side-menu-width-expanded: 250px;
+    --side-menu-transition-speed: 0.3s;
+    /* Définir la couleur bleue principale */
+    --side-menu-bg-color: #1976d2; 
+    /* Définir une couleur de survol légèrement plus foncée */
+    --side-menu-hover-bg-color: #1565c0;
+    /* Définir une couleur d'accentuation pour la bordure/indicateur */
+    --side-menu-accent-color: #2196f3;
+}
+
+.side-menu {
+    position: fixed;
+    top: 0; /* Ajuster si vous avez un header (ex: top: 60px;) */
+    left: 0;
+    height: 100vh; /* Ajuster si vous avez un header (ex: calc(100vh - 60px);) */
+    width: var(--side-menu-width-retracted);
+    background-color: var(--side-menu-bg-color); /* Utiliser la variable */
+    color: #ffffff; /* Texte blanc pour contraste */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden; /* Cacher le texte qui dépasse en mode rétracté */
+    white-space: nowrap; /* Empêcher le texte de passer à la ligne */
+    transition: width var(--side-menu-transition-speed) ease;
+    z-index: 1000; /* Pour être au-dessus du contenu */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.side-menu:hover {
+    width: var(--side-menu-width-expanded);
+}
+
+.side-menu-nav {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    padding-top: 60px;
+}
+
+.side-menu-item {
+    margin-bottom: 5px;
+}
+
+.side-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #ffffff; /* Texte blanc */
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    border-left: 3px solid transparent; /* Indicateur de sélection */
+}
+
+.side-menu-link:hover {
+    background-color: var(--side-menu-hover-bg-color); /* Utiliser la variable */
+    border-left-color: var(--side-menu-accent-color); /* Utiliser la variable */
+}
+
+/* Activer quand la route est active (nécessite NavLink au lieu de Link si besoin) */
+/* .side-menu-link.active {
+    background-color: var(--side-menu-hover-bg-color);
+    border-left-color: var(--side-menu-accent-color); 
+} */
+
+.link-icon {
+    font-size: 1.5em;
+    margin-right: 15px;
+    min-width: 30px; /* Pour aligner le texte quand le menu est ouvert */
+    text-align: center;
+}
+
+.link-text {
+    opacity: 0; /* Caché par défaut */
+    transition: opacity 0.2s ease;
+    transition-delay: 0.1s; /* Petit délai pour l'apparition */
+    font-size: 1em;
+}
+
+.side-menu:hover .link-text {
+    opacity: 1; /* Apparaît au survol du menu */
+}
+
+.side-menu-footer {
+    padding: 20px;
+    border-top: 1px solid var(--side-menu-hover-bg-color); /* Utiliser la couleur de survol pour la bordure */
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    transition-delay: 0.1s;
+}
+
+.side-menu:hover .user-info {
+    opacity: 1;
+}
+
+.user-name {
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.user-email {
+    font-size: 0.8em;
+    color: #e0e0e0; /* Légèrement moins blanc que le texte principal */
+}
+
+.logout-button {
+    background: none;
+    border: none;
+    color: #ffffff; /* Texte blanc */
+    padding: 10px 0; /* Moins de padding que les liens nav */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    font-size: 1em; /* Pour correspondre à .link-text */
+}
+
+.logout-button:hover {
+    color: #ffcdd2; /* Un rouge pâle pour le survol */
+}
+
+/* Icône et texte du bouton logout suivent les mêmes règles que les liens nav */
+.logout-button .link-icon {
+    margin-right: 15px;
+}
+
+.logout-button .link-text {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    transition-delay: 0.1s;
+}
+
+.side-menu:hover .logout-button .link-text {
+    opacity: 1;
+} 
