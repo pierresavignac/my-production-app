@@ -1,0 +1,227 @@
+[08-Dec-2024 20:17:41 America/Montreal] 
+
+=== Nouvelle requête ===
+[08-Dec-2024 20:17:41 America/Montreal] URLs configurées:
+[08-Dec-2024 20:17:41 America/Montreal] Server URL: http://garychartrand.progressionlive.com
+[08-Dec-2024 20:17:41 America/Montreal] Service URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService
+[08-Dec-2024 20:17:41 America/Montreal] WSDL URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService?wsdl
+[08-Dec-2024 20:17:41 America/Montreal] Création du service SOAP...
+[08-Dec-2024 20:17:41 America/Montreal] Service SOAP créé avec succès
+[08-Dec-2024 20:17:41 America/Montreal] Tentative de connexion...
+[08-Dec-2024 20:17:41 America/Montreal] Connexion réussie avec SessionID: 5DC2EEC8716CFD7376ACF5E9C7DFB44C22
+[08-Dec-2024 20:17:41 America/Montreal] Recherche de tâche avec le code: INS010310
+[08-Dec-2024 20:17:41 America/Montreal] Envoi de la requête de recherche SQL...
+[08-Dec-2024 20:17:41 America/Montreal] Dernière requête SOAP: <?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://message.v2.ws.progression.diffusion.cc"><SOAP-ENV:Body><ns1:SearchRecordsRequest><ns1:credentials SessionID="5DC2EEC8716CFD7376ACF5E9C7DFB44C22" Username="pierre@garychartrand.com" Password="A11gdb333!"/><ns1:recordType>TASK</ns1:recordType><ns1:query>SELECT * FROM TASK WHERE code = 'INS010310'</ns1:query><ns1:limit/></ns1:SearchRecordsRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+[08-Dec-2024 20:17:41 America/Montreal] Dernière réponse SOAP: <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ns7:SearchRecordsResponse xmlns:ns2="http://base.v2.ws.progression.diffusion.cc" xmlns:ns3="http://timesheet.v2.ws.progression.diffusion.cc" xmlns:ns4="http://auth.v2.ws.progression.diffusion.cc" xmlns:ns5="http://client.v2.ws.progression.diffusion.cc" xmlns:ns6="http://task.v2.ws.progression.diffusion.cc" xmlns:ns7="http://message.v2.ws.progression.diffusion.cc" xmlns:ns8="http://resource.v2.ws.progression.diffusion.cc" xmlns:ns9="http://conf.v2.ws.progression.diffusion.cc" xmlns:ns10="http://optim.v2.ws.progression.diffusion.cc" xmlns:ns11="http://product.v2.ws.progression.diffusion.cc" xmlns:ns12="http://report.v2.ws.progression.diffusion.cc" xmlns:ns13="http://tax.v2.ws.progression.diffusion.cc" xmlns:ns14="http://workflow.v2.ws.progression.diffusion.cc"><ns7:records/></ns7:SearchRecordsResponse></soap:Body></soap:Envelope>
+[08-Dec-2024 20:17:41 America/Montreal] Nombre de records trouvés: 0
+[08-Dec-2024 20:17:41 America/Montreal] PHP Fatal error:  Uncaught Error: Cannot use object of type ProgressionWebService\ArrayOfRecord as array in /Users/pierresavignac/Desktop/PROGRAMMES/Production/my-production-app/api/progression/tasks.php:181
+Stack trace:
+#0 {main}
+  thrown in /Users/pierresavignac/Desktop/PROGRAMMES/Production/my-production-app/api/progression/tasks.php on line 181
+[08-Dec-2024 20:18:38 America/Montreal] 
+
+=== Nouvelle requête ===
+[08-Dec-2024 20:18:38 America/Montreal] URLs configurées:
+[08-Dec-2024 20:18:38 America/Montreal] Server URL: http://garychartrand.progressionlive.com
+[08-Dec-2024 20:18:38 America/Montreal] Service URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService
+[08-Dec-2024 20:18:38 America/Montreal] WSDL URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService?wsdl
+[08-Dec-2024 20:18:38 America/Montreal] Création du service SOAP...
+[08-Dec-2024 20:18:38 America/Montreal] Service SOAP créé avec succès
+[08-Dec-2024 20:18:38 America/Montreal] Tentative de connexion...
+[08-Dec-2024 20:18:38 America/Montreal] Connexion réussie avec SessionID: 5EF54D83475EDA33F822092A25B2E99722
+[08-Dec-2024 20:18:38 America/Montreal] Recherche de tâche avec le code: INS010310
+[08-Dec-2024 20:18:38 America/Montreal] Envoi de la requête de recherche avec filtre XML...
+[08-Dec-2024 20:18:38 America/Montreal] Dernière requête SOAP: <?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://message.v2.ws.progression.diffusion.cc"><SOAP-ENV:Body><ns1:SearchRecordsRequest><ns1:credentials SessionID="5EF54D83475EDA33F822092A25B2E99722" Username="pierre@garychartrand.com" Password="A11gdb333!"/><ns1:recordType>TASK</ns1:recordType><ns1:query>&lt;filter&gt;&lt;field name="code" value="INS010310" /&gt;&lt;/filter&gt;</ns1:query><ns1:limit/></ns1:SearchRecordsRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+[08-Dec-2024 20:18:38 America/Montreal] Dernière réponse SOAP: <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ns7:SearchRecordsResponse xmlns:ns2="http://base.v2.ws.progression.diffusion.cc" xmlns:ns3="http://timesheet.v2.ws.progression.diffusion.cc" xmlns:ns4="http://auth.v2.ws.progression.diffusion.cc" xmlns:ns5="http://client.v2.ws.progression.diffusion.cc" xmlns:ns6="http://task.v2.ws.progression.diffusion.cc" xmlns:ns7="http://message.v2.ws.progression.diffusion.cc" xmlns:ns8="http://resource.v2.ws.progression.diffusion.cc" xmlns:ns9="http://conf.v2.ws.progression.diffusion.cc" xmlns:ns10="http://optim.v2.ws.progression.diffusion.cc" xmlns:ns11="http://product.v2.ws.progression.diffusion.cc" xmlns:ns12="http://report.v2.ws.progression.diffusion.cc" xmlns:ns13="http://tax.v2.ws.progression.diffusion.cc" xmlns:ns14="http://workflow.v2.ws.progression.diffusion.cc"><ns7:records/></ns7:SearchRecordsResponse></soap:Body></soap:Envelope>
+[08-Dec-2024 20:18:38 America/Montreal] Nombre de records trouvés: 1
+[08-Dec-2024 20:18:38 America/Montreal] PHP Fatal error:  Uncaught Error: Call to a member function getName() on null in /Users/pierresavignac/Desktop/PROGRAMMES/Production/my-production-app/api/progression/tasks.php:197
+Stack trace:
+#0 {main}
+  thrown in /Users/pierresavignac/Desktop/PROGRAMMES/Production/my-production-app/api/progression/tasks.php on line 197
+[08-Dec-2024 20:19:20 America/Montreal] 
+
+=== Nouvelle requête ===
+[08-Dec-2024 20:19:20 America/Montreal] URLs configurées:
+[08-Dec-2024 20:19:20 America/Montreal] Server URL: http://garychartrand.progressionlive.com
+[08-Dec-2024 20:19:20 America/Montreal] Service URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService
+[08-Dec-2024 20:19:20 America/Montreal] WSDL URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService?wsdl
+[08-Dec-2024 20:19:20 America/Montreal] Création du service SOAP...
+[08-Dec-2024 20:19:20 America/Montreal] Service SOAP créé avec succès
+[08-Dec-2024 20:19:20 America/Montreal] Tentative de connexion...
+[08-Dec-2024 20:19:20 America/Montreal] Connexion réussie avec SessionID: D8FAC5DC6974765B0B29E5C558A8632E22
+[08-Dec-2024 20:19:20 America/Montreal] Recherche de tâche avec le code: INS010310
+[08-Dec-2024 20:19:20 America/Montreal] PHP Fatal error:  Uncaught Error: Call to undefined method ProgressionWebService\Property::setOperator() in /Users/pierresavignac/Desktop/PROGRAMMES/Production/my-production-app/api/progression/tasks.php:137
+Stack trace:
+#0 {main}
+  thrown in /Users/pierresavignac/Desktop/PROGRAMMES/Production/my-production-app/api/progression/tasks.php on line 137
+[08-Dec-2024 20:21:36 America/Montreal] 
+
+=== Nouvelle requête ===
+[08-Dec-2024 20:21:36 America/Montreal] URLs configurées:
+[08-Dec-2024 20:21:36 America/Montreal] Server URL: http://garychartrand.progressionlive.com
+[08-Dec-2024 20:21:36 America/Montreal] Service URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService
+[08-Dec-2024 20:21:36 America/Montreal] WSDL URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService?wsdl
+[08-Dec-2024 20:21:36 America/Montreal] Création du service SOAP...
+[08-Dec-2024 20:21:36 America/Montreal] Service SOAP créé avec succès
+[08-Dec-2024 20:21:36 America/Montreal] Tentative de connexion...
+[08-Dec-2024 20:21:36 America/Montreal] Connexion réussie avec SessionID: 9CB2176D64501A68187BFAD640BDAAD622
+[08-Dec-2024 20:21:36 America/Montreal] Recherche de tâche avec le code: INS010310
+[08-Dec-2024 20:21:36 America/Montreal] Envoi de la requête de recherche...
+[08-Dec-2024 20:21:36 America/Montreal] Query: code = 'INS010310'
+[08-Dec-2024 20:21:36 America/Montreal] Dernière requête SOAP: <?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://message.v2.ws.progression.diffusion.cc"><SOAP-ENV:Body><ns1:SearchRecordsRequest><ns1:credentials SessionID="9CB2176D64501A68187BFAD640BDAAD622" Username="pierre@garychartrand.com" Password="A11gdb333!"/><ns1:recordType>TASK</ns1:recordType><ns1:query>code = 'INS010310'</ns1:query><ns1:limit/></ns1:SearchRecordsRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+[08-Dec-2024 20:21:36 America/Montreal] Dernière réponse SOAP: <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ns7:SearchRecordsResponse xmlns:ns2="http://base.v2.ws.progression.diffusion.cc" xmlns:ns3="http://timesheet.v2.ws.progression.diffusion.cc" xmlns:ns4="http://auth.v2.ws.progression.diffusion.cc" xmlns:ns5="http://client.v2.ws.progression.diffusion.cc" xmlns:ns6="http://task.v2.ws.progression.diffusion.cc" xmlns:ns7="http://message.v2.ws.progression.diffusion.cc" xmlns:ns8="http://resource.v2.ws.progression.diffusion.cc" xmlns:ns9="http://conf.v2.ws.progression.diffusion.cc" xmlns:ns10="http://optim.v2.ws.progression.diffusion.cc" xmlns:ns11="http://product.v2.ws.progression.diffusion.cc" xmlns:ns12="http://report.v2.ws.progression.diffusion.cc" xmlns:ns13="http://tax.v2.ws.progression.diffusion.cc" xmlns:ns14="http://workflow.v2.ws.progression.diffusion.cc"><ns7:records/></ns7:SearchRecordsResponse></soap:Body></soap:Envelope>
+[08-Dec-2024 20:21:36 America/Montreal] Nombre de records trouvés: 1
+[08-Dec-2024 20:21:36 America/Montreal] PHP Fatal error:  Uncaught Error: Call to a member function getName() on null in /Users/pierresavignac/Desktop/PROGRAMMES/Production/my-production-app/api/progression/tasks.php:204
+Stack trace:
+#0 {main}
+  thrown in /Users/pierresavignac/Desktop/PROGRAMMES/Production/my-production-app/api/progression/tasks.php on line 204
+[08-Dec-2024 20:24:01 America/Montreal] 
+
+=== Nouvelle requête ===
+[08-Dec-2024 20:24:01 America/Montreal] URLs configurées:
+[08-Dec-2024 20:24:01 America/Montreal] Server URL: http://garychartrand.progressionlive.com
+[08-Dec-2024 20:24:01 America/Montreal] Service URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService
+[08-Dec-2024 20:24:01 America/Montreal] WSDL URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService?wsdl
+[08-Dec-2024 20:24:01 America/Montreal] Création du service SOAP...
+[08-Dec-2024 20:24:01 America/Montreal] Service SOAP créé avec succès
+[08-Dec-2024 20:24:01 America/Montreal] Tentative de connexion...
+[08-Dec-2024 20:24:01 America/Montreal] Connexion réussie avec SessionID: 4B9FA595BFBEFD111D0BE41A8B55F2C222
+[08-Dec-2024 20:24:01 America/Montreal] Recherche de tâche avec le code: INS010310
+[08-Dec-2024 20:24:01 America/Montreal] Envoi de la requête de recherche...
+[08-Dec-2024 20:24:01 America/Montreal] Dernière requête SOAP: <?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://message.v2.ws.progression.diffusion.cc" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns2="http://base.v2.ws.progression.diffusion.cc"><SOAP-ENV:Body><ns1:SearchRecordsRequest><ns1:credentials SessionID="4B9FA595BFBEFD111D0BE41A8B55F2C222" Username="pierre@garychartrand.com" Password="A11gdb333!"/><ns1:recordType>TASK</ns1:recordType><ns1:query>code = :code</ns1:query><ns1:parameters><ns2:Property Name="code"><ns2:Value xsi:type="xsd:string">INS010310</ns2:Value></ns2:Property></ns1:parameters><ns1:limit/></ns1:SearchRecordsRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+[08-Dec-2024 20:24:01 America/Montreal] Dernière réponse SOAP: <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ns7:SearchRecordsResponse xmlns:ns2="http://base.v2.ws.progression.diffusion.cc" xmlns:ns3="http://timesheet.v2.ws.progression.diffusion.cc" xmlns:ns4="http://auth.v2.ws.progression.diffusion.cc" xmlns:ns5="http://client.v2.ws.progression.diffusion.cc" xmlns:ns6="http://task.v2.ws.progression.diffusion.cc" xmlns:ns7="http://message.v2.ws.progression.diffusion.cc" xmlns:ns8="http://resource.v2.ws.progression.diffusion.cc" xmlns:ns9="http://conf.v2.ws.progression.diffusion.cc" xmlns:ns10="http://optim.v2.ws.progression.diffusion.cc" xmlns:ns11="http://product.v2.ws.progression.diffusion.cc" xmlns:ns12="http://report.v2.ws.progression.diffusion.cc" xmlns:ns13="http://tax.v2.ws.progression.diffusion.cc" xmlns:ns14="http://workflow.v2.ws.progression.diffusion.cc"><ns7:records/></ns7:SearchRecordsResponse></soap:Body></soap:Envelope>
+[08-Dec-2024 20:24:01 America/Montreal] Nombre de records trouvés: 1
+[08-Dec-2024 20:24:01 America/Montreal] PHP Fatal error:  Uncaught Error: Call to a member function getName() on null in /Users/pierresavignac/Desktop/PROGRAMMES/Production/my-production-app/api/progression/tasks.php:217
+Stack trace:
+#0 {main}
+  thrown in /Users/pierresavignac/Desktop/PROGRAMMES/Production/my-production-app/api/progression/tasks.php on line 217
+[08-Dec-2024 20:25:18 America/Montreal] 
+
+=== Nouvelle requête ===
+[08-Dec-2024 20:25:18 America/Montreal] URLs configurées:
+[08-Dec-2024 20:25:18 America/Montreal] Server URL: http://garychartrand.progressionlive.com
+[08-Dec-2024 20:25:18 America/Montreal] Service URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService
+[08-Dec-2024 20:25:18 America/Montreal] WSDL URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService?wsdl
+[08-Dec-2024 20:25:18 America/Montreal] Création du service SOAP...
+[08-Dec-2024 20:25:18 America/Montreal] Service SOAP créé avec succès
+[08-Dec-2024 20:25:18 America/Montreal] Tentative de connexion...
+[08-Dec-2024 20:25:18 America/Montreal] Connexion réussie avec SessionID: F5060EF6DBD9139E2A62CF6ED9860B3B22
+[08-Dec-2024 20:25:18 America/Montreal] Recherche de tâche avec le code: INS010310
+[08-Dec-2024 20:25:18 America/Montreal] Envoi de la requête de recherche...
+[08-Dec-2024 20:25:18 America/Montreal] Dernière requête SOAP: <?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://message.v2.ws.progression.diffusion.cc" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns2="http://base.v2.ws.progression.diffusion.cc"><SOAP-ENV:Body><ns1:SearchRecordsRequest><ns1:credentials SessionID="F5060EF6DBD9139E2A62CF6ED9860B3B22" Username="pierre@garychartrand.com" Password="A11gdb333!"/><ns1:recordType>TASK</ns1:recordType><ns1:query>code = :code</ns1:query><ns1:parameters><ns2:Property Name="code"><ns2:Value xsi:type="xsd:string">INS010310</ns2:Value></ns2:Property></ns1:parameters><ns1:limit/></ns1:SearchRecordsRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+[08-Dec-2024 20:25:18 America/Montreal] Dernière réponse SOAP: <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ns7:SearchRecordsResponse xmlns:ns2="http://base.v2.ws.progression.diffusion.cc" xmlns:ns3="http://timesheet.v2.ws.progression.diffusion.cc" xmlns:ns4="http://auth.v2.ws.progression.diffusion.cc" xmlns:ns5="http://client.v2.ws.progression.diffusion.cc" xmlns:ns6="http://task.v2.ws.progression.diffusion.cc" xmlns:ns7="http://message.v2.ws.progression.diffusion.cc" xmlns:ns8="http://resource.v2.ws.progression.diffusion.cc" xmlns:ns9="http://conf.v2.ws.progression.diffusion.cc" xmlns:ns10="http://optim.v2.ws.progression.diffusion.cc" xmlns:ns11="http://product.v2.ws.progression.diffusion.cc" xmlns:ns12="http://report.v2.ws.progression.diffusion.cc" xmlns:ns13="http://tax.v2.ws.progression.diffusion.cc" xmlns:ns14="http://workflow.v2.ws.progression.diffusion.cc"><ns7:records/></ns7:SearchRecordsResponse></soap:Body></soap:Envelope>
+[08-Dec-2024 20:25:18 America/Montreal] Nombre de records trouvés: 1
+[08-Dec-2024 20:27:00 America/Montreal] 
+
+=== Nouvelle requête ===
+[08-Dec-2024 20:27:00 America/Montreal] URLs configurées:
+[08-Dec-2024 20:27:00 America/Montreal] Server URL: http://garychartrand.progressionlive.com
+[08-Dec-2024 20:27:00 America/Montreal] Service URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService
+[08-Dec-2024 20:27:00 America/Montreal] WSDL URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService?wsdl
+[08-Dec-2024 20:27:00 America/Montreal] Création du service SOAP...
+[08-Dec-2024 20:27:00 America/Montreal] Service SOAP créé avec succès
+[08-Dec-2024 20:27:00 America/Montreal] Tentative de connexion...
+[08-Dec-2024 20:27:00 America/Montreal] Connexion réussie avec SessionID: AA1188B9F2A16D664310AC8A4334128D22
+[08-Dec-2024 20:27:00 America/Montreal] Recherche de tâche avec le code: INS010310
+[08-Dec-2024 20:27:00 America/Montreal] Envoi de la requête de recherche...
+[08-Dec-2024 20:28:08 america/montreal] 
+
+=== Nouvelle requête ===
+[08-Dec-2024 20:28:08 america/montreal] URLs configurées:
+[08-Dec-2024 20:28:08 america/montreal] Server URL: http://garychartrand.progressionlive.com
+[08-Dec-2024 20:28:08 america/montreal] Service URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService
+[08-Dec-2024 20:28:08 america/montreal] WSDL URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService?wsdl
+[08-Dec-2024 20:28:08 america/montreal] Création du service SOAP...
+[08-Dec-2024 20:28:08 america/montreal] Service SOAP créé avec succès
+[08-Dec-2024 20:28:08 america/montreal] Tentative de connexion...
+[08-Dec-2024 20:28:08 america/montreal] Connexion réussie avec SessionID: 3C143EE17062EF33936A4A4236E5722722
+[08-Dec-2024 20:28:08 america/montreal] Recherche de tâche avec le code: INS010310
+[08-Dec-2024 20:28:08 america/montreal] Envoi de la requête de recherche...
+[08-Dec-2024 20:29:02 america/montreal] 
+
+=== Nouvelle requête ===
+[08-Dec-2024 20:29:02 america/montreal] URLs configurées:
+[08-Dec-2024 20:29:02 america/montreal] Server URL: http://garychartrand.progressionlive.com
+[08-Dec-2024 20:29:02 america/montreal] Service URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService
+[08-Dec-2024 20:29:02 america/montreal] WSDL URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService?wsdl
+[08-Dec-2024 20:29:02 america/montreal] Création du service SOAP...
+[08-Dec-2024 20:29:02 america/montreal] Service SOAP créé avec succès
+[08-Dec-2024 20:29:02 america/montreal] Tentative de connexion...
+[08-Dec-2024 20:29:02 america/montreal] Connexion réussie avec SessionID: 2B495625C6EB4EE426C6766F3094FB5422
+[08-Dec-2024 20:29:02 america/montreal] Recherche de tâche avec le code: INS010310
+[08-Dec-2024 20:29:02 america/montreal] Envoi de la requête de recherche...
+[08-Dec-2024 20:29:02 america/montreal] Dernière requête SOAP: <?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://message.v2.ws.progression.diffusion.cc" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns2="http://base.v2.ws.progression.diffusion.cc"><SOAP-ENV:Body><ns1:SearchRecordsRequest><ns1:credentials SessionID="2B495625C6EB4EE426C6766F3094FB5422" Username="pierre@garychartrand.com" Password="A11gdb333!"/><ns1:recordType>TASK</ns1:recordType><ns1:query>code = :code</ns1:query><ns1:parameters><ns2:Property Name="code"><ns2:Value xsi:type="xsd:string">INS010310</ns2:Value></ns2:Property></ns1:parameters><ns1:limit/></ns1:SearchRecordsRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+[08-Dec-2024 20:29:02 america/montreal] Dernière réponse SOAP: <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ns7:SearchRecordsResponse xmlns:ns2="http://base.v2.ws.progression.diffusion.cc" xmlns:ns3="http://timesheet.v2.ws.progression.diffusion.cc" xmlns:ns4="http://auth.v2.ws.progression.diffusion.cc" xmlns:ns5="http://client.v2.ws.progression.diffusion.cc" xmlns:ns6="http://task.v2.ws.progression.diffusion.cc" xmlns:ns7="http://message.v2.ws.progression.diffusion.cc" xmlns:ns8="http://resource.v2.ws.progression.diffusion.cc" xmlns:ns9="http://conf.v2.ws.progression.diffusion.cc" xmlns:ns10="http://optim.v2.ws.progression.diffusion.cc" xmlns:ns11="http://product.v2.ws.progression.diffusion.cc" xmlns:ns12="http://report.v2.ws.progression.diffusion.cc" xmlns:ns13="http://tax.v2.ws.progression.diffusion.cc" xmlns:ns14="http://workflow.v2.ws.progression.diffusion.cc"><ns7:records/></ns7:SearchRecordsResponse></soap:Body></soap:Envelope>
+[08-Dec-2024 20:29:02 america/montreal] Nombre de records trouvés: 1
+[08-Dec-2024 20:30:22 america/montreal] 
+
+=== Nouvelle requête ===
+[08-Dec-2024 20:30:22 america/montreal] URLs configurées:
+[08-Dec-2024 20:30:22 america/montreal] Server URL: http://garychartrand.progressionlive.com
+[08-Dec-2024 20:30:22 america/montreal] Service URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService
+[08-Dec-2024 20:30:22 america/montreal] WSDL URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService?wsdl
+[08-Dec-2024 20:30:22 america/montreal] Création du service SOAP...
+[08-Dec-2024 20:30:22 america/montreal] Service SOAP créé avec succès
+[08-Dec-2024 20:30:22 america/montreal] Tentative de connexion...
+[08-Dec-2024 20:30:22 america/montreal] Connexion réussie avec SessionID: 5468DABCED60883BC0EA3756D57803C922
+[08-Dec-2024 20:30:22 america/montreal] Recherche de tâche avec le code: INS010310
+[08-Dec-2024 20:30:22 america/montreal] Envoi de la requête de recherche...
+[08-Dec-2024 20:30:22 america/montreal] Dernière requête SOAP: <?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://message.v2.ws.progression.diffusion.cc" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns2="http://base.v2.ws.progression.diffusion.cc"><SOAP-ENV:Body><ns1:SearchRecordsRequest><ns1:credentials SessionID="5468DABCED60883BC0EA3756D57803C922" Username="pierre@garychartrand.com" Password="A11gdb333!"/><ns1:recordType>TASK</ns1:recordType><ns1:query>code = :code</ns1:query><ns1:parameters><ns2:Property Name="code"><ns2:Value xsi:type="xsd:string">INS010310</ns2:Value></ns2:Property></ns1:parameters><ns1:limit/></ns1:SearchRecordsRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+[08-Dec-2024 20:30:22 america/montreal] Dernière réponse SOAP: <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ns7:SearchRecordsResponse xmlns:ns2="http://base.v2.ws.progression.diffusion.cc" xmlns:ns3="http://timesheet.v2.ws.progression.diffusion.cc" xmlns:ns4="http://auth.v2.ws.progression.diffusion.cc" xmlns:ns5="http://client.v2.ws.progression.diffusion.cc" xmlns:ns6="http://task.v2.ws.progression.diffusion.cc" xmlns:ns7="http://message.v2.ws.progression.diffusion.cc" xmlns:ns8="http://resource.v2.ws.progression.diffusion.cc" xmlns:ns9="http://conf.v2.ws.progression.diffusion.cc" xmlns:ns10="http://optim.v2.ws.progression.diffusion.cc" xmlns:ns11="http://product.v2.ws.progression.diffusion.cc" xmlns:ns12="http://report.v2.ws.progression.diffusion.cc" xmlns:ns13="http://tax.v2.ws.progression.diffusion.cc" xmlns:ns14="http://workflow.v2.ws.progression.diffusion.cc"><ns7:records/></ns7:SearchRecordsResponse></soap:Body></soap:Envelope>
+[08-Dec-2024 20:30:22 america/montreal] Nombre de records trouvés: 1
+[08-Dec-2024 20:32:05 america/montreal] 
+
+=== Nouvelle requête ===
+[08-Dec-2024 20:32:05 america/montreal] URLs configurées:
+[08-Dec-2024 20:32:05 america/montreal] Server URL: http://garychartrand.progressionlive.com
+[08-Dec-2024 20:32:05 america/montreal] Service URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService
+[08-Dec-2024 20:32:05 america/montreal] WSDL URL: http://garychartrand.progressionlive.com/server/ws/v2/ProgressionWebService?wsdl
+[08-Dec-2024 20:32:05 america/montreal] Création du service SOAP...
+[08-Dec-2024 20:32:05 america/montreal] Service SOAP créé avec succès
+[08-Dec-2024 20:32:05 america/montreal] Tentative de connexion...
+[08-Dec-2024 20:32:05 america/montreal] Connexion réussie avec SessionID: D16974FED2A1C8DDED2E7F4BB71C9BA822
+[08-Dec-2024 20:32:05 america/montreal] Recherche de tâche avec le code: INS010310
+[08-Dec-2024 20:32:05 america/montreal] Envoi de la requête de recherche...
+[08-Dec-2024 20:32:05 america/montreal] Query: UPPER(code) = :code
+[08-Dec-2024 20:32:05 america/montreal] Parameters: ProgressionWebService\ArrayOfProperty Object
+(
+    [Property:protected] => Array
+        (
+            [0] => ProgressionWebService\Property Object
+                (
+                    [Value:protected] => SoapVar Object
+                        (
+                            [enc_type] => 101
+                            [enc_value] => INS010310
+                            [enc_stype] => string
+                            [enc_ns] => http://www.w3.org/2001/XMLSchema
+                            [enc_name] => 
+                            [enc_namens] => 
+                        )
+
+                    [Name:protected] => code
+                )
+
+        )
+
+)
+
+[08-Dec-2024 20:32:05 america/montreal] Dernière requête SOAP: <?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://message.v2.ws.progression.diffusion.cc" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns2="http://base.v2.ws.progression.diffusion.cc"><SOAP-ENV:Body><ns1:SearchRecordsRequest><ns1:credentials SessionID="D16974FED2A1C8DDED2E7F4BB71C9BA822" Username="pierre@garychartrand.com" Password="A11gdb333!"/><ns1:recordType>TASK</ns1:recordType><ns1:query>UPPER(code) = :code</ns1:query><ns1:parameters><ns2:Property Name="code"><ns2:Value xsi:type="xsd:string">INS010310</ns2:Value></ns2:Property></ns1:parameters><ns1:limit/></ns1:SearchRecordsRequest></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+[08-Dec-2024 20:32:05 america/montreal] Dernière réponse SOAP: <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ns7:SearchRecordsResponse xmlns:ns2="http://base.v2.ws.progression.diffusion.cc" xmlns:ns3="http://timesheet.v2.ws.progression.diffusion.cc" xmlns:ns4="http://auth.v2.ws.progression.diffusion.cc" xmlns:ns5="http://client.v2.ws.progression.diffusion.cc" xmlns:ns6="http://task.v2.ws.progression.diffusion.cc" xmlns:ns7="http://message.v2.ws.progression.diffusion.cc" xmlns:ns8="http://resource.v2.ws.progression.diffusion.cc" xmlns:ns9="http://conf.v2.ws.progression.diffusion.cc" xmlns:ns10="http://optim.v2.ws.progression.diffusion.cc" xmlns:ns11="http://product.v2.ws.progression.diffusion.cc" xmlns:ns12="http://report.v2.ws.progression.diffusion.cc" xmlns:ns13="http://tax.v2.ws.progression.diffusion.cc" xmlns:ns14="http://workflow.v2.ws.progression.diffusion.cc"><ns7:records/></ns7:SearchRecordsResponse></soap:Body></soap:Envelope>
+[08-Dec-2024 20:32:05 america/montreal] Nombre de records trouvés: 1
