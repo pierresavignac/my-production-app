@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS installations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code VARCHAR(10) NOT NULL UNIQUE,
+    name VARCHAR(255),
+    address TEXT,
+    city VARCHAR(100),
+    postal_code VARCHAR(10),
+    phone VARCHAR(20),
+    status VARCHAR(50) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+); 

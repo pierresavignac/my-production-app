@@ -1,0 +1,156 @@
+# STRUCTURE TECHNIQUE DU PROJET
+============================
+
+1. ARCHITECTURE GÉNÉRALE
+----------------------
+A. Frontend
+   - React (SPA)
+   - React Router pour la navigation
+   - React Bootstrap pour l'interface
+   - JWT pour l'authentification
+
+B. Backend
+   - PHP 8.x
+   - API REST
+   - JWT pour la sécurité
+   - PDO pour la base de données
+
+C. Base de données
+   - MySQL 8.x
+   - UTF-8 encoding
+   - InnoDB engine
+
+D. Intégrations
+   - ProgressionLive API (SOAP)
+   - Service de cache (Redis/Memcached)
+
+2. STRUCTURE DES DOSSIERS
+-----------------------
+```
+project_root/
+├── src/                    # Frontend React
+│   ├── components/
+│   │   ├── calendar/       # Composants calendrier
+│   │   │   ├── WeekView.jsx
+│   │   │   ├── DayBlock.jsx
+│   │   │   └── EventItem.jsx
+│   │   ├── events/         # Gestion événements
+│   │   │   ├── EventForm.jsx
+│   │   │   ├── EventDetails.jsx
+│   │   │   └── EventList.jsx
+│   │   ├── auth/           # Authentification
+│   │   │   ├── Login.jsx
+│   │   │   └── ProtectedRoute.jsx
+│   │   └── common/         # Composants communs
+│   ├── utils/              # Utilitaires
+│   ├── services/           # Services API
+│   └── styles/             # Styles CSS
+├── api/                    # Backend PHP
+│   ├── config/             # Configuration
+│   ├── controllers/        # Contrôleurs
+│   ├── models/             # Modèles
+│   └── integration/        # Intégration externe
+└── database/               # Base de données
+    └── migrations/         # Migrations
+```
+
+3. STRUCTURE DE LA BASE DE DONNÉES
+-------------------------------
+A. Table: users
+   ```sql
+   CREATE TABLE users (
+       id INT PRIMARY KEY AUTO_INCREMENT,
+       email VARCHAR(255) UNIQUE,
+       password VARCHAR(255),
+       role ENUM('admin', 'user'),
+       status ENUM('active', 'inactive'),
+       created_at TIMESTAMP,
+       last_login TIMESTAMP
+   );
+   ```
+
+B. Table: events
+   ```sql
+   CREATE TABLE events (
+       id INT PRIMARY KEY AUTO_INCREMENT,
+       type ENUM('installation', 'conge', 'maladie', 'formation', 'vacances'),
+       date DATE,
+       time TIME,
+       client_name VARCHAR(255),
+       address TEXT,
+       city VARCHAR(100),
+       status ENUM('en_approbation', 'approuve', 'complete'),
+       created_by INT,
+       created_at TIMESTAMP,
+       FOREIGN KEY (created_by) REFERENCES users(id)
+   );
+   ```
+
+C. Table: technicians
+   ```sql
+   CREATE TABLE technicians (
+       id INT PRIMARY KEY AUTO_INCREMENT,
+       name VARCHAR(255),
+       email VARCHAR(255),
+       status ENUM('active', 'inactive'),
+       created_at TIMESTAMP
+   );
+   ```
+
+4. ENDPOINTS API
+--------------
+A. Authentification
+   - POST /api/auth/login
+   - POST /api/auth/logout
+   - GET /api/auth/verify
+
+B. Événements
+   - GET /api/events
+   - POST /api/events
+   - PUT /api/events/{id}
+   - DELETE /api/events/{id}
+
+C. Techniciens
+   - GET /api/technicians
+   - POST /api/technicians
+   - PUT /api/technicians/{id}
+
+5. SÉCURITÉ
+----------
+A. Authentification
+   - JWT avec expiration
+   - Refresh tokens
+   - Protection CSRF
+
+B. Autorisations
+   - Middleware de vérification des rôles
+   - Validation des permissions
+
+C. Données
+   - Validation des entrées
+   - Échappement des sorties
+   - Prévention des injections SQL
+
+6. PERFORMANCE
+------------
+A. Frontend
+   - Code splitting
+   - Lazy loading
+   - Mise en cache locale
+
+B. Backend
+   - Cache des requêtes
+   - Optimisation des requêtes SQL
+   - Pagination des résultats
+
+7. DÉPLOIEMENT
+------------
+A. Environnements
+   - Développement
+   - Staging
+   - Production
+
+B. Configuration
+   - Variables d'environnement
+   - Fichiers de configuration par environnement
+   - Gestion des secrets 

@@ -1,0 +1,220 @@
+# Guide d'intégration de l'API ProgressionLive
+
+## Table des matières
+1. Configuration initiale
+2. Authentification
+3. Recherche de tâches
+4. Gestion des tâches
+5. Exemples de code
+
+## 1. Configuration initiale
+
+### Inclusion des fichiers requis
+```php
+require_once __DIR__ . '/ProgressionWebServiceV2/bootstrap.php';
+require_once __DIR__ . '/ProgressionWebServiceV2/Utils.php';
+
+use ProgressionWebService\Credentials;
+use ProgressionWebService\LoginRequest;
+use ProgressionWebService\ProgressionPortType;
+use ProgressionWebService\SearchRecordsRequest;
+use ProgressionWebService\Property;
+use ProgressionWebService\ArrayOfProperty;
+```
+
+### Configuration du service SOAP
+```php
+$options = [
+    'trace' => true,
+    'exceptions' => true,
+    'cache_wsdl' => WSDL_CACHE_NONE,
+    'features' => SOAP_SINGLE_ELEMENT_ARRAYS,
+    'connection_timeout' => 30,
+    'stream_context' => stream_context_create([
+        'ssl' => [
+            'verify_peer' => false,
+            'verify_peer_name' => false
+        ]
+    ])
+];
+
+$serverUrl = "https://{$company_domain}.progressionlive.com";
+$serviceUrl = $serverUrl . '/server/ws/v2/ProgressionWebService';
+$wsdlUrl = $serviceUrl . '?wsdl';
+
+$service = new ProgressionPortType($options, $wsdlUrl);
+```
+
+## 2. Authentification
+
+### Processus de login
+```php
+// Création des credentials
+$credentials = new Credentials();
+$credentials->setUsername($username);
+$credentials->setPassword($password);
+
+// Création de la requête de login
+$loginRequest = new LoginRequest();
+$loginRequest->setCredentials($credentials);
+
+// Exécution du login
+$loginResponse = $service->Login($loginRequest);
+
+// Récupération des credentials avec le SessionID
+$credentials = $loginResponse->getCredentials();
+$sessionId = $credentials->getSessionID();
+```
+
+## 3. Recherche de tâches
+
+### Recherche par code de tâche
+```php
+// Création de la requête de recherche
+$searchRequest = new SearchRecordsRequest();
+$searchRequest->setCredentials($credentials);
+$searchRequest->setRecordType('TASK');
+
+// Création de la propriété pour la recherche
+$property = new Property();
+$property->setName('info.code');
+$property->setValue($taskCode);
+
+// Création du tableau de propriétés
+$arrayOfProperty = new ArrayOfProperty();
+$arrayOfProperty->setProperty(array($property));
+
+// Ajout des paramètres à la requête
+$searchRequest->setParameters($arrayOfProperty);
+
+// Exécution de la recherche
+$searchResponse = $service->SearchRecords($searchRequest);
+```
+
+### Propriétés disponibles pour les tâches
+- info.code : Code de la tâche
+- client.name : Nom du client
+- client.phoneNumber : Numéro de téléphone
+- location.address : Adresse
+- location.city : Ville
+- info.summary : Résumé
+- info.description : Description
+- info.priceWithTaxes : Montant
+- client.number : Numéro client
+- soumission.po : Numéro de soumission
+- info.representant : Représentant
+
+## 4. Gestion des tâches
+
+### Récupération des détails d'une tâche
+```php
+// Une fois que vous avez un RecordRef d'une tâche
+$getRecordRequest = new GetRecordRequest();
+$getRecordRequest->setCredentials($credentials);
+$getRecordRequest->setRecordRef($taskRef);
+
+$getRecordResponse = $service->GetRecord($getRecordRequest);
+$task = $getRecordResponse->getRecord();
+```
+
+### Accès aux propriétés d'une tâche
+```php
+// Propriétés de base
+$name = $task->getName();
+$summary = $task->getSummary();
+$description = $task->getDescription();
+
+// Propriétés personnalisées
+$properties = $task->getProperties();
+if ($properties && method_exists($properties, 'getProperty')) {
+    foreach ($properties->getProperty() as $prop) {
+        if ($prop instanceof Property) {
+            $propName = $prop->getName();
+            $propValue = $prop->getValue();
+        }
+    }
+}
+```
+
+## 5. Exemples de code
+
+### Exemple complet de recherche et récupération d'une tâche
+```php
+try {
+    // Login
+    $credentials = new Credentials();
+    $credentials->setUsername($username);
+    $credentials->setPassword($password);
+    
+    $loginRequest = new LoginRequest();
+    $loginRequest->setCredentials($credentials);
+    
+    $loginResponse = $service->Login($loginRequest);
+    $credentials = $loginResponse->getCredentials();
+    
+    // Recherche de tâche
+    $searchRequest = new SearchRecordsRequest();
+    $searchRequest->setCredentials($credentials);
+    $searchRequest->setRecordType('TASK');
+    
+    $property = new Property();
+    $property->setName('info.code');
+    $property->setValue($taskCode);
+    
+    $arrayOfProperty = new ArrayOfProperty();
+    $arrayOfProperty->setProperty(array($property));
+    
+    $searchRequest->setParameters($arrayOfProperty);
+    
+    $searchResponse = $service->SearchRecords($searchRequest);
+    
+    if ($searchResponse && $searchResponse->getRecords()) {
+        $task = $searchResponse->getRecords()[0];
+        
+        // Construction de la réponse
+        $response = [
+            'success' => true,
+            'data' => [
+                'full_name' => $task->getName(),
+                'phone' => getPropertyValue($task, 'client.phoneNumber'),
+                'address' => getPropertyValue($task, 'location.address'),
+                'city' => getPropertyValue($task, 'location.city'),
+                'summary' => $task->getSummary(),
+                'description' => $task->getDescription(),
+                'amount' => getPropertyValue($task, 'info.priceWithTaxes'),
+                'client_number' => getPropertyValue($task, 'client.number'),
+                'quote_number' => getPropertyValue($task, 'soumission.po'),
+                'representative' => getPropertyValue($task, 'info.representant')
+            ]
+        ];
+    }
+} catch (Exception $e) {
+    // Gestion des erreurs
+    $response = [
+        'success' => false,
+        'error' => $e->getMessage()
+    ];
+}
+```
+
+### Notes importantes
+1. Toujours gérer les exceptions SOAP qui peuvent survenir
+2. Vérifier la présence des propriétés avant d'y accéder
+3. Utiliser les timeouts appropriés pour éviter les blocages
+4. Mettre en cache le WSDL si possible pour améliorer les performances
+
+## Dépannage
+
+### Problèmes courants
+1. "Error Fetching http headers" : Problème de timeout ou de connexion
+   - Augmenter les timeouts
+   - Vérifier la connexion au serveur
+   
+2. "Missing parameters" : Format de requête incorrect
+   - Vérifier la structure des paramètres
+   - Utiliser setParameters() au lieu de setQuery()
+
+3. Timeouts : Le serveur met trop de temps à répondre
+   - Optimiser les requêtes
+   - Ajuster les timeouts PHP et SOAP
+   - Mettre en cache les résultats si possible

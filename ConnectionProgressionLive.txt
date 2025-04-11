@@ -1,0 +1,94 @@
+Guide d'accès aux données dans la réponse ProgressionLive
+=================================================
+
+Pour chaque champ requis, voici comment accéder aux données dans la réponse du serveur :
+
+1. Nom complet (nom du client)
+   - Chemin : task.client.name
+   - Exemple : $clientName = $response->task->client->name;
+
+2. Téléphone
+   - Chemin : task.client.phoneNumber
+   - Exemple : $phone = $response->task->client->phoneNumber;
+
+3. Adresse
+   - Priorité 1 (si emplacement est utilisé) :
+     Chemin : task.location.address.street
+     Exemple : $address = $response->task->location->address->street;
+   - Priorité 2 (si pas d'emplacement) :
+     Chemin : task.client.address.street
+     Exemple : $address = $response->task->client->address->street;
+
+4. Ville
+   - Priorité 1 (si emplacement est utilisé) :
+     Chemin : task.location.address.city
+     Exemple : $city = $response->task->location->address->city;
+   - Priorité 2 (si pas d'emplacement) :
+     Chemin : task.client.address.city
+     Exemple : $city = $response->task->client->address->city;
+
+5. Sommaire
+   - Chemin : task.title
+   - Exemple : $summary = $response->task->title;
+
+6. Description
+   - Chemin : task.description
+   - Exemple : $description = $response->task->description;
+
+7. Montant à percevoir (avec taxes)
+   - Chemin : task.priceWithTaxes
+   - Exemple : $amount = $response->task->priceWithTaxes;
+
+8. Client (numéro avantage)
+   - Chemin : task.client.number
+   - Exemple : $clientNumber = $response->task->client->number;
+
+9. Soumission
+   - Chemin : task.soumission.po
+   - Exemple : $quoteNumber = $response->task->soumission->po;
+
+10. Représentant
+    - Chemin : task.representant
+    - Exemple : $representative = $response->task->representant;
+
+Code PHP pour récupérer toutes les informations :
+-----------------------------------------------
+
+```php
+function extractTaskInformation($response) {
+    $taskInfo = [];
+
+    // Vérifier si l'emplacement est utilisé
+    $hasLocation = isset($response->task->location);
+
+    // Informations de base
+    $taskInfo['full_name'] = $response->task->client->name ?? '';
+    $taskInfo['phone'] = $response->task->client->phoneNumber ?? '';
+    
+    // Adresse et ville (avec gestion de la priorité emplacement/client)
+    if ($hasLocation) {
+        $taskInfo['address'] = $response->task->location->address->street ?? '';
+        $taskInfo['city'] = $response->task->location->address->city ?? '';
+    } else {
+        $taskInfo['address'] = $response->task->client->address->street ?? '';
+        $taskInfo['city'] = $response->task->client->address->city ?? '';
+    }
+
+    // Autres informations
+    $taskInfo['summary'] = $response->task->title ?? '';
+    $taskInfo['description'] = $response->task->description ?? '';
+    $taskInfo['amount'] = $response->task->priceWithTaxes ?? '';
+    $taskInfo['client_number'] = $response->task->client->number ?? '';
+    $taskInfo['quote_number'] = $response->task->soumission->po ?? '';
+    $taskInfo['representative'] = $response->task->representant ?? '';
+
+    return $taskInfo;
+}
+```
+
+Notes importantes :
+-----------------
+1. Toujours vérifier l'existence des propriétés avec l'opérateur ?? ou isset()
+2. Pour l'adresse et la ville, vérifier d'abord si un emplacement est défini
+3. Les montants peuvent nécessiter un formatage supplémentaire selon vos besoins
+4. Certains champs peuvent être vides ou null, prévoir une gestion appropriée

@@ -1,0 +1,115 @@
+# INSTALLATION ET CONFIGURATION DE L'API PROGRESSION LIVE
+=====================================================
+
+1. STRUCTURE DES DOSSIERS
+------------------------
+project_root/
+├── api/
+│   ├── progression/
+│   │   └── tasks.php
+│   └── ProgressionWebServiceV2/      # SDK ProgressionLive
+│       ├── bootstrap.php
+│       ├── Utils.php
+│       ├── Credentials.php
+│       ├── LoginRequest.php
+│       ├── ProgressionPortType.php
+│       ├── SearchRecordsRequest.php
+│       ├── Property.php
+│       └── ArrayOfProperty.php
+├── config/
+│   └── progression.php               # Configuration
+├── src/
+│   └── utils/
+│       └── ProgressionHelper.php     # Classe utilitaire
+└── .env                             # Variables d'environnement
+
+2. INSTALLATION DU SDK
+---------------------
+1. Télécharger le SDK depuis ProgressionLive
+2. Décompresser dans le dossier api/ProgressionWebServiceV2/
+3. Vérifier que tous les fichiers sont présents
+
+3. CONFIGURATION
+---------------
+1. Créer le fichier .env :
+```
+PROGRESSION_COMPANY_DOMAIN=garychartrand
+PROGRESSION_USERNAME=pierre@garychartrand.com
+PROGRESSION_PASSWORD=votre_mot_de_passe
+```
+
+2. Créer config/progression.php :
+```php
+<?php
+return [
+    'company_domain' => getenv('PROGRESSION_COMPANY_DOMAIN'),
+    'username' => getenv('PROGRESSION_USERNAME'),
+    'password' => getenv('PROGRESSION_PASSWORD'),
+    'wsdl_cache' => WSDL_CACHE_NONE,
+    'timeout' => 30
+];
+```
+
+3. Créer src/utils/ProgressionHelper.php :
+```php
+<?php
+class ProgressionHelper {
+    private static function getPropertyValue($record, $propertyName) {
+        if ($record && $record->getProperties()) {
+            foreach ($record->getProperties()->getProperty() as $prop) {
+                if ($prop->getName() === $propertyName) {
+                    return $prop->getValue();
+                }
+            }
+        }
+        return null;
+    }
+}
+```
+
+4. VÉRIFICATION DE L'INSTALLATION
+--------------------------------
+1. Vérifier que PHP SOAP est installé :
+```bash
+php -m | grep soap
+```
+
+2. Tester la connexion :
+```php
+try {
+    require_once __DIR__ . '/ProgressionWebServiceV2/bootstrap.php';
+    $service = new ProgressionPortType($options, $wsdlUrl);
+    // Si pas d'erreur, l'installation est correcte
+} catch (Exception $e) {
+    echo "Erreur : " . $e->getMessage();
+}
+```
+
+5. DÉPENDANCES PHP REQUISES
+--------------------------
+- PHP >= 7.4
+- ext-soap
+- ext-json
+- ext-curl
+
+6. NOTES DE SÉCURITÉ
+-------------------
+1. Ne jamais commiter le fichier .env
+2. Protéger l'accès au dossier ProgressionWebServiceV2
+3. Utiliser HTTPS pour toutes les requêtes
+4. Valider toutes les entrées utilisateur
+
+7. DÉPANNAGE
+-----------
+1. Erreur "Class not found" :
+   - Vérifier l'autoload dans bootstrap.php
+   - Vérifier les namespaces
+
+2. Erreur "SOAP-ERROR" :
+   - Vérifier les credentials
+   - Vérifier la connexion internet
+   - Vérifier les paramètres SSL
+
+3. Erreur "Failed to load WSDL" :
+   - Vérifier l'URL du WSDL
+   - Vérifier les paramètres du pare-feu 

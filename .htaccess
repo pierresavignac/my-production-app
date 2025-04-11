@@ -1,0 +1,46 @@
+RewriteEngine On
+
+# Rediriger www vers non-www
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+# Activer le module headers s'il ne l'est pas déjà
+<IfModule mod_headers.c>
+    # Définir le type MIME correct pour CSS
+    <FilesMatch "\.css$">
+        Header set Content-Type "text/css"
+        Header set X-Content-Type-Options "nosniff"
+    </FilesMatch>
+
+    # Définir le type MIME correct pour JavaScript
+    <FilesMatch "\.js$">
+        Header set Content-Type "application/javascript"
+        Header set X-Content-Type-Options "nosniff"
+    </FilesMatch>
+
+    # CORS headers
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+
+# Règles de réécriture
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Ne pas rediriger les fichiers et dossiers existants
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Ne pas rediriger les requêtes API
+    RewriteCond %{REQUEST_URI} !^/api/
+
+    # Rediriger tout le reste vers index.html
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+# Types MIME additionnels
+AddType text/css .css
+AddType application/javascript .js
+AddType application/json .json

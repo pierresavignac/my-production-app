@@ -1,0 +1,91 @@
+# Documentation de l'Application de Production
+
+## 1. Structure des Composants
+
+### Modales
+1. EventDetailsModal
+   - Configuration de l'interface :
+     * Largeur fixe à 95% de l'écran
+     * Centrage automatique
+     * Adaptation responsive (98% sur mobile)
+   - Gestion des données :
+     * Affichage des détails de l'événement
+     * Gestion des techniciens
+     * Statut de l'installation
+   - Actions :
+     * Modification
+     * Suppression
+     * Navigation vers la feuille de travail
+
+2. EditEventModal
+   - Configuration de l'interface :
+     * Largeur fixe à 95% de l'écran
+     * Centrage automatique
+     * Adaptation responsive (98% sur mobile)
+   - Gestion des données :
+     * Chargement asynchrone des techniciens
+     * Gestion robuste des équipements avec fallback
+     * Validation des données du formulaire
+   - Gestion des erreurs :
+     * Récupération gracieuse en cas d'erreur de chargement
+     * Conservation des données existantes
+     * Messages d'erreur explicites
+
+### Styles (Modal.css)
+1. Configuration générale
+   - Largeurs :
+     * 95% de l'écran par défaut
+     * 98% sur mobile
+     * Marges automatiques pour le centrage
+   - Hauteur :
+     * Maximum 90vh
+     * Défilement vertical si nécessaire
+   - Positionnement :
+     * Centrage horizontal et vertical
+     * Footer sticky en bas
+
+2. Gestion responsive
+   - Breakpoints :
+     * Mobile : < 768px
+     * Tablette et Desktop : >= 768px
+   - Adaptations :
+     * Largeurs ajustées
+     * Marges réduites
+     * Espacement optimisé
+
+### Gestion des données
+1. Chargement des équipements
+   - Processus :
+     * Tentative de chargement depuis l'API
+     * Vérification du format de réponse
+     * Fallback sur les données existantes
+   - Gestion d'erreurs :
+     * Conservation des données actuelles
+     * Création d'un équipement par défaut
+     * Log des erreurs pour débogage
+
+2. Gestion des techniciens
+   - Format standardisé :
+     * ID unique
+     * Nom complet (prénom + nom)
+   - Validation :
+     * Vérification des données requises
+     * Format des identifiants
+     * Unicité des assignations
+
+## 2. Bonnes pratiques
+
+1. Gestion des erreurs
+   - Logging détaillé
+   - Messages utilisateur appropriés
+   - Fallback gracieux
+
+2. Performance
+   - Chargement conditionnel
+   - Optimisation des re-renders
+   - Gestion de l'état local
+
+3. Maintenance
+   - Documentation à jour
+   - Code commenté
+   - Structure modulaire

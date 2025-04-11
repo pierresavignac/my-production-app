@@ -1,0 +1,178 @@
+# IMPLÉMENTATION DU BOUTON FETCH PROGRESSION LIVE
+==============================================
+
+1. COMPOSANT REACT
+-----------------
+```jsx
+// Dans AddEventModal.jsx ou EventDetailsModal.jsx
+
+const [installationNumber, setInstallationNumber] = useState('');
+const [isLoading, setIsLoading] = useState(false);
+
+// Bouton Fetch avec champ de saisie
+<Form.Group className="mb-3">
+    <Form.Label>Numéro d'installation</Form.Label>
+    <InputGroup>
+        <Form.Control
+            type="text"
+            value={installationNumber}
+            onChange={(e) => setInstallationNumber(e.target.value)}
+            placeholder="Ex: INS000123"
+        />
+        <Button 
+            onClick={handleFetchClick}
+            disabled={isLoading}
+        >
+            {isLoading ? 'Chargement...' : 'Fetch'}
+        </Button>
+    </InputGroup>
+</Form.Group>
+```
+
+2. FONCTION DE RÉCUPÉRATION
+--------------------------
+```javascript
+const handleFetchClick = async () => {
+    if (!installationNumber) {
+        alert('Veuillez entrer un numéro d\'installation');
+        return;
+    }
+
+    setIsLoading(true);
+    try {
+        const response = await fetch(`/api/progression/tasks.php?code=${installationNumber}`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Mise à jour du formulaire avec les données
+            setFormData({
+                full_name: data.data.contact.name,
+                phone: data.data.contact.phone,
+                address: data.data.address.street,
+                city: data.data.address.city,
+                client_number: data.data.clientNumber,
+                quote_number: data.data.quoteNumber,
+                representative: data.data.representative,
+                Sommaire: data.data.summary,
+                Description: data.data.description
+            });
+        } else {
+            throw new Error(data.message || 'Erreur lors de la récupération des données');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur lors de la récupération des données');
+    } finally {
+        setIsLoading(false);
+    }
+};
+```
+
+3. ENDPOINT PHP
+--------------
+```php
+// api/progression/tasks.php
+
+header('Content-Type: application/json');
+
+require_once '../config/progression.php';
+require_once '../ProgressionWebServiceV2/bootstrap.php';
+
+try {
+    if (!isset($_GET['code'])) {
+        throw new Exception('Code manquant');
+    }
+
+    $taskCode = $_GET['code'];
+    
+    // Initialisation du service SOAP
+    $service = new ProgressionPortType($options, $wsdlUrl);
+    
+    // Login
+    $credentials = new Credentials();
+    $credentials->setUsername($config['username']);
+    $credentials->setPassword($config['password']);
+    
+    $loginRequest = new LoginRequest();
+    $loginRequest->setCredentials($credentials);
+    
+    $loginResponse = $service->Login($loginRequest);
+    
+    // Recherche de la tâche
+    $searchRequest = new SearchRecordsRequest();
+    $searchRequest->setCredentials($loginResponse->getCredentials());
+    $searchRequest->setRecordType('TASK');
+    
+    $property = new Property();
+    $property->setName('info.code');
+    $property->setValue($taskCode);
+    
+    $arrayOfProperty = new ArrayOfProperty();
+    $arrayOfProperty->setProperty(array($property));
+    
+    $searchRequest->setParameters($arrayOfProperty);
+    
+    $searchResponse = $service->SearchRecords($searchRequest);
+    
+    if ($searchResponse && $searchResponse->getRecords()) {
+        $task = $searchResponse->getRecords()[0];
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'contact' => [
+                    'name' => $task->getName(),
+                    'phone' => ProgressionHelper::getPropertyValue($task, 'client.phoneNumber')
+                ],
+                'address' => [
+                    'street' => ProgressionHelper::getPropertyValue($task, 'location.address'),
+                    'city' => ProgressionHelper::getPropertyValue($task, 'location.city')
+                ],
+                'clientNumber' => ProgressionHelper::getPropertyValue($task, 'client.number'),
+                'quoteNumber' => ProgressionHelper::getPropertyValue($task, 'soumission.po'),
+                'representative' => ProgressionHelper::getPropertyValue($task, 'info.representant'),
+                'summary' => $task->getSummary(),
+                'description' => $task->getDescription()
+            ]
+        ]);
+    } else {
+        throw new Exception('Tâche non trouvée');
+    }
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
+}
+```
+
+4. NOTES IMPORTANTES
+------------------
+1. Validation des entrées :
+   - Nettoyer le numéro d'installation
+   - Vérifier le format (INS + 6 chiffres)
+   - Gérer les cas d'erreur
+
+2. Gestion du cache :
+   - Mettre en cache les résultats fréquents
+   - Définir une durée de validité du cache
+   - Prévoir un mécanisme de rafraîchissement
+
+3. UX :
+   - Afficher un indicateur de chargement
+   - Gérer les timeouts
+   - Prévoir des messages d'erreur explicites
+
+4. Sécurité :
+   - Valider les permissions utilisateur
+   - Limiter le nombre de requêtes
+   - Logger les appels pour le débogage 

@@ -1,0 +1,139 @@
+# CALENDRIER DE PRODUCTION - SPÉCIFICATIONS FONCTIONNELLES
+======================================================
+
+1. STRUCTURE GÉNÉRALE
+--------------------
+Interface divisée en deux parties principales :
+- En-tête : Navigation et contrôles
+- Corps : Affichage du calendrier
+
+2. EN-TÊTE DE L'APPLICATION
+--------------------------
+A. Navigation temporelle
+   - Bouton "Semaine précédente"
+   - Bouton "Semaine courante" (actif si semaine en cours)
+   - Bouton "Semaine suivante"
+
+B. Contrôles utilisateur
+   - Affichage de l'email de l'utilisateur connecté
+   - Bouton "Usagers" (visible uniquement pour les administrateurs)
+   - Bouton "Déconnexion"
+
+3. AFFICHAGE DU CALENDRIER
+-------------------------
+A. Structure
+   - Affichage sur 3 semaines
+   - 5 jours ouvrables par semaine (lundi au vendredi)
+   - Week-ends masqués par défaut (visibles uniquement si événements)
+
+B. Blocs journaliers
+   - En-tête : Nom du jour + date
+   - Bouton "+" pour ajout rapide d'événement
+   - Liste des événements du jour
+   - Indication visuelle du jour actuel
+
+C. Affichage des événements
+   - Code couleur par type d'événement :
+     * Installation : Bleu
+     * Congé : Gris
+     * Maladie : Rouge
+     * Formation : Vert
+     * Vacances : Orange
+   - Statut visuel (En approbation, Approuvé, Complété)
+
+4. GESTION DES ÉVÉNEMENTS
+------------------------
+A. Types d'événements
+   - Installation
+   - Congé
+   - Maladie
+   - Formation
+   - Vacances
+
+B. Informations par événement
+   - Heure d'installation
+   - Nom du client
+   - Adresse
+   - Ville
+   - Équipement
+   - Techniciens assignés (1-4)
+   - Statut
+   - Détails supplémentaires
+
+5. SYSTÈME D'AUTHENTIFICATION
+---------------------------
+A. Niveaux d'accès
+   - Administrateur : Accès complet
+   - Utilisateur standard : Accès limité
+
+B. Fonctionnalités par niveau
+   Administrateur :
+   - Gestion des utilisateurs
+   - Approbation des événements
+   - Accès à toutes les fonctionnalités
+
+   Utilisateur standard :
+   - Consultation du calendrier
+   - Création d'événements
+   - Modification de ses propres événements
+
+6. INTÉGRATION PROGRESSION LIVE
+-----------------------------
+A. Fonctionnalité de récupération
+   - Bouton "Fetch" dans le formulaire d'événement
+   - Remplissage automatique des champs
+   - Validation des données importées
+
+B. Champs synchronisés
+   - Informations client
+   - Détails de l'installation
+   - Numéros de référence
+   - Notes et descriptions
+
+7. RÈGLES MÉTIER
+---------------
+A. Validation des événements
+   - Pas de double réservation des techniciens
+   - Respect des heures de travail
+   - Validation des congés et vacances
+
+B. Contraintes horaires
+   - Heures d'installation standard : 8h-17h
+   - Pauses et temps de déplacement
+   - Gestion des urgences
+
+8. INTERFACE UTILISATEUR
+----------------------
+A. Éléments visuels
+   - Design responsive
+   - Thème cohérent
+   - Indicateurs d'état clairs
+
+B. Interactions
+   - Glisser-déposer pour déplacer les événements
+   - Clics pour édition rapide
+   - Formulaires contextuels
+
+9. NOTIFICATIONS
+--------------
+A. Types
+   - Confirmation d'action
+   - Alertes d'erreur
+   - Rappels d'événements
+
+B. Affichage
+   - Messages non intrusifs
+   - Durée d'affichage appropriée
+   - Code couleur intuitif
+
+10. PERFORMANCE
+-------------
+A. Chargement
+   - Données paginées par semaine
+   - Mise en cache intelligente
+   - Chargement progressif
+
+B. Mises à jour
+   - Rafraîchissement automatique
+   - Synchronisation en temps réel
+   - Gestion des conflits 

@@ -1,0 +1,70 @@
+# Instructions
+
+During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name), especially about a fix to a mistake you made or a correction you received, you should take note in the `Lessons` section in the `.cursorrules` file so you will not make the same mistake again. 
+
+You should also use the `.cursorrules` file as a Scratchpad to organize your thoughts. Especially when you receive a new task, you should first review the content of the Scratchpad, clear old different task if necessary, first explain the task, and plan the steps you need to take to complete the task. You can use todo markers to indicate the progress, e.g.
+[X] Task 1
+[ ] Task 2
+
+Also update the progress of the task in the Scratchpad when you finish a subtask.
+Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the Scratchpad to reflect and plan.
+The goal is to help you maintain a big picture as well as the progress of the task. Always refer to the Scratchpad when you plan the next step.
+
+# Project Structure
+
+This is a React-based production management application with the following key components:
+
+## Frontend (React + Vite)
+- `src/components/`: React components
+  - `modals/`: Modal components for various interactions
+  - `admin/`: Admin-specific components
+  - `auth/`: Authentication-related components
+  - `forms/`: Reusable form components
+- `src/utils/`: Utility functions and API helpers
+- `src/styles/`: CSS stylesheets
+- `src/contexts/`: React context providers
+
+## Backend (PHP)
+- `api/`: PHP API endpoints
+  - `classes/`: PHP classes
+  - `admin/`: Admin-specific endpoints
+  - Configuration files (config.php, auth.php, etc.)
+
+# Lessons
+
+## User Specified Lessons
+
+- Read the file before trying to edit it
+- Due to Cursor's limit, when using `git` and `gh` and need to submit a multiline commit message:
+  1. Write the message in a file
+  2. Use `git commit -F <filename>` to commit
+  3. Remove the temporary file afterward
+  4. Include "[Cursor] " in commit messages and PR titles
+- Follow the established project structure when adding new components
+- Keep API endpoints organized in appropriate directories
+- Maintain consistent error handling across the application
+
+## Project-Specific Lessons
+
+- Use appropriate modal components from `src/components/modals/` for user interactions
+- Follow the authentication flow using the AuthContext
+- Implement proper error handling using the utility functions in `src/utils/`
+- Keep styling consistent by using the existing CSS classes in `src/styles/`
+- Use the API utility functions from `src/utils/apiUtils.js` for backend communication
+
+## Cursor Learned
+
+- For React components, ensure proper prop types and default props are defined
+- Keep modal styles consistent by extending the base Modal.css styles
+- Follow the established pattern for API endpoint organization
+- Maintain consistent error handling across the application
+
+# Scratchpad
+
+Current Task: Mise à jour du fichier .cursorrules
+[X] Lecture et analyse du fichier existant
+[X] Identification des sections pertinentes
+[X] Ajout de la structure du projet
+[X] Mise à jour des leçons spécifiques au projet
+[X] Suppression des sections non pertinentes
+[X] Validation des modifications
