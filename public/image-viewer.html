@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Visualiseur d'images</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .image-container {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            max-width: 90%;
+            max-height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        img {
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+        }
+        .footer {
+            background-color: #f1f1f1;
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn-blue {
+            background-color: #2196F3;
+        }
+        .btn-blue:hover {
+            background-color: #0b7dda;
+        }
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            color: #666;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            color: red;
+            padding: 15px;
+            border: 1px solid #ffcccc;
+            background-color: #ffeeee;
+            border-radius: 4px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 id="image-title">Visualiseur d'images</h1>
+    </div>
+    
+    <div class="content">
+        <div class="image-container">
+            <img id="main-image" src="" alt="Image" />
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <span>Chargement de l'image...</span>
+            </div>
+        </div>
+        
+        <div id="error-message" class="error hidden">
+            Une erreur s'est produite lors du chargement de l'image.
+        </div>
+        
+        <div>
+            <a id="download-btn" href="#" class="btn" download>Télécharger l'image</a>
+            <a id="open-btn" href="#" class="btn btn-blue" target="_blank">Ouvrir dans un nouvel onglet</a>
+            <button id="reload-btn" class="btn">Recharger l'image</button>
+        </div>
+    </div>
+    
+    <div class="footer">
+        Calendrier de Production - Visualiseur d'images
+    </div>
+    
+    <script>
+    // Récupérer les paramètres de l'URL
+    function getParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+    
+    // Obtenir des paramètres
+    const installationId = getParam('ins');
+    const fileName = getParam('file');
+    
+    // Variables pour les chemins d'images
+    let imagePath = '';
+    let displayFileName = fileName || 'Image';
+    
+    // Mettre à jour le titre
+    document.getElementById('image-title').textContent = displayFileName;
+    
+    // Gérer le chargement de l'image
+    function loadImage() {
+        const img = document.getElementById('main-image');
+        const loading = document.getElementById('loading');
+        const errorMsg = document.getElementById('error-message');
+        
+        // S'il y a un fichier et une installation, on construit le chemin
+        if (fileName && installationId) {
+            // Chemin vers le fichier image sur le serveur
+            imagePath = `/temp/files/${installationId}/${fileName}`;
+            
+            // Mettre à jour les attributs de l'image
+            img.src = imagePath;
+            img.alt = displayFileName;
+            
+            // Mettre à jour les boutons
+            document.getElementById('download-btn').href = imagePath;
+            document.getElementById('download-btn').setAttribute('download', fileName);
+            document.getElementById('open-btn').href = imagePath;
+            
+            // Gérer les événements de chargement
+            img.onload = function() {
+                loading.classList.add('hidden');
+                errorMsg.classList.add('hidden');
+            };
+            
+            img.onerror = function() {
+                loading.classList.add('hidden');
+                errorMsg.classList.remove('hidden');
+                errorMsg.textContent = `Impossible de charger l'image: ${fileName}`;
+            };
+        } else {
+            // Pas de paramètres valides
+            loading.classList.add('hidden');
+            errorMsg.classList.remove('hidden');
+            errorMsg.textContent = "Paramètres manquants pour afficher l'image";
+        }
+    }
+    
+    // Bouton de rechargement
+    document.getElementById('reload-btn').addEventListener('click', function() {
+        const loading = document.getElementById('loading');
+        const errorMsg = document.getElementById('error-message');
+        
+        loading.classList.remove('hidden');
+        errorMsg.classList.add('hidden');
+        
+        // Recharger l'image
+        const img = document.getElementById('main-image');
+        img.src = imagePath + '?t=' + new Date().getTime(); // Ajouter un timestamp pour éviter le cache
+    });
+    
+    // Charger l'image au chargement de la page
+    window.onload = loadImage;
+    </script>
+</body>
+</html>

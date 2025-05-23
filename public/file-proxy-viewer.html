@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisation de fichier</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: normal;
+        }
+        
+        .header .controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background-color: #0069d9;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #6c757d;
+            color: #6c757d;
+        }
+        
+        .btn-outline:hover {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: auto;
+            padding: 20px;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            max-width: 80%;
+        }
+        
+        .image-container {
+            max-width: 90%;
+            max-height: 80vh;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .pdf-container {
+            width: 90%;
+            height: 80vh;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        
+        .pdf-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .nav-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .file-count {
+            padding: 8px 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin: 0 10px;
+        }
+        
+        .fallback-container {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            z-index: 30;
+        }
+        
+        .action-button {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.2s;
+        }
+        
+        .action-button:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 id="file-title">Chargement du fichier...</h1>
+        <div class="controls">
+            <button id="repair-btn" class="btn btn-outline" style="display: none;">Réparer l'image</button>
+            <button id="open-btn" class="btn btn-outline">Ouvrir dans un nouvel onglet</button>
+            <button id="download-btn" class="btn">Télécharger</button>
+            <button id="close-btn" class="btn">Fermer</button>
+        </div>
+    </div>
+    
+    <div class="content" id="content">
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Chargement du fichier...</p>
+            <button id="try-alternative" class="btn btn-outline">Essayer une méthode alternative</button>
+        </div>
+    </div>
+    
+    <div class="navigation" id="navigation" style="display: none;">
+        <button id="prev-btn" class="nav-btn">&lt; Précédent</button>
+        <div id="file-count" class="file-count">0/0</div>
+        <button id="next-btn" class="nav-btn">Suivant &gt;</button>
+    </div>
+    
+    <script>
+        // Configuration
+        const useDirectMethod = true; // Utiliser la méthode directe ou l'iframe
+        
+        // Éléments DOM
+        const fileTitle = document.getElementById('file-title');
+        const content = document.getElementById('content');
+        const loading = document.getElementById('loading');
+        const openBtn = document.getElementById('open-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const tryAlternativeBtn = document.getElementById('try-alternative');
+        const repairBtn = document.getElementById('repair-btn');
+        const navigation = document.getElementById('navigation');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const fileCount = document.getElementById('file-count');
+        
+        // Variables globales
+        let currentFileIndex = -1;
+        let totalFiles = 0;
+        let filesData = [];
+        let useFallback = false;
+        let useRepairImage = false;
+        let fileLoadAttempts = 0;
+        let currentDisplayedUrl = '';
+        
+        // Récupérer les paramètres de l'URL
+        const params = new URLSearchParams(window.location.search);
+        const fileId = params.get('id');
+        const installationNumber = params.get('ins');
+        const fileName = params.get('name') || params.get('file') || 'Fichier';
+        const fileIndex = parseInt(params.get('index') || '0', 10);
+        const filesCountParam = parseInt(params.get('total') || '1', 10);
+        
+        // URL pour l'API
+        const API_BASE_URL = params.get('api') || '';
+        
+        // Différentes méthodes d'accès aux fichiers
+        // Méthode 1: direct_file_viewer (la plus fiable mais uniquement pour ID)
+        let method1Url = '';
+        if (fileId && installationNumber) {
+            method1Url = `${API_BASE_URL}/direct_file_viewer.php?id=${fileId}&ins=${encodeURIComponent(installationNumber)}&name=${encodeURIComponent(fileName)}&mode=inline`;
+        }
+        
+        // Méthode 2: safari_download (pour Safari et problèmes de base64)
+        let method2Url = '';
+        if (fileId && installationNumber) {
+            method2Url = `${API_BASE_URL}/safari_download.php?id=${fileId}&ins=${encodeURIComponent(installationNumber)}&mode=inline`;
+        }
+        
+        // Méthode 3: direct_image (pour les images dans le dossier files)
+        let method3Url = '';
+        if (fileName && installationNumber) {
+            method3Url = `${API_BASE_URL}/direct_image.php?ins=${encodeURIComponent(installationNumber)}&file=${encodeURIComponent(fileName)}&mode=inline`;
+        }
+        
+        // Méthode 4: binary_file (pour les fichiers dans le dossier temp)
+        let method4Url = '';
+        if (fileName && installationNumber === 'temp') {
+            method4Url = `${API_BASE_URL}/binary_file.php?ins=temp&file=${encodeURIComponent(fileName)}&mode=inline`;
+        }
+        
+        // Méthode 5: Accès direct aux fichiers du dossier temp
+        let method5Url = '';
+        if (fileName && installationNumber === 'temp') {
+            method5Url = `/temp/${encodeURIComponent(fileName)}`;
+        }
+        
+        // URL pour réparation d'image
+        let repairUrl = '';
+        if (fileName && installationNumber) {
+            repairUrl = `${API_BASE_URL}/repair_image.php?ins=${encodeURIComponent(installationNumber)}&file=${encodeURIComponent(fileName)}&mode=inline`;
+        }
+        
+        // URL pour traitement binaire (conversion de format)
+        let processBinaryUrl = '';
+        if (fileId && installationNumber) {
+            processBinaryUrl = `${API_BASE_URL}/process_binary.php?id=${fileId}&ins=${encodeURIComponent(installationNumber)}`;
+        } else if (fileName && installationNumber) {
+            processBinaryUrl = `${API_BASE_URL}/process_binary.php?file=${encodeURIComponent(fileName)}&ins=${encodeURIComponent(installationNumber)}`;
+        }
+        
+        // URL pour téléchargement
+        let downloadUrl = '';
+        if (fileId && installationNumber) {
+            downloadUrl = `${API_BASE_URL}/download_attachment.php?id=${fileId}&ins=${encodeURIComponent(installationNumber)}`;
+        } else if (fileName && installationNumber === 'temp') {
+            downloadUrl = `/temp/${encodeURIComponent(fileName)}`;
+        } else if (fileName && installationNumber) {
+            downloadUrl = `${API_BASE_URL}/direct_image.php?ins=${encodeURIComponent(installationNumber)}&file=${encodeURIComponent(fileName)}&mode=attachment`;
+        }
+        
+        // Initialisation
+        function init() {
+            // Mettre à jour le titre
+            fileTitle.textContent = fileName;
+            document.title = `Visualisation: ${fileName}`;
+            
+            // Configuration des boutons
+            openBtn.addEventListener('click', openInNewTab);
+            downloadBtn.addEventListener('click', downloadFile);
+            closeBtn.addEventListener('click', closeWindow);
+            tryAlternativeBtn.addEventListener('click', toggleFallbackMethod);
+            repairBtn.addEventListener('click', repairImage);
+            
+            // Configuration de la navigation
+            setupNavigation();
+            
+            // Charger le fichier
+            loadFile();
+        }
+        
+        // Obtenir l'URL actuelle en fonction de la méthode utilisée
+        function getCurrentUrl() {
+            if (useRepairImage && repairUrl) {
+                return repairUrl;
+            }
+            
+            if (installationNumber === 'temp' && fileName) {
+                // Pour les fichiers temporaires, utiliser l'accès direct
+                return method5Url || method4Url;
+            }
+            
+            if (useFallback) {
+                // Méthodes alternatives en cas d'échec
+                if (fileId && installationNumber) {
+                    return method2Url || method3Url;
+                } else {
+                    return method3Url;
+                }
+            }
+            
+            // Méthode par défaut
+            if (fileId && installationNumber) {
+                return method1Url;
+            } else {
+                return method3Url || method5Url;
+            }
+        }
+        
+        // Basculer entre les méthodes
+        function toggleFallbackMethod() {
+            useFallback = !useFallback;
+            useRepairImage = false;
+            tryAlternativeBtn.textContent = useFallback 
+                ? "Revenir à la méthode principale" 
+                : "Essayer une méthode alternative";
+            loadFile();
+        }
+        
+        // Fonction de réparation d'image
+        function repairImage() {
+            useRepairImage = true;
+            useFallback = false;
+            repairBtn.textContent = "Utiliser l'image originale";
+            loadFile();
+        }
+        
+        // Télécharger le fichier
+        function downloadFile() {
+            if (downloadUrl) {
+                window.open(downloadUrl, '_blank');
+            }
+        }
+        
+        // Ouvrir dans un nouvel onglet
+        function openInNewTab() {
+            if (currentDisplayedUrl) {
+                window.open(currentDisplayedUrl, '_blank');
+            }
+        }
+        
+        // Fermer la fenêtre
+        function closeWindow() {
+            // Tenter de communiquer avec la fenêtre parente
+            try {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage('file-viewer-closing', '*');
+                    window.opener.focus();
+                    
+                    // Court délai pour s'assurer que l'ouvreur a le focus
+                    setTimeout(() => {
+                        window.close();
+                    }, 50);
+                } else {
+                    window.close();
+                }
+            } catch (e) {
+                console.error('Erreur lors de la fermeture:', e);
+                window.close();
+            }
+        }
+        
+        // Configurer la navigation entre fichiers
+        function setupNavigation() {
+            // Récupérer l'index et le total
+            currentFileIndex = fileIndex;
+            totalFiles = filesCountParam;
+            
+            // Afficher la navigation uniquement s'il y a plusieurs fichiers
+            if (totalFiles > 1) {
+                navigation.style.display = 'flex';
+                fileCount.textContent = `${currentFileIndex + 1}/${totalFiles}`;
+                
+                // Activer/désactiver les boutons
+                prevBtn.disabled = currentFileIndex <= 0;
+                nextBtn.disabled = currentFileIndex >= totalFiles - 1;
+                
+                // Ajouter les gestionnaires d'événements
+                prevBtn.addEventListener('click', navigateToPrevious);
+                nextBtn.addEventListener('click', navigateToNext);
+            }
+        }
+        
+        // Navigation vers le fichier précédent
+        function navigateToPrevious() {
+            if (currentFileIndex > 0) {
+                navigateToIndex(currentFileIndex - 1);
+            }
+        }
+        
+        // Navigation vers le fichier suivant
+        function navigateToNext() {
+            if (currentFileIndex < totalFiles - 1) {
+                navigateToIndex(currentFileIndex + 1);
+            }
+        }
+        
+        // Navigation vers un index spécifique
+        function navigateToIndex(index) {
+            // Tenter de communiquer avec la fenêtre parente
+            try {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({
+                        type: 'navigate-to-file',
+                        index: index
+                    }, '*');
+                    
+                    // Fermé automatiquement après la navigation pour éviter des fenêtres orphelines
+                    setTimeout(() => {
+                        window.close();
+                    }, 100);
+                    return;
+                }
+            } catch (e) {
+                console.error('Erreur lors de la communication avec la fenêtre parente:', e);
+            }
+            
+            // Si la communication échoue, naviguer directement
+            const url = new URL(window.location.href);
+            url.searchParams.set('index', index.toString());
+            window.location.href = url.toString();
+        }
+        
+        // Détecter le type de fichier
+        function getFileType(fileName) {
+            if (!fileName) return 'unknown';
+            
+            const extension = fileName.split('.').pop().toLowerCase();
+            
+            if (extension === 'pdf') {
+                return 'pdf';
+            } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
+                return 'image';
+            } else if (['txt', 'csv', 'log', 'md', 'json', 'xml', 'html'].includes(extension)) {
+                return 'text';
+            } else if (['mp4', 'webm', 'ogg'].includes(extension)) {
+                return 'video';
+            } else if (['mp3', 'wav', 'ogg'].includes(extension)) {
+                return 'audio';
+            }
+            
+            return 'unknown';
+        }
+        
+        // Charger le fichier en fonction de son type
+        function loadFile() {
+            // Réinitialiser le contenu
+            while (content.firstChild !== loading) {
+                content.removeChild(content.firstChild);
+            }
+            loading.style.display = 'flex';
+            
+            const fileType = getFileType(fileName);
+            const currentUrl = getCurrentUrl();
+            currentDisplayedUrl = currentUrl;
+            
+            console.log(`Chargement du fichier ${fileName} (${fileType}) depuis ${currentUrl}`);
+            
+            // Réinitialiser le bouton de réparation
+            if (fileType === 'image') {
+                repairBtn.style.display = 'inline-block';
+                repairBtn.textContent = useRepairImage ? "Utiliser l'image originale" : "Réparer l'image";
+            } else {
+                repairBtn.style.display = 'none';
+            }
+            
+            // Créer l'élément approprié en fonction du type de fichier
+            switch (fileType) {
+                case 'pdf':
+                    loadPdf(currentUrl);
+                    break;
+                case 'image':
+                    loadImage(currentUrl);
+                    break;
+                case 'text':
+                    loadText(currentUrl);
+                    break;
+                case 'video':
+                    loadVideo(currentUrl);
+                    break;
+                case 'audio':
+                    loadAudio(currentUrl);
+                    break;
+                default:
+                    tryProcessBinary();
+            }
+        }
+        
+        // Essayer de traiter le fichier avec process_binary
+        function tryProcessBinary() {
+            if (processBinaryUrl && fileLoadAttempts < 1) {
+                fileLoadAttempts++;
+                
+                // Afficher un message
+                const loadingMessage = document.querySelector('#loading p');
+                if (loadingMessage) {
+                    loadingMessage.textContent = "Tentative de conversion du fichier...";
+                }
+                
+                // Appeler le script de traitement binaire
+                fetch(processBinaryUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Conversion réussie:', data);
+                            
+                            // Rediriger vers la version convertie
+                            if (data.viewerUrl) {
+                                window.location.href = data.viewerUrl;
+                            } else if (data.file && data.file.url) {
+                                // Fallback: charger l'URL directement
+                                const fileType = getFileType(data.file.name);
+                                currentDisplayedUrl = data.file.url;
+                                
+                                switch (fileType) {
+                                    case 'pdf':
+                                        loadPdf(data.file.url);
+                                        break;
+                                    case 'image':
+                                        loadImage(data.file.url);
+                                        break;
+                                    default:
+                                        showUnsupportedFile();
+                                }
+                            } else {
+                                showUnsupportedFile();
+                            }
+                        } else {
+                            console.error('Échec de la conversion:', data.error);
+                            showUnsupportedFile();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors de la conversion:', error);
+                        showUnsupportedFile();
+                    });
+            } else {
+                showUnsupportedFile();
+            }
+        }
+        
+        // Charger un PDF
+        function loadPdf(url) {
+            const container = document.createElement('div');
+            container.className = 'pdf-container';
+            
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.title = 'PDF Viewer';
+            iframe.onload = () => {
+                loading.style.display = 'none';
+            };
+            iframe.onerror = () => {
+                handleLoadError();
+            };
+            
+            container.appendChild(iframe);
+            content.appendChild(container);
+            
+            // Détecter les erreurs de chargement
+            setTimeout(() => {
+                if (loading.style.display !== 'none') {
+                    // Essayer avec l'incorporation simple plutôt qu'un iframe
+                    content.removeChild(container);
+                    
+                    const embeddedContainer = document.createElement('div');
+                    embeddedContainer.className = 'pdf-container';
+                    
+                    const embed = document.createElement('embed');
+                    embed.src = url;
+                    embed.type = 'application/pdf';
+                    embed.width = '100%';
+                    embed.height = '100%';
+                    
+                    embeddedContainer.appendChild(embed);
+                    content.appendChild(embeddedContainer);
+                    
+                    // Masquer le chargement après un délai
+                    setTimeout(() => {
+                        loading.style.display = 'none';
+                    }, 1500);
+                }
+            }, 5000);
+        }
+        
+        // Charger une image
+        function loadImage(url) {
+            const container = document.createElement('div');
+            container.className = 'image-container';
+            
+            // Ajouter des boutons d'action pour les images
+            const actionButtons = document.createElement('div');
+            actionButtons.className = 'action-buttons';
+            
+            const zoomInBtn = document.createElement('button');
+            zoomInBtn.className = 'action-button';
+            zoomInBtn.textContent = '🔍+';
+            zoomInBtn.title = 'Zoom avant';
+            
+            const zoomOutBtn = document.createElement('button');
+            zoomOutBtn.className = 'action-button';
+            zoomOutBtn.textContent = '🔍-';
+            zoomOutBtn.title = 'Zoom arrière';
+            
+            const rotateBtn = document.createElement('button');
+            rotateBtn.className = 'action-button';
+            rotateBtn.textContent = '🔄';
+            rotateBtn.title = 'Rotation';
+            
+            actionButtons.appendChild(zoomInBtn);
+            actionButtons.appendChild(zoomOutBtn);
+            actionButtons.appendChild(rotateBtn);
+            container.appendChild(actionButtons);
+            
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = fileName;
+            img.onload = () => {
+                loading.style.display = 'none';
+            };
+            img.onerror = () => {
+                handleLoadError();
+            };
+            
+            // Variables pour les fonctionnalités de l'image
+            let zoomLevel = 1;
+            let rotation = 0;
+            
+            // Appliquer le zoom et la rotation
+            function applyTransform() {
+                img.style.transform = `scale(${zoomLevel}) rotate(${rotation}deg)`;
+            }
+            
+            // Gestionnaires d'événements pour les boutons
+            zoomInBtn.addEventListener('click', () => {
+                zoomLevel = Math.min(zoomLevel + 0.25, 3);
+                applyTransform();
+            });
+            
+            zoomOutBtn.addEventListener('click', () => {
+                zoomLevel = Math.max(zoomLevel - 0.25, 0.5);
+                applyTransform();
+            });
+            
+            rotateBtn.addEventListener('click', () => {
+                rotation = (rotation + 90) % 360;
+                applyTransform();
+            });
+            
+            container.appendChild(img);
+            content.appendChild(container);
+        }
+        
+        // Charger un fichier texte
+        function loadText(url) {
+            const container = document.createElement('div');
+            container.className = 'pdf-container';
+            
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.title = 'Text Viewer';
+            iframe.onload = () => {
+                loading.style.display = 'none';
+            };
+            iframe.onerror = () => {
+                handleLoadError();
+            };
+            
+            container.appendChild(iframe);
+            content.appendChild(container);
+        }
+        
+        // Charger une vidéo
+        function loadVideo(url) {
+            const container = document.createElement('div');
+            container.className = 'pdf-container';
+            
+            const video = document.createElement('video');
+            video.controls = true;
+            video.style.width = '100%';
+            video.style.height = '100%';
+            
+            const source = document.createElement('source');
+            source.src = url;
+            
+            video.appendChild(source);
+            
+            video.onloadeddata = () => {
+                loading.style.display = 'none';
+            };
+            
+            video.onerror = () => {
+                handleLoadError();
+            };
+            
+            container.appendChild(video);
+            content.appendChild(container);
+        }
+        
+        // Charger un audio
+        function loadAudio(url) {
+            const container = document.createElement('div');
+            container.className = 'fallback-container';
+            
+            const audio = document.createElement('audio');
+            audio.controls = true;
+            audio.style.width = '100%';
+            
+            const source = document.createElement('source');
+            source.src = url;
+            
+            audio.appendChild(source);
+            
+            audio.onloadeddata = () => {
+                loading.style.display = 'none';
+            };
+            
+            audio.onerror = () => {
+                handleLoadError();
+            };
+            
+            const title = document.createElement('p');
+            title.textContent = fileName;
+            title.style.fontWeight = 'bold';
+            
+            container.appendChild(title);
+            container.appendChild(audio);
+            content.appendChild(container);
+            
+            // Masquer le chargement après un délai
+            setTimeout(() => {
+                loading.style.display = 'none';
+            }, 1000);
+        }
+        
+        // Afficher un message pour les types de fichiers non supportés
+        function showUnsupportedFile() {
+            const container = document.createElement('div');
+            container.className = 'fallback-container';
+            
+            const message = document.createElement('p');
+            message.textContent = `Ce type de fichier (${fileName.split('.').pop().toLowerCase()}) ne peut pas être affiché directement dans le navigateur.`;
+            
+            const downloadButton = document.createElement('button');
+            downloadButton.className = 'btn';
+            downloadButton.textContent = 'Télécharger le fichier';
+            downloadButton.onclick = () => window.open(downloadUrl, '_blank');
+            
+            container.appendChild(message);
+            container.appendChild(downloadButton);
+            content.appendChild(container);
+            
+            loading.style.display = 'none';
+        }
+        
+        // Gérer les erreurs de chargement
+        function handleLoadError() {
+            if (fileLoadAttempts < 2) {
+                fileLoadAttempts++;
+                
+                if (!useFallback) {
+                    // Si nous utilisons la méthode principale, essayer avec la méthode de secours
+                    console.log('Erreur de chargement avec la méthode principale, passage à la méthode de secours');
+                    useFallback = true;
+                    loadFile();
+                } else if (!useRepairImage && getFileType(fileName) === 'image') {
+                    // Si la méthode de secours échoue pour une image, essayer la réparation
+                    console.log('Erreur de chargement avec la méthode de secours, tentative de réparation de l\'image');
+                    useRepairImage = true;
+                    loadFile();
+                } else {
+                    // Si toutes les méthodes ont échoué, essayer process_binary
+                    console.log('Toutes les méthodes ont échoué, tentative de conversion binaire');
+                    tryProcessBinary();
+                }
+            } else {
+                // Si toutes les tentatives ont échoué, afficher une erreur
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                
+                const errorMessage = document.createElement('p');
+                errorMessage.textContent = 'Impossible de charger le fichier après plusieurs tentatives. Veuillez essayer de le télécharger.';
+                
+                const downloadButton = document.createElement('button');
+                downloadButton.className = 'btn';
+                downloadButton.textContent = 'Télécharger';
+                downloadButton.onclick = () => window.open(downloadUrl, '_blank');
+                
+                errorDiv.appendChild(errorMessage);
+                errorDiv.appendChild(downloadButton);
+                content.appendChild(errorDiv);
+                
+                loading.style.display = 'none';
+            }
+        }
+        
+        // Initialiser la page
+        window.onload = init;
+        
+        // Écouter les messages depuis la fenêtre parente
+        window.addEventListener('message', function(event) {
+            // Vérifier si le message vient de la fenêtre parente attendue
+            try {
+                if (event.source === window.opener) {
+                    if (event.data === 'refresh-file-viewer') {
+                        // Recharger la page pour rafraîchir le contenu
+                        window.location.reload();
+                    }
+                }
+            } catch (e) {
+                console.error('Erreur lors du traitement du message:', e);
+            }
+        });
+    </script>
+</body>
+</html>

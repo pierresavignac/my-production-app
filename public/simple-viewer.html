@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualiseur de Fichier</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: #f5f5f5;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: white;
+        }
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            background-color: white;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            padding: 20px;
+        }
+        .download-link {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .download-link:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h3 id="title">Chargement...</h3>
+            <div>
+                <button id="download-btn">Télécharger</button>
+                <button id="close-btn">Fermer</button>
+            </div>
+        </div>
+        <div class="content" id="content">
+            <div class="loading" id="loading">Chargement du fichier...</div>
+        </div>
+    </div>
+
+    <script>
+        // Récupération des paramètres de l'URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const ins = urlParams.get('ins');
+        const fileName = urlParams.get('file');
+        const apiBaseUrl = urlParams.get('api') || '/api';
+
+        // Éléments DOM
+        const titleElement = document.getElementById('title');
+        const contentElement = document.getElementById('content');
+        const loadingElement = document.getElementById('loading');
+        const downloadBtn = document.getElementById('download-btn');
+        const closeBtn = document.getElementById('close-btn');
+
+        // Mettre à jour le titre
+        if (fileName) {
+            titleElement.textContent = fileName;
+            document.title = fileName;
+        }
+
+        // Créer l'URL du fichier (utiliser binary_file.php pour une manipulation binaire stricte)
+        const fileUrl = `${apiBaseUrl}/binary_file.php?ins=${encodeURIComponent(ins)}&file=${encodeURIComponent(fileName)}&mode=inline&t=${Date.now()}`;
+        const downloadUrl = `${apiBaseUrl}/binary_file.php?ins=${encodeURIComponent(ins)}&file=${encodeURIComponent(fileName)}&mode=attachment`;
+
+        // Déterminer le type de fichier
+        let fileType = 'unknown';
+        if (fileName) {
+            const extension = fileName.split('.').pop().toLowerCase();
+            if (extension === 'pdf') {
+                fileType = 'pdf';
+            } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(extension)) {
+                fileType = 'image';
+            }
+        }
+
+        // Télécharger le fichier
+        downloadBtn.addEventListener('click', () => {
+            window.open(downloadUrl, '_blank');
+        });
+
+        // Fermer la fenêtre
+        closeBtn.addEventListener('click', () => {
+            window.close();
+        });
+
+        // Charger le contenu en fonction du type
+        function loadContent() {
+            if (!ins || !fileName) {
+                handleError("Paramètres manquants (installation ou fichier)");
+                return;
+            }
+
+            if (fileType === 'pdf') {
+                // Pour les PDF, créer un iframe avec mécanisme de fallback
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                
+                let loadTimeout = setTimeout(() => {
+                    console.warn('Timeout dépassé pour le chargement du PDF');
+                    tryFallbackMethod();
+                }, 5000);
+                
+                iframe.onload = () => {
+                    clearTimeout(loadTimeout);
+                    loadingElement.style.display = 'none';
+                    console.log('PDF chargé avec succès via iframe');
+                };
+                
+                iframe.onerror = () => {
+                    clearTimeout(loadTimeout);
+                    console.error('Erreur lors du chargement du PDF via iframe');
+                    tryFallbackMethod();
+                };
+                
+                iframe.src = fileUrl;
+                contentElement.appendChild(iframe);
+                
+                // Méthode de secours si l'iframe échoue
+                function tryFallbackMethod() {
+                    contentElement.innerHTML = '';
+                    
+                    const embed = document.createElement('embed');
+                    embed.src = fileUrl;
+                    embed.type = 'application/pdf';
+                    embed.style.width = '100%';
+                    embed.style.height = '100%';
+                    
+                    const backupLink = document.createElement('p');
+                    backupLink.innerHTML = `Si le PDF ne s'affiche pas, <a href="${fileUrl}" target="_blank">cliquez ici pour l'ouvrir directement</a> ou <a href="${downloadUrl}">téléchargez-le</a>.`;
+                    backupLink.style.textAlign = 'center';
+                    backupLink.style.margin = '10px';
+                    
+                    contentElement.appendChild(embed);
+                    contentElement.appendChild(backupLink);
+                    loadingElement.style.display = 'none';
+                }
+            } else if (fileType === 'image') {
+                // Pour les images
+                const img = new Image();
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.objectFit = 'contain';
+                
+                img.onload = () => {
+                    loadingElement.style.display = 'none';
+                    console.log('Image chargée avec succès');
+                };
+                
+                img.onerror = (e) => {
+                    console.error('Erreur lors du chargement de l\'image', e);
+                    tryFallbackMethod();
+                };
+                
+                // Ajouter un timestamp pour éviter le cache
+                img.src = `${fileUrl}&nocache=${Date.now()}`;
+                contentElement.appendChild(img);
+                
+                // Méthode de secours si l'image échoue
+                function tryFallbackMethod() {
+                    contentElement.innerHTML = '';
+                    
+                    const message = document.createElement('div');
+                    message.style.textAlign = 'center';
+                    message.style.padding = '20px';
+                    
+                    message.innerHTML = `
+                        <p>Impossible d'afficher l'image.</p>
+                        <p><a href="${fileUrl}" target="_blank" class="download-link">Ouvrir dans un nouvel onglet</a></p>
+                        <p><a href="${downloadUrl}" class="download-link">Télécharger l'image</a></p>
+                    `;
+                    
+                    contentElement.appendChild(message);
+                    loadingElement.style.display = 'none';
+                }
+            } else {
+                // Pour les autres fichiers
+                const message = document.createElement('div');
+                message.style.textAlign = 'center';
+                message.style.padding = '20px';
+                
+                message.innerHTML = `
+                    <p>Ce type de fichier ne peut pas être affiché directement dans le navigateur.</p>
+                    <p><a href="${downloadUrl}" class="download-link">Télécharger le fichier</a></p>
+                `;
+                
+                loadingElement.style.display = 'none';
+                contentElement.appendChild(message);
+            }
+        }
+
+        // Gérer les erreurs
+        function handleError(message = "Impossible de charger le fichier.") {
+            loadingElement.style.display = 'none';
+            const errorElement = document.createElement('div');
+            errorElement.className = 'error';
+            errorElement.innerHTML = `
+                <p>${message}</p>
+                <p>Essayez de télécharger le fichier directement.</p>
+                <p><a href="${downloadUrl}" class="download-link">Télécharger</a></p>
+            `;
+            contentElement.innerHTML = '';
+            contentElement.appendChild(errorElement);
+        }
+
+        // Démarrer le chargement
+        loadContent();
+
+        // Ajouter un timeout global
+        setTimeout(() => {
+            if (document.getElementById('loading').style.display !== 'none') {
+                handleError("Le chargement a pris trop de temps. Le fichier pourrait être trop volumineux.");
+            }
+        }, 15000);
+    </script>
+</body>
+</html>

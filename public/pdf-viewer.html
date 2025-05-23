@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisation PDF</title>
+    <script>
+        // Ce script est exécuté avant le chargement de la page
+        // Nécessaire pour éviter les problèmes de focus entre les fenêtres
+        if (window.opener && !window.opener.closed) {
+            // Notifier l'ouvreur que la fenêtre est ouverte
+            try {
+                window.opener.postMessage('pdf-viewer-opened', '*');
+            } catch (e) {
+                console.error('Impossible de communiquer avec la fenêtre parente:', e);
+            }
+        }
+    </script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #pdf-container {
+            width: 100%;
+            height: calc(100% - 40px);
+            border: none;
+            margin-top: 40px;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            text-align: center;
+        }
+        .error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            color: #ff0000;
+            text-align: center;
+            max-width: 80%;
+        }
+        .error button {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .error button:hover {
+            background-color: #0056b3;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+        
+        .navigation {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-button {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nav-button:hover {
+            background-color: #e2e6ea;
+        }
+        
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .file-counter {
+            font-size: 14px;
+            color: #666;
+        }
+        .header-title {
+            font-size: 16px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70%;
+        }
+        .close-button {
+            width: 30px;
+            height: 30px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            color: #666;
+        }
+        .close-button:hover {
+            background-color: #e2e6ea;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .download-button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .download-button:hover {
+            background-color: #0069d9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-title" id="file-title">Visualisation PDF</div>
+        <div class="navigation">
+            <button class="nav-button prev-button" id="prev-button">&lt;</button>
+            <span class="file-counter">1/1</span>
+            <button class="nav-button next-button" id="next-button">&gt;</button>
+        </div>
+        <div class="actions">
+            <button class="download-button" id="download-btn-header">Télécharger</button>
+            <button class="close-button" id="close-btn-header">&times;</button>
+        </div>
+    </div>
+    
+    <div id="loading" class="loading">Chargement du PDF...</div>
+    <div id="error" class="error" style="display: none;">
+        <p>Impossible de charger le fichier PDF.</p>
+        <button id="download-btn">Télécharger le fichier</button>
+        <button id="close-btn">Fermer</button>
+    </div>
+    <!-- Remplacer l'objet PDF par un iframe pour une meilleure compatibilité avec Safari -->
+    <iframe id="pdf-container" style="display: none;" width="100%" height="100%" frameborder="0"></iframe>
+    
+    <!-- Fallback si l'iframe ne marche pas -->
+    <div id="fallback-container" style="display: none; text-align: center; padding: 20px;">
+        <p>Votre navigateur ne peut pas afficher le PDF directement.</p>
+        <p><a id="fallback-link" href="#" target="_blank" class="download-button" style="display: inline-block; padding: 10px 15px;">Ouvrir le PDF</a></p>
+    </div>
+
+    <script>
+        // Fonction pour récupérer les paramètres de l'URL
+        function getUrlParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Récupérer les paramètres de l'URL
+        const fileId = getUrlParam('id');
+        const installationNumber = getUrlParam('ins');
+        
+        // Éléments du DOM
+        const pdfContainer = document.getElementById('pdf-container');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const downloadBtn = document.getElementById('download-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const fallbackLink = document.getElementById('fallback-link');
+        const fileTitle = document.getElementById('file-title');
+        const downloadBtnHeader = document.getElementById('download-btn-header');
+        const closeBtnHeader = document.getElementById('close-btn-header');
+        const prevButton = document.querySelector('.prev-button');
+        const nextButton = document.querySelector('.next-button');
+        
+        // Paramètres de navigation
+        const currentIndex = parseInt(getUrlParam('index') || '0', 10);
+        const totalFiles = parseInt(getUrlParam('total') || '1', 10);
+        
+        // Mettre à jour l'indicateur de navigation si disponible
+        const fileCounter = document.querySelector('.file-counter');
+        if (fileCounter && totalFiles > 1) {
+            fileCounter.textContent = `${currentIndex + 1}/${totalFiles}`;
+        }
+        
+        // Base URL de l'API
+        const apiBaseUrl = getUrlParam('api') || ''; // L'URL de l'API peut être transmise en paramètre
+        
+        // Récupérer le nom du fichier s'il est fourni
+        const fileName = getUrlParam('filename') || 'Document PDF';
+        fileTitle.textContent = fileName;
+        
+        // Construire les URLs
+        const viewUrl = `${apiBaseUrl}/direct_download.php?id=${fileId}&ins=${installationNumber}&mode=inline`;
+        const downloadUrl = `${apiBaseUrl}/download_attachment.php?id=${fileId}&ins=${installationNumber}`;
+        
+        // Mettre à jour le lien de fallback
+        fallbackLink.href = downloadUrl;
+        
+        // Fonction de fermeture commune
+        function closeWindow() {
+            try {
+                // Tenter de remettre le focus sur l'ouvreur avant de fermer
+                if (window.opener && !window.opener.closed) {
+                    // Informer l'ouvreur que la fenêtre va se fermer
+                    window.opener.postMessage('pdf-viewer-closing', '*');
+                    window.opener.focus();
+                    
+                    // Court délai pour s'assurer que l'ouvreur a le focus
+                    setTimeout(() => {
+                        window.close();
+                    }, 50);
+                } else {
+                    // Si pas d'opener (ouverte directement), juste fermer
+                    window.close();
+                }
+            } catch (e) {
+                console.error('Erreur lors de la fermeture:', e);
+                window.close(); // Fallback - tenter de fermer normalement
+            }
+        }
+        
+        // Fonction de téléchargement commune
+        function downloadFile() {
+            window.open(downloadUrl, '_blank');
+        }
+        
+        // Gérer les événements pour les boutons dans le message d'erreur
+        downloadBtn.addEventListener('click', downloadFile);
+        closeBtn.addEventListener('click', closeWindow);
+        
+        // Gérer les événements pour les boutons de l'en-tête
+        downloadBtnHeader.addEventListener('click', downloadFile);
+        closeBtnHeader.addEventListener('click', closeWindow);
+        
+        // Fonctions de navigation entre fichiers
+        function navigateToFile(index) {
+            if (index < 0 || index >= totalFiles) return;
+            
+            // Informer la fenêtre parente de la navigation
+            if (window.opener && !window.opener.closed) {
+                try {
+                    window.opener.postMessage({
+                        type: 'navigate-to-file',
+                        index: index
+                    }, '*');
+                } catch (e) {
+                    console.error('Erreur lors de la communication avec la fenêtre parente:', e);
+                    // Tentative de navigation directe si la communication échoue
+                    navigationFallback(index);
+                }
+            } else {
+                // Si pas de fenêtre parente, tenter une navigation directe
+                navigationFallback(index);
+            }
+        }
+        
+        function navigationFallback(index) {
+            // Construction de l'URL avec le nouvel index
+            const url = new URL(window.location.href);
+            url.searchParams.set('index', index.toString());
+            
+            // Recharger la page avec le nouvel index
+            window.location.href = url.toString();
+        }
+        
+        // Ajouter les gestionnaires d'événements pour les boutons de navigation
+        if (prevButton) {
+            prevButton.disabled = currentIndex <= 0;
+            prevButton.addEventListener('click', function() {
+                if (currentIndex > 0) {
+                    navigateToFile(currentIndex - 1);
+                }
+            });
+        }
+        
+        if (nextButton) {
+            nextButton.disabled = currentIndex >= totalFiles - 1;
+            nextButton.addEventListener('click', function() {
+                if (currentIndex < totalFiles - 1) {
+                    navigateToFile(currentIndex + 1);
+                }
+            });
+        }
+        
+        // Écouter les messages depuis la fenêtre parente
+        window.addEventListener('message', function(event) {
+            // Vérifier si le message vient de la fenêtre parente attendue
+            try {
+                if (event.source === window.opener) {
+                    if (event.data === 'refresh-pdf-viewer') {
+                        // Recharger la page pour rafraîchir le contenu
+                        window.location.reload();
+                    }
+                }
+            } catch (e) {
+                console.error('Erreur lors du traitement du message:', e);
+            }
+        });
+        
+        // Charger le PDF
+        if (fileId && installationNumber) {
+            try {
+                // Définir les attributs de l'iframe pour le PDF
+                pdfContainer.src = viewUrl;
+                
+                // Afficher une erreur si l'iframe ne se charge pas correctement
+                pdfContainer.onerror = function() {
+                    console.error('Erreur de chargement de l\'iframe PDF');
+                    loading.style.display = 'none';
+                    error.style.display = 'block';
+                };
+                
+                // Configurer le lien de secours pour une ouverture directe
+                const fallbackContainer = document.getElementById('fallback-container');
+                fallbackLink.href = viewUrl;
+                
+                // Événement de chargement réussi
+                pdfContainer.onload = function() {
+                    loading.style.display = 'none';
+                    pdfContainer.style.display = 'block';
+                    console.log('PDF chargé avec succès via iframe');
+                };
+                
+                // Fallback en cas d'absence de signal onload
+                setTimeout(function() {
+                    if (loading.style.display !== 'none') {
+                        console.log('Délai de chargement atteint, affichage du PDF et des alternatives');
+                        loading.style.display = 'none';
+                        pdfContainer.style.display = 'block';
+                        
+                        // Afficher également les options de secours
+                        fallbackContainer.style.display = 'block';
+                    }
+                }, 2000);
+            } catch (e) {
+                console.error('Erreur lors de l\'initialisation du PDF:', e);
+                loading.style.display = 'none';
+                error.style.display = 'block';
+            }
+            
+            // Timeout pour détecter les problèmes de chargement
+            setTimeout(function() {
+                if (loading.style.display !== 'none') {
+                    loading.style.display = 'none';
+                    error.style.display = 'block';
+                    console.error('Timeout lors du chargement du PDF');
+                }
+            }, 10000); // 10 secondes
+        } else {
+            loading.style.display = 'none';
+            error.style.display = 'block';
+            error.querySelector('p').textContent = 'Paramètres manquants pour afficher le PDF.';
+            console.error('Paramètres manquants');
+        }
+    </script>
+</body>
+</html>
