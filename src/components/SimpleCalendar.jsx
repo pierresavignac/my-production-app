@@ -48,6 +48,17 @@ const SimpleCalendar = forwardRef(({ events, onDateClick, onEventClick, currentD
             if (!fullName) return '';
             return fullName.includes(' ') ? fullName.split(' ').slice(1).join(' ') : fullName;
         };
+        
+        const getRepresentativeName = (representative) => {
+            if (!representative) return '';
+            // Enlever le code au début (ex: "3a ", "2c ", etc.)
+            const parts = representative.split(' ');
+            // Si le premier élément contient un chiffre suivi d'une lettre, on l'enlève
+            if (parts.length > 1 && /^\d+[a-z]?$/i.test(parts[0])) {
+                return parts.slice(1).join(' ');
+            }
+            return representative;
+        };
 
         return (
             <div 
@@ -64,7 +75,7 @@ const SimpleCalendar = forwardRef(({ events, onDateClick, onEventClick, currentD
                     <>
                         <div className="installation-number">{event.installation_number}</div>
                         {event.representative && (
-                            <div className="representative-name">{event.representative}</div>
+                            <div className="representative-name">{getRepresentativeName(event.representative)}</div>
                         )}
                     </>
                 )}
