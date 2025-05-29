@@ -301,9 +301,12 @@ const EditEventModal = ({ show, onHide, onSave, onDelete, event, employees }) =>
         }
     };
 
-    const handleEquipmentModalClose = async () => {
+    const handleEquipmentModalClose = () => {
         setShowEquipmentModal(false);
-        // Recharger la liste des équipements
+    };
+
+    const handleEquipmentModalChange = async () => {
+        // Recharger la liste des équipements sans fermer le modal
         const equipData = await fetchEquipment();
         if (equipData && equipData.success) {
             setEquipment(equipData.data || []);
@@ -880,7 +883,7 @@ const EditEventModal = ({ show, onHide, onSave, onDelete, event, employees }) =>
             <ManageEquipmentModal 
                 show={showEquipmentModal}
                 onHide={handleEquipmentModalClose}
-                onEquipmentChange={handleEquipmentModalClose}
+                onEquipmentChange={handleEquipmentModalChange}
             />
             
             {/* Modal de prévisualisation de fichier avec navigation */}
