@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, ListGroup } from 'react-bootstrap';
 import { fetchEquipment as apiFetchEquipment } from '../../utils/apiUtils';
+import { API_BASE_URL } from '../../config/config';
 
 const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
     const [newEquipment, setNewEquipment] = useState('');
@@ -38,19 +39,22 @@ const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
         }
 
         try {
-            const response = await fetch('/api/equipment.php', {
+            const response = await fetch(`${API_BASE_URL}/equipment.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ name: newEquipment }),
+                credentials: 'include'
             });
 
-            if (!response.ok) {
-                throw new Error('Erreur lors de l\'ajout de l\'équipement');
+            const data = await response.json();
+            
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Erreur lors de l\'ajout de l\'équipement');
             }
 
-            await fetchEquipment();
+            await loadEquipment();
             setNewEquipment('');
             setError('');
             if (onEquipmentChange) {
@@ -64,15 +68,16 @@ const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
 
     const handleDeleteEquipment = async (id) => {
         try {
-            const response = await fetch(`/api/equipment.php?id=${id}`, {
-                method: 'DELETE'
+            const response = await fetch(`${API_BASE_URL}/equipment.php?id=${id}`, {
+                method: 'DELETE',
+                credentials: 'include'
             });
 
             if (!response.ok) {
                 throw new Error('Erreur lors de la suppression de l\'équipement');
             }
 
-            await fetchEquipment();
+            await loadEquipment();
             if (onEquipmentChange) {
                 onEquipmentChange();
             }
@@ -89,19 +94,20 @@ const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
 
     const handleSaveEdit = async (id) => {
         try {
-            const response = await fetch(`/api/equipment.php?id=${id}`, {
+            const response = await fetch(`${API_BASE_URL}/equipment.php?id=${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ name: editingName }),
+                credentials: 'include'
             });
 
             if (!response.ok) {
                 throw new Error('Erreur lors de la modification de l\'équipement');
             }
 
-            await fetchEquipment();
+            await loadEquipment();
             setEditingId(null);
             setEditingName('');
         } catch (error) {
