@@ -1,0 +1,66 @@
+.data-management-page {
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.data-management-page h1 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+
+.data-management-page .table {
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.data-management-page .table th {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+    font-weight: 600;
+    text-align: center;
+}
+
+.data-management-page .table td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+.data-management-page .table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+.data-management-page .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.data-management-page .alert {
+    margin-bottom: 20px;
+}
+
+.data-management-page .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    margin: 50px auto;
+}
+
+.data-management-page .form-select {
+    max-width: 300px;
+}
+
+@media (max-width: 768px) {
+    .data-management-page {
+        padding: 10px;
+    }
+    
+    .data-management-page h1 {
+        font-size: 1.5rem;
+    }
+    
+    .data-management-page .table {
+        font-size: 0.875rem;
+    }
+}

@@ -50,6 +50,12 @@ const SideMenu = () => {
                         <span className="link-text">Usagers</span>
                     </Link>
                 </li>
+                <li className="side-menu-item">
+                    <Link to="/data-management" className="side-menu-link">
+                        <span className="link-icon">🗄️</span>
+                        <span className="link-text">Données</span>
+                    </Link>
+                </li>
                 {/* Ajouter d'autres liens ici si nécessaire */}
             </ul>
 

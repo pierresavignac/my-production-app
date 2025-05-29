@@ -6,6 +6,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import SideMenu from './components/layout/SideMenu';
 import NoAppointmentView from './components/views/NoAppointmentView';
 import ListViewPage from './components/ListViewPage';
+import DataManagementPage from './components/DataManagementPage';
 import './App.css';
 import './styles/FileViewerModal.css';
 
@@ -53,6 +54,14 @@ function App() {
             element={
               <ProtectedRoute requireAdmin={true}>
                 <UserManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/data-management" 
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <DataManagementPage />
               </ProtectedRoute>
             } 
           />
