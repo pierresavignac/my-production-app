@@ -16,6 +16,15 @@ const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
         }
     }, [show]);
 
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => {
+                setError('');
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
+
     const loadEquipment = async () => {
         try {
             const response = await apiFetchEquipment();
@@ -44,7 +53,7 @@ const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name: newEquipment }),
+                body: JSON.stringify({ name: newEquipment.trim() }),
                 credentials: 'include'
             });
 
@@ -73,11 +82,14 @@ const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
                 credentials: 'include'
             });
 
-            if (!response.ok) {
-                throw new Error('Erreur lors de la suppression de l\'équipement');
+            const data = await response.json();
+            
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Erreur lors de la suppression de l\'équipement');
             }
 
             await loadEquipment();
+            setError('');
             if (onEquipmentChange) {
                 onEquipmentChange();
             }
@@ -93,23 +105,34 @@ const ManageEquipmentModal = ({ show, onHide, onEquipmentChange }) => {
     };
 
     const handleSaveEdit = async (id) => {
+        if (!editingName.trim()) {
+            setError('Veuillez entrer un nom d\'équipement');
+            return;
+        }
+
         try {
             const response = await fetch(`${API_BASE_URL}/equipment.php?id=${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name: editingName }),
+                body: JSON.stringify({ name: editingName.trim() }),
                 credentials: 'include'
             });
 
-            if (!response.ok) {
-                throw new Error('Erreur lors de la modification de l\'équipement');
+            const data = await response.json();
+            
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Erreur lors de la modification de l\'équipement');
             }
 
             await loadEquipment();
             setEditingId(null);
             setEditingName('');
+            setError('');
+            if (onEquipmentChange) {
+                onEquipmentChange();
+            }
         } catch (error) {
             console.error('Erreur:', error);
             setError('Erreur lors de la modification de l\'équipement');
