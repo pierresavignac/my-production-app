@@ -84,6 +84,9 @@ const SimpleCalendar = forwardRef(({ events, onDateClick, onEventClick, currentD
                 <div>{event.full_name}</div>
                 <div>{event.address}</div>
                 <div>{event.city}</div>
+                {event.type === 'installation' && event.equipment && (
+                    <div className="event-equipment">{event.equipment}</div>
+                )}
                 <div className="technicians-container">
                     {event.technician1_name && (
                         <div className="technician-name">
