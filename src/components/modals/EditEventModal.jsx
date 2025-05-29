@@ -267,11 +267,18 @@ const EditEventModal = ({ show, onHide, onSave, onDelete, event, employees }) =>
             console.log('Techniciens chargés:', techData);
             console.log('Équipements chargés:', equipData);
             
-            setAvailableTechnicians(techData);
-            if (equipData && equipData.success) {
-                setEquipment(equipData.data || []);
+            // S'assurer que techData.data est un tableau
+            if (techData && techData.success && Array.isArray(techData.data)) {
+                setAvailableTechnicians(techData.data);
             } else {
-                console.error('Format de données invalide:', equipData);
+                console.error('Format de données invalide pour les techniciens:', techData);
+                setAvailableTechnicians([]);
+            }
+            
+            if (equipData && equipData.success && Array.isArray(equipData.data)) {
+                setEquipment(equipData.data);
+            } else {
+                console.error('Format de données invalide pour les équipements:', equipData);
                 setEquipment([]);
             }
         } catch (error) {
@@ -819,11 +826,11 @@ const EditEventModal = ({ show, onHide, onSave, onDelete, event, employees }) =>
                                     onChange={(e) => handleChange('technician1_id', e.target.value)}
                                 >
                                     <option value="">Technicien 1</option>
-                                    {availableTechnicians.map(tech => (
+                                    {Array.isArray(availableTechnicians) ? availableTechnicians.map(tech => (
                                         <option key={tech.id} value={tech.id}>
-                                            {tech.name.includes(' ') ? tech.name.split(' ').slice(1).join(' ') : tech.name}
+                                            {tech.name && tech.name.includes(' ') ? tech.name.split(' ').slice(1).join(' ') : tech.name}
                                         </option>
-                                    ))}
+                                    )) : null}
                                 </Form.Select>
                             </div>
                             <div className="col-6">
@@ -832,11 +839,11 @@ const EditEventModal = ({ show, onHide, onSave, onDelete, event, employees }) =>
                                     onChange={(e) => handleChange('technician2_id', e.target.value)}
                                 >
                                     <option value="">Technicien 2</option>
-                                    {availableTechnicians.map(tech => (
+                                    {Array.isArray(availableTechnicians) ? availableTechnicians.map(tech => (
                                         <option key={tech.id} value={tech.id}>
-                                            {tech.name.includes(' ') ? tech.name.split(' ').slice(1).join(' ') : tech.name}
+                                            {tech.name && tech.name.includes(' ') ? tech.name.split(' ').slice(1).join(' ') : tech.name}
                                         </option>
-                                    ))}
+                                    )) : null}
                                 </Form.Select>
                             </div>
                         </div>
@@ -848,11 +855,11 @@ const EditEventModal = ({ show, onHide, onSave, onDelete, event, employees }) =>
                                     onChange={(e) => handleChange('technician3_id', e.target.value)}
                                 >
                                     <option value="">Technicien 3</option>
-                                    {availableTechnicians.map(tech => (
+                                    {Array.isArray(availableTechnicians) ? availableTechnicians.map(tech => (
                                         <option key={tech.id} value={tech.id}>
-                                            {tech.name.includes(' ') ? tech.name.split(' ').slice(1).join(' ') : tech.name}
+                                            {tech.name && tech.name.includes(' ') ? tech.name.split(' ').slice(1).join(' ') : tech.name}
                                         </option>
-                                    ))}
+                                    )) : null}
                                 </Form.Select>
                             </div>
                             <div className="col-6">
@@ -861,11 +868,11 @@ const EditEventModal = ({ show, onHide, onSave, onDelete, event, employees }) =>
                                     onChange={(e) => handleChange('technician4_id', e.target.value)}
                                 >
                                     <option value="">Technicien 4</option>
-                                    {availableTechnicians.map(tech => (
+                                    {Array.isArray(availableTechnicians) ? availableTechnicians.map(tech => (
                                         <option key={tech.id} value={tech.id}>
-                                            {tech.name.includes(' ') ? tech.name.split(' ').slice(1).join(' ') : tech.name}
+                                            {tech.name && tech.name.includes(' ') ? tech.name.split(' ').slice(1).join(' ') : tech.name}
                                         </option>
-                                    ))}
+                                    )) : null}
                                 </Form.Select>
                             </div>
                         </div>

@@ -414,3 +414,12 @@ button {
     white-space: nowrap; /* Empêche le texte du bouton de passer à la ligne */
     margin: 0 5px; /* Ajouter un peu d'espace entre les boutons si ce n'est pas déjà fait */
 }
+
+/* Séparateur pour les tâches de Pascal */
+.pascal-separator {
+    width: 100%;
+    height: 2px;
+    background-color: #333;
+    margin: 12px 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}

@@ -196,7 +196,34 @@ const SimpleCalendar = forwardRef(({ events, onDateClick, onEventClick, currentD
                                             {format(date, 'EEEE d', { locale: fr })}
                                             <Button className="add-inline-button">+</Button>
                                         </h3>
-                                        {getEventsForDate(date).map(event => renderEvent(event))}
+                                        {(() => {
+                                            const events = getEventsForDate(date);
+                                            // Séparer les événements de Pascal des autres
+                                            const pascalEvents = events.filter(event => 
+                                                event.type === 'installation' && 
+                                                (event.technician1_name?.toLowerCase().includes('pascal') ||
+                                                 event.technician2_name?.toLowerCase().includes('pascal') ||
+                                                 event.technician3_name?.toLowerCase().includes('pascal') ||
+                                                 event.technician4_name?.toLowerCase().includes('pascal'))
+                                            );
+                                            const otherEvents = events.filter(event => 
+                                                !(event.type === 'installation' && 
+                                                  (event.technician1_name?.toLowerCase().includes('pascal') ||
+                                                   event.technician2_name?.toLowerCase().includes('pascal') ||
+                                                   event.technician3_name?.toLowerCase().includes('pascal') ||
+                                                   event.technician4_name?.toLowerCase().includes('pascal')))
+                                            );
+                                            
+                                            return (
+                                                <>
+                                                    {otherEvents.map(event => renderEvent(event))}
+                                                    {pascalEvents.length > 0 && otherEvents.length > 0 && (
+                                                        <div className="pascal-separator"></div>
+                                                    )}
+                                                    {pascalEvents.map(event => renderEvent(event))}
+                                                </>
+                                            );
+                                        })()}
                                     </div>
                                 );
                             })}
