@@ -4,48 +4,58 @@ import { fr } from 'date-fns/locale';
 import styled from 'styled-components';
 
 const WeekSection = styled.div`
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
 
   &[data-is-current="true"] {
-    background: #1976d2;
-    color: white;
+    border: 2px solid #1976d2;
     
     .week-header {
-      background: white;
-      color: black;
-      border-bottom: 1px solid #e9ecef;
+      background: #1976d2;
+      color: white;
     }
     
     .day-section {
       background: white;
       color: black;
-      margin: 0.5rem;
-      border-radius: 8px;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+      margin: 0;
+      padding: 20px;
+      border-bottom: 1px solid #e9ecef;
+
+      &:last-child {
+        border-bottom: none;
+      }
 
       &[data-is-current="true"] {
-        background: #ff8f00;
+        background: #fff3cd;
+        border-left: 4px solid #ff8f00;
       }
     }
   }
 `;
 
 const AddInlineButton = styled.button`
-  margin-left: 10px;
-  padding: 2px 8px;
-  background: #4CAF50;
+  margin-left: auto;
+  padding: 4px 12px;
+  background: #28a745;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.2s;
 
   &:hover {
-    background: #45a049;
+    background: #218838;
   }
 `;
 

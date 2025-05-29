@@ -1,13 +1,20 @@
 /* Styles personnalisés pour le FileViewerModal */
 
-/* Modal avec largeur de 95% */
-.file-viewer-modal-wide .modal-dialog {
+/* Modal avec largeur de 95% - IMPORTANT: appliqué au .modal-dialog */
+.file-viewer-modal-wide {
   max-width: 95vw !important;
   width: 95vw !important;
   margin: 2.5vh auto;
 }
 
+/* Pour s'assurer que le modal prend bien la largeur */
+.modal.show .file-viewer-modal-wide {
+  max-width: 95vw !important;
+  width: 95vw !important;
+}
+
 /* Hauteur maximale pour le contenu */
+.file-viewer-modal .modal-body,
 .file-viewer-modal-wide .modal-body {
   height: 85vh;
   max-height: 85vh;
@@ -49,12 +56,13 @@
 
 /* Navigation responsive */
 @media (max-width: 768px) {
-  .file-viewer-modal-wide .modal-dialog {
+  .file-viewer-modal-wide {
     max-width: 100vw !important;
     width: 100vw !important;
     margin: 0;
   }
   
+  .file-viewer-modal .modal-body,
   .file-viewer-modal-wide .modal-body {
     height: calc(100vh - 120px);
     max-height: calc(100vh - 120px);
@@ -72,13 +80,29 @@
 }
 
 /* Header du modal */
+.file-viewer-modal .modal-header,
 .file-viewer-modal-wide .modal-header {
   background-color: #f8f9fa;
   border-bottom: 2px solid #dee2e6;
 }
 
 /* Footer du modal */
+.file-viewer-modal .modal-footer,
 .file-viewer-modal-wide .modal-footer {
   background-color: #f8f9fa;
   border-top: 2px solid #dee2e6;
+}
+
+/* Override Bootstrap pour forcer la largeur */
+.modal-dialog.file-viewer-modal-wide {
+  max-width: 95vw !important;
+  width: 95vw !important;
+}
+
+/* S'assurer que le modal est bien centré */
+.modal.show .modal-dialog.file-viewer-modal-wide {
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - 3.5rem);
+  margin: 1.75rem auto;
 }

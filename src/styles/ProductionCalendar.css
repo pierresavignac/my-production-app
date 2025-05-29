@@ -199,6 +199,7 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 8px;
+  padding-right: 100px; /* Espace augmenté pour INS et représentant complet */
   margin-bottom: 8px;
   border-radius: 4px;
   cursor: pointer;
@@ -206,6 +207,34 @@
   box-sizing: border-box;
   color: black;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: visible; /* S'assurer que le contenu n'est pas coupé */
+}
+
+.installation-number {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-weight: bold;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+.representative-name {
+  position: absolute;
+  top: 24px; /* Légèrement plus proche du numéro INS */
+  right: 8px;
+  font-weight: bold;
+  font-family: inherit;
+  font-size: 0.9em; /* Légèrement plus petit */
+  color: inherit;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 10;
+  max-width: 90px; /* Largeur augmentée pour afficher le nom complet */
 }
 
 .calendar-event:hover {

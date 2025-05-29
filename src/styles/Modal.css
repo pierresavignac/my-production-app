@@ -6,6 +6,17 @@
     justify-content: center !important;
 }
 
+/* Assurer un fond blanc opaque pour tous les modals */
+.modal-content {
+    background-color: white !important;
+    opacity: 1 !important;
+}
+
+.modal-body {
+    background-color: white !important;
+    opacity: 1 !important;
+}
+
 /* Spécifiquement pour EventDetailsModal */
 .custom-modal-wide .modal-dialog {
     max-width: 1120px !important; /* Réduit de 1600px à 1120px (30% de moins) */
@@ -367,9 +378,54 @@
 }
 
 /* --- Styles pour le visualisateur de fichiers --- */
+.modal-dialog-95vw {
+    background-color: transparent !important;
+}
+
+.modal-dialog-95vw .modal-content {
+    background-color: white !important;
+    opacity: 1 !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,.5) !important;
+}
+
 .file-viewer-modal .modal-body {
     max-height: 75vh;
     overflow-y: auto;
+    background-color: white !important;
+    opacity: 1 !important;
+}
+
+/* Assurer un fond blanc pour le modal du visualisateur de fichiers */
+.modal-dialog-95vw .modal-content {
+    background-color: white !important;
+    opacity: 1 !important;
+}
+
+.modal-content-full {
+    background-color: white !important;
+    opacity: 1 !important;
+}
+
+/* Style pour le footer du modal pour améliorer la visibilité des boutons */
+.modal-dialog-95vw .modal-footer {
+    background-color: #f8f9fa !important;
+    border-top: 1px solid #dee2e6 !important;
+    padding: 1rem !important;
+    box-shadow: 0 -2px 5px rgba(0,0,0,.1) !important;
+}
+
+.modal-dialog-95vw .modal-header {
+    background-color: white !important;
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+/* Overlay du modal */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.modal.show {
+    background-color: rgba(0, 0, 0, 0.5) !important;
 }
 
 .pdf-container {

@@ -5,7 +5,9 @@ import UserManagement from './components/admin/UserManagement';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import SideMenu from './components/layout/SideMenu';
 import NoAppointmentView from './components/views/NoAppointmentView';
+import ListViewPage from './components/ListViewPage';
 import './App.css';
+import './styles/FileViewerModal.css';
 
 function App() {
   return (
@@ -26,7 +28,7 @@ function App() {
             path="/list-view" 
             element={
               <ProtectedRoute>
-                <div>Page Vue Liste (à créer)</div> 
+                <ListViewPage />
               </ProtectedRoute>
             } 
           />

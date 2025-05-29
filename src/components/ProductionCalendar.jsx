@@ -30,8 +30,10 @@ const ProductionCalendar = () => {
             console.log("Réponse reçue de fetchEvents:", response);
 
             if (response && response.success && Array.isArray(response.data)) {
-                console.log(`${response.data.length} événements chargés avec succès.`);
-                setEvents(response.data);
+                // Filtrer pour exclure les tâches "Sans rendez-vous"
+                const eventsWithAppointment = response.data.filter(event => !event.no_appointment);
+                console.log(`${eventsWithAppointment.length} événements avec rendez-vous chargés (${response.data.length} au total).`);
+                setEvents(eventsWithAppointment);
             } else {
                 console.error('Format de réponse inattendu de fetchEvents:', response);
                 setEvents([]);

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, Button, Spinner, Alert } from 'react-bootstrap';
 import { getProgressionDirectUrl } from '../utils/progressionFileUtils';
-import '../styles/FileViewerModal.css';
 
 /**
  * Modal pour afficher tous types de fichiers (PDF, images, etc.)
@@ -142,7 +141,7 @@ const FileViewerModal = ({ show, onHide, file, fileId, fileName, installationNum
     // Afficher un message d'erreur si présent
     if (error) {
       return (
-        <Alert variant="danger" className="m-3">
+        <Alert variant="danger" className="m-3" style={{ backgroundColor: 'white' }}>
           {error}
         </Alert>
       );
@@ -151,7 +150,15 @@ const FileViewerModal = ({ show, onHide, file, fileId, fileName, installationNum
     // Afficher un indicateur de chargement
     if (loading) {
       return (
-        <div className="file-viewer-loading">
+        <div style={{ 
+          width: '100%', 
+          height: '100%', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          backgroundColor: 'white'
+        }}>
           <Spinner animation="border" role="status" />
           <p className="mt-3">Chargement...</p>
         </div>
@@ -166,12 +173,19 @@ const FileViewerModal = ({ show, onHide, file, fileId, fileName, installationNum
     // Si on a une URL directe vers ProgressionLive, l'utiliser directement
     if (directProgressionUrl) {
       return (
-        <div className="file-viewer-content-container">
+        <div style={{ 
+          width: '100%', 
+          height: '100%', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          backgroundColor: 'white'
+        }}>
           <iframe
             key={`progression-${currentFile.id}`}
             src={directProgressionUrl}
             title="Visualiseur de fichier"
-            className="file-viewer-iframe"
+            style={{ width: '100%', height: '100%', border: 'none' }}
             onError={() => setError("Impossible de charger le fichier depuis ProgressionLive.")}
           />
         </div>
@@ -180,12 +194,25 @@ const FileViewerModal = ({ show, onHide, file, fileId, fileName, installationNum
 
     // Utiliser l'iframe pour charger la page proxy qui gère la visualisation
     return (
-      <div className="file-viewer-content-container">
+      <div style={{ 
+        width: '100%', 
+        height: '100%', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        backgroundColor: 'white',
+        position: 'relative'
+      }}>
         <iframe
           key={`proxy-${currentFile.id}`}
           src={proxyViewerUrl}
           title="Visualiseur de fichier"
-          className="file-viewer-iframe"
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            border: 'none',
+            backgroundColor: 'white'
+          }}
           onError={() => setError("Impossible de charger le fichier. Veuillez essayer de le télécharger.")}
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
         />
@@ -198,10 +225,22 @@ const FileViewerModal = ({ show, onHide, file, fileId, fileName, installationNum
       show={show} 
       onHide={onHide} 
       centered
-      fullscreen={window.innerWidth < 576}
-      className="file-viewer-modal file-viewer-modal-wide"
-      backdrop="static" // Empêche la fermeture en cliquant sur l'arrière-plan
-      dialogClassName="modal-95vw"
+      backdrop="static"
+      dialogClassName="modal-dialog-95vw"
+      contentClassName="modal-content-full"
+      style={{
+        display: show ? 'block' : 'none',
+        backgroundColor: 'white'
+      }}
+      dialogAs={props => (
+        <div {...props} style={{
+          ...props.style,
+          maxWidth: '95vw',
+          width: '95vw',
+          margin: '2.5vh auto',
+          backgroundColor: 'white'
+        }} />
+      )}
     >
       <Modal.Header closeButton>
         <Modal.Title className="d-flex align-items-center">
@@ -212,35 +251,23 @@ const FileViewerModal = ({ show, onHide, file, fileId, fileName, installationNum
             </span>
           )}
         </Modal.Title>
-        {showNavigation && (
-          <div className="ms-auto me-3 embedded-pdf-nav-controls d-md-none">
-            <button 
-              className={`embedded-pdf-nav-button ${isPrevDisabled ? 'disabled' : ''}`}
-              onClick={handlePrevious}
-              disabled={isPrevDisabled}
-              title="Fichier précédent"
-            >
-              &lt;
-            </button>
-            <button 
-              className={`embedded-pdf-nav-button ${isNextDisabled ? 'disabled' : ''}`}
-              onClick={handleNext}
-              disabled={isNextDisabled}
-              title="Fichier suivant"
-            >
-              &gt;
-            </button>
-          </div>
-        )}
       </Modal.Header>
       
-      <Modal.Body className="p-0">
+      <Modal.Body className="p-0" style={{ 
+        height: '85vh', 
+        maxHeight: '85vh', 
+        overflow: 'hidden',
+        backgroundColor: 'white',
+        opacity: '1',
+        position: 'relative',
+        zIndex: '10'
+      }}>
         {renderFileContent()}
       </Modal.Body>
       
-      <Modal.Footer>
+      <Modal.Footer className="justify-content-center">
         {showNavigation && (
-          <div className="me-auto">
+          <>
             <Button 
               variant="outline-secondary" 
               disabled={isPrevDisabled}
@@ -256,25 +283,11 @@ const FileViewerModal = ({ show, onHide, file, fileId, fileName, installationNum
             >
               Suivant &gt;
             </Button>
-          </div>
+          </>
         )}
-        <Button 
-          variant="outline-primary" 
-          onClick={handleOpenInNewTab}
-          disabled={!directProgressionUrl && !proxyViewerUrl}
-        >
-          Ouvrir dans un nouvel onglet
+        <Button variant="secondary" onClick={onHide} className={showNavigation ? "ms-2" : ""}>
+          Fermer
         </Button>
-        {directProgressionUrl && (
-          <Button 
-            variant="outline-info" 
-            onClick={() => window.open(directProgressionUrl, '_blank')}
-            title="Ouvrir directement dans ProgressionLive"
-          >
-            ProgressionLive
-          </Button>
-        )}
-        <Button variant="secondary" onClick={onHide}>Fermer</Button>
       </Modal.Footer>
     </Modal>
   );

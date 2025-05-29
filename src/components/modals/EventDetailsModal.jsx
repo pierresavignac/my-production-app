@@ -331,7 +331,7 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
                                 </div>
                                 <div className="detail-item">
                                     <label>Représentant :</label>
-                                    <span>{event.sales_rep || '-'}</span>
+                                    <span>{event.representative || '-'}</span>
                                 </div>
                             </div>
 
