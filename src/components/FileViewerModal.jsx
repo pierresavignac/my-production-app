@@ -1,54 +1,72 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, Button, Spinner, Alert } from 'react-bootstrap';
+import { getProgressionDirectUrl } from '../utils/progressionFileUtils';
+import '../styles/FileViewerModal.css';
 
 /**
  * Modal pour afficher tous types de fichiers (PDF, images, etc.)
  * avec support de navigation entre fichiers
  */
-const FileViewerModal = ({ show, onHide, file, installationNumber, files, currentIndex, onNavigate }) => {
+const FileViewerModal = ({ show, onHide, file, fileId, fileName, installationNumber, files, currentIndex, onNavigate }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewerHeight, setViewerHeight] = useState('75vh');
 
   // URL du service API
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
-
-  // URL principale - notre page HTML proxy qui gère l'affichage de tous types de fichiers
-  const proxyViewerUrl = file && installationNumber 
-    ? `${window.location.origin}/file-proxy-viewer.html?id=${file.id}&ins=${encodeURIComponent(installationNumber)}${file.name ? `&name=${encodeURIComponent(file.name)}` : ''}&api=${API_BASE_URL}&index=${currentIndex || 0}&total=${files?.length || 1}` 
-    : '';
   
-  // URL pour téléchargement du fichier
-  const downloadUrl = file && installationNumber 
-    ? `${API_BASE_URL}/download_attachment.php?id=${file.id}&ins=${encodeURIComponent(installationNumber)}` 
-    : '';
+  // Utiliser file s'il existe, sinon créer un objet file à partir de fileId et fileName
+  // useMemo pour éviter de recréer l'objet à chaque rendu
+  const currentFile = useMemo(() => {
+    return file || (fileId && fileName ? { id: fileId, name: fileName } : null);
+  }, [file, fileId, fileName]);
+
+  // URL directe vers ProgressionLive
+  const directProgressionUrl = useMemo(() => {
+    return currentFile ? getProgressionDirectUrl(currentFile.id, currentFile.name) : null;
+  }, [currentFile]);
+
+  // URL principale - utiliser l'URL directe de ProgressionLive si disponible
+  const proxyViewerUrl = useMemo(() => {
+    return directProgressionUrl || (currentFile && installationNumber 
+      ? `/file-proxy-viewer.html?id=${currentFile.id}&ins=${encodeURIComponent(installationNumber)}${currentFile.name ? `&name=${encodeURIComponent(currentFile.name)}` : ''}&api=${API_BASE_URL}&index=${currentIndex || 0}&total=${files?.length || 1}` 
+      : '');
+  }, [directProgressionUrl, currentFile, installationNumber, API_BASE_URL, currentIndex, files]);
+  // URL pour téléchargement du fichier - on n'en a plus besoin
+  const downloadUrl = null;
 
   // Déterminer le type de fichier en fonction de l'extension
   useEffect(() => {
-    if (file?.name) {
-      const extension = file.name.toLowerCase().split('.').pop();
+    if (currentFile?.name) {
+      const extension = currentFile.name.toLowerCase().split('.').pop();
       if (extension === 'pdf') {
         setViewerHeight('80vh'); // Plus grand pour les PDFs
       } else {
         setViewerHeight('75vh');
       }
     }
-  }, [file]);
+  }, [currentFile?.name]); // Dépendre uniquement du nom du fichier
 
   // Réinitialiser l'état lorsque le modal est ouvert ou le fichier change
   useEffect(() => {
-    if (show && file) {
+    let timer;
+    
+    if (show && currentFile && currentFile.id) {
       setError(null);
       setLoading(true);
       
       // Simuler un chargement rapide car notre page proxy gère son propre indicateur de chargement
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         setLoading(false);
       }, 500);
-      
-      return () => clearTimeout(timer);
     }
-  }, [show, file]); 
+    
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [show, currentFile?.id]); // Dépendre de l'ID du fichier plutôt que de l'objet complet 
 
   // Fonction pour naviguer vers le fichier précédent
   const handlePrevious = (e) => {
@@ -98,24 +116,26 @@ const FileViewerModal = ({ show, onHide, file, installationNumber, files, curren
     };
   }, [onNavigate]);
 
-  // Téléchargement du fichier
-  const handleDownload = () => {
-    if (downloadUrl) {
-      window.open(downloadUrl, '_blank');
-    }
-  };
-  
   // Fonction pour ouvrir le visualiseur dans un nouvel onglet
   const handleOpenInNewTab = () => {
-    if (proxyViewerUrl) {
-      window.open(proxyViewerUrl, '_blank');
+    const urlToOpen = directProgressionUrl || proxyViewerUrl;
+    if (urlToOpen) {
+      window.open(urlToOpen, '_blank');
     }
   };
 
   // Vérification si les boutons de navigation doivent être affichés
-  const showNavigation = Array.isArray(files) && files.length > 1 && onNavigate !== undefined;
-  const isPrevDisabled = !showNavigation || currentIndex <= 0;
-  const isNextDisabled = !showNavigation || currentIndex >= files.length - 1;
+  const showNavigation = useMemo(() => {
+    return Array.isArray(files) && files.length > 1 && onNavigate !== undefined;
+  }, [files, onNavigate]);
+  
+  const isPrevDisabled = useMemo(() => {
+    return !showNavigation || currentIndex <= 0;
+  }, [showNavigation, currentIndex]);
+  
+  const isNextDisabled = useMemo(() => {
+    return !showNavigation || currentIndex >= files.length - 1;
+  }, [showNavigation, currentIndex, files?.length]);
 
   // Rendu du contenu du fichier
   const renderFileContent = () => {
@@ -124,11 +144,6 @@ const FileViewerModal = ({ show, onHide, file, installationNumber, files, curren
       return (
         <Alert variant="danger" className="m-3">
           {error}
-          <div className="mt-3">
-            <Button variant="primary" onClick={handleDownload}>
-              Télécharger le fichier à la place
-            </Button>
-          </div>
         </Alert>
       );
     }
@@ -136,7 +151,7 @@ const FileViewerModal = ({ show, onHide, file, installationNumber, files, curren
     // Afficher un indicateur de chargement
     if (loading) {
       return (
-        <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: viewerHeight }}>
+        <div className="file-viewer-loading">
           <Spinner animation="border" role="status" />
           <p className="mt-3">Chargement...</p>
         </div>
@@ -144,48 +159,53 @@ const FileViewerModal = ({ show, onHide, file, installationNumber, files, curren
     }
 
     // Vérifier si l'URL est valide
-    if (!proxyViewerUrl) {
+    if (!directProgressionUrl && !proxyViewerUrl) {
       return <Alert variant="warning" className="m-3">Aucun fichier à afficher</Alert>;
+    }
+
+    // Si on a une URL directe vers ProgressionLive, l'utiliser directement
+    if (directProgressionUrl) {
+      return (
+        <div className="file-viewer-content-container">
+          <iframe
+            key={`progression-${currentFile.id}`}
+            src={directProgressionUrl}
+            title="Visualiseur de fichier"
+            className="file-viewer-iframe"
+            onError={() => setError("Impossible de charger le fichier depuis ProgressionLive.")}
+          />
+        </div>
+      );
     }
 
     // Utiliser l'iframe pour charger la page proxy qui gère la visualisation
     return (
-      <div className="d-flex flex-column" style={{ height: viewerHeight }}>
+      <div className="file-viewer-content-container">
         <iframe
+          key={`proxy-${currentFile.id}`}
           src={proxyViewerUrl}
           title="Visualiseur de fichier"
-          width="100%"
-          height="100%"
-          frameBorder="0"
+          className="file-viewer-iframe"
           onError={() => setError("Impossible de charger le fichier. Veuillez essayer de le télécharger.")}
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-          style={{ background: 'white' }}
         />
       </div>
     );
   };
 
-  console.log('🔍 [FileViewerModal] Render avec:', { 
-    show, 
-    fileName: file?.name,
-    showNavigation,
-    currentIndex: currentIndex || 0,
-    proxyViewerUrl
-  });
-
   return (
     <Modal 
       show={show} 
       onHide={onHide} 
-      size="xl"
       centered
-      fullscreen={window.innerWidth < 992}
-      className="file-viewer-modal"
+      fullscreen={window.innerWidth < 576}
+      className="file-viewer-modal file-viewer-modal-wide"
       backdrop="static" // Empêche la fermeture en cliquant sur l'arrière-plan
+      dialogClassName="modal-95vw"
     >
       <Modal.Header closeButton>
         <Modal.Title className="d-flex align-items-center">
-          {file ? file.name : 'Visualisation de fichier'}
+          {currentFile ? currentFile.name : 'Visualisation de fichier'}
           {showNavigation && (
             <span className="ms-3 text-muted small">
               Fichier {currentIndex + 1} sur {files.length}
@@ -241,18 +261,20 @@ const FileViewerModal = ({ show, onHide, file, installationNumber, files, curren
         <Button 
           variant="outline-primary" 
           onClick={handleOpenInNewTab}
-          disabled={!proxyViewerUrl}
+          disabled={!directProgressionUrl && !proxyViewerUrl}
         >
           Ouvrir dans un nouvel onglet
         </Button>
+        {directProgressionUrl && (
+          <Button 
+            variant="outline-info" 
+            onClick={() => window.open(directProgressionUrl, '_blank')}
+            title="Ouvrir directement dans ProgressionLive"
+          >
+            ProgressionLive
+          </Button>
+        )}
         <Button variant="secondary" onClick={onHide}>Fermer</Button>
-        <Button 
-          variant="primary" 
-          onClick={handleDownload}
-          disabled={!file}
-        >
-          Télécharger
-        </Button>
       </Modal.Footer>
     </Modal>
   );

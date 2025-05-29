@@ -33,6 +33,10 @@ const SimpleCalendar = forwardRef(({ events, onDateClick, onEventClick, currentD
 
     const getEventsForDate = (date) => {
         return events.filter(event => {
+            // Filtrer les événements sans rendez-vous
+            if (event.no_appointment) {
+                return false;
+            }
             const eventDateStr = formatInTimeZone(parseISO(event.date), 'America/Montreal', 'yyyy-MM-dd');
             const calendarDateStr = formatInTimeZone(date, 'America/Montreal', 'yyyy-MM-dd');
             return eventDateStr === calendarDateStr;

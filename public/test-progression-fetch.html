@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Fetch ProgressionLive</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+        button { margin: 10px 0; padding: 10px; }
+        input { padding: 8px; margin: 5px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Test de récupération des données ProgressionLive</h1>
+    
+    <div class="section">
+        <h2>1. Test de l'API tasks.php</h2>
+        <input type="text" id="insNumber1" placeholder="Numéro INS (ex: 12345)" value="12345">
+        <button onclick="testTasks()">Tester tasks.php</button>
+        <div id="tasksResults"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. Test de l'API get_progression_files.php</h2>
+        <input type="text" id="insNumber2" placeholder="Numéro INS (ex: 12345)" value="12345">
+        <button onclick="testFiles()">Tester get_progression_files.php</button>
+        <div id="filesResults"></div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:8080';
+        
+        async function testTasks() {
+            const insNumber = document.getElementById('insNumber1').value;
+            const resultsDiv = document.getElementById('tasksResults');
+            resultsDiv.innerHTML = '<p class="info">Test en cours...</p>';
+            
+            try {
+                const formattedCode = insNumber.startsWith('INS') ? insNumber : `INS${insNumber.padStart(6, '0')}`;
+                const url = `${API_URL}/progression/tasks.php?code=${formattedCode}`;
+                
+                console.log('Appel de:', url);
+                const response = await fetch(url);
+                const responseText = await response.text();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${responseText}`);
+                }
+                
+                try {
+                    const data = JSON.parse(responseText);
+                    resultsDiv.innerHTML = `
+                        <p class="success">✅ Connexion réussie</p>
+                        <p>Status: ${response.status}</p>
+                        <p>Success: ${data.success}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } catch (parseError) {
+                    resultsDiv.innerHTML = `
+                        <p class="error">❌ Erreur de parsing JSON</p>
+                        <pre>${responseText}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ Erreur: ${error.message}</p>`;
+            }
+        }
+        
+        async function testFiles() {
+            const insNumber = document.getElementById('insNumber2').value;
+            const resultsDiv = document.getElementById('filesResults');
+            resultsDiv.innerHTML = '<p class="info">Test en cours...</p>';
+            
+            try {
+                const url = `${API_URL}/get_progression_files.php?ins=${insNumber}`;
+                
+                console.log('Appel de:', url);
+                const response = await fetch(url);
+                const responseText = await response.text();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${responseText}`);
+                }
+                
+                try {
+                    const data = JSON.parse(responseText);
+                    resultsDiv.innerHTML = `
+                        <p class="success">✅ Connexion réussie</p>
+                        <p>Status: ${response.status}</p>
+                        <p>Success: ${data.success}</p>
+                        <p>Nombre de fichiers: ${data.data ? data.data.length : 0}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } catch (parseError) {
+                    resultsDiv.innerHTML = `
+                        <p class="error">❌ Erreur de parsing JSON</p>
+                        <pre>${responseText}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ Erreur: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

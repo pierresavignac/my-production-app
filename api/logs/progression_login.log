@@ -1,0 +1,74 @@
+[2025-05-27 21:49:51] Début progression_login.php []
+[2025-05-27 21:49:51] Requête OPTIONS préliminaire []
+[2025-05-27 21:49:51] Début progression_login.php []
+[2025-05-27 21:49:51] Données brutes reçues {
+    "raw": "{\"username\":\"pierre@garychartrand.com\",\"password\":\"A11gdb333!\",\"domain\":\"garychartrand\"}"
+}
+[2025-05-27 21:49:51] Paramètres validés {
+    "username": "pierre@garychartrand.com",
+    "domain": "garychartrand",
+    "password_length": 10
+}
+[2025-05-27 21:49:51] Fichiers de configuration {
+    "config": "\/Users\/pierresavignac\/Documents\/PROGRAMMES\/Calendar\/my-production-app\/api\/progression\/config.php",
+    "example": "\/Users\/pierresavignac\/Documents\/PROGRAMMES\/Calendar\/my-production-app\/api\/progression\/config.example.php",
+    "config_exists": true,
+    "example_exists": true
+}
+[2025-05-27 21:49:51] Configuration SOAP {
+    "baseUrl": "https:\/\/garychartrand.progressionlive.com",
+    "serviceUrl": "https:\/\/garychartrand.progressionlive.com\/server\/ws\/v2\/ProgressionWebService",
+    "wsdlUrl": "https:\/\/garychartrand.progressionlive.com\/server\/ws\/v2\/ProgressionWebService?wsdl"
+}
+[2025-05-27 21:49:51] Création du service SOAP []
+[2025-05-27 21:49:51] Création des credentials []
+[2025-05-27 21:49:51] Tentative de connexion à ProgressionLive []
+[2025-05-27 21:49:52] Réponse de connexion reçue []
+[2025-05-27 21:49:52] Connexion réussie, sauvegarde de la configuration []
+[2025-05-27 21:49:52] Configuration sauvegardée avec succès {
+    "path": "\/Users\/pierresavignac\/Documents\/PROGRAMMES\/Calendar\/my-production-app\/api\/progression\/config.php",
+    "size": 783
+}
+[2025-05-27 21:49:52] Connexion réussie, réponse {
+    "success": true,
+    "message": "Connexion réussie à ProgressionLive",
+    "username": "pierre@garychartrand.com",
+    "domain": "garychartrand"
+}
+[2025-05-28 01:50:43] Début progression_login.php []
+[2025-05-28 01:50:43] Requête OPTIONS préliminaire []
+[2025-05-28 01:50:43] Début progression_login.php []
+[2025-05-28 01:50:43] Données brutes reçues {
+    "raw": "{\"username\":\"pierre@garychartrand.com\",\"password\":\"A11gdb333!\",\"domain\":\"garychartrand\"}"
+}
+[2025-05-28 01:50:43] Paramètres validés {
+    "username": "pierre@garychartrand.com",
+    "domain": "garychartrand",
+    "password_length": 10
+}
+[2025-05-28 01:50:43] Fichiers de configuration {
+    "config": "\/Users\/pierresavignac\/Documents\/PROGRAMMES\/Calendar\/my-production-app\/api\/progression\/config.php",
+    "example": "\/Users\/pierresavignac\/Documents\/PROGRAMMES\/Calendar\/my-production-app\/api\/progression\/config.example.php",
+    "config_exists": true,
+    "example_exists": true
+}
+[2025-05-28 01:50:43] Configuration SOAP {
+    "baseUrl": "https:\/\/garychartrand.progressionlive.com",
+    "serviceUrl": "https:\/\/garychartrand.progressionlive.com\/server\/ws\/v2\/ProgressionWebService",
+    "wsdlUrl": "https:\/\/garychartrand.progressionlive.com\/server\/ws\/v2\/ProgressionWebService?wsdl"
+}
+[2025-05-28 01:50:43] Création du service SOAP []
+[2025-05-28 01:50:43] Création des credentials []
+[2025-05-28 01:50:43] Tentative de connexion à ProgressionLive []
+[2025-05-28 01:50:43] Réponse de connexion reçue []
+[2025-05-28 01:50:43] Connexion réussie, sauvegarde de la configuration []
+[2025-05-28 01:50:43] Configuration sauvegardée avec succès {
+    "path": "\/Users\/pierresavignac\/Documents\/PROGRAMMES\/Calendar\/my-production-app\/api\/progression\/config.php",
+    "size": 783
+}
+[2025-05-28 01:50:43] Connexion réussie, réponse {
+    "success": true,
+    "message": "Connexion réussie à ProgressionLive",
+    "username": "pierre@garychartrand.com",
+    "domain": "garychartrand"
+}

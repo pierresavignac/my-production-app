@@ -228,6 +228,119 @@
     overflow-y: auto;
 }
 
+/* Styles pour la section des fichiers d'installation */
+.installation-files-container {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+    background-color: white;
+    width: 100%;
+}
+
+.installation-files-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.installation-files-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.installation-files-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+}
+
+.installation-file-item {
+    padding: 8px 10px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.installation-file-item:last-child {
+    border-bottom: none;
+}
+
+.installation-file-item:hover {
+    background-color: #e9ecef;
+}
+
+.installation-file-name {
+    font-size: 0.9rem;
+    flex-grow: 1;
+    margin-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.installation-file-size {
+    font-size: 0.8rem;
+    color: #6c757d;
+    flex-shrink: 0;
+    width: 80px;
+    text-align: right;
+}
+
+.installation-file-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.installation-file-view,
+.installation-file-download,
+.installation-file-direct-view {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.installation-file-view {
+    color: #17a2b8;
+}
+
+.installation-file-view:hover {
+    color: #138496;
+}
+
+.installation-file-download {
+    color: #007bff;
+}
+
+.installation-file-download:hover {
+    color: #0056b3;
+}
+
+.installation-file-direct-view {
+    color: #28a745;
+}
+
+.installation-file-direct-view:hover {
+    color: #218838;
+}
+
+.installation-files-empty {
+    padding: 20px;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.installation-file-target {
+    font-weight: bold;
+    background-color: #e6f7ff;
+}
+
 /* Ajustements des marges et espacements */
 .modal-body .form-group {
     margin-bottom: 1rem;
@@ -251,4 +364,153 @@
 /* Ajuster la largeur du champ de texte pour l'édition */
 .equipment-modal .form-control {
     width: 300px !important; /* Augmenter la largeur du champ d'édition */
+}
+
+/* --- Styles pour le visualisateur de fichiers --- */
+.file-viewer-modal .modal-body {
+    max-height: 75vh;
+    overflow-y: auto;
+}
+
+.pdf-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    max-height: calc(100vh - 150px);
+}
+
+.pdf-iframe {
+    border: 0;
+    width: 100%;
+    height: 75vh;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.pdf-controls {
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto;
+    padding: 10px;
+}
+
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    max-height: 70vh;
+    overflow: hidden;
+}
+
+.image-container img {
+    max-width: 100%;
+    object-fit: contain;
+}
+
+/* Styles pour le PDF intégré */
+.embedded-pdf-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 9999; /* Un z-index très élevé pour être sûr qu'il est au-dessus de tout */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.embedded-pdf-header {
+    width: 100%;
+    height: 50px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.embedded-pdf-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    max-width: 60%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.embedded-pdf-close,
+.embedded-pdf-nav-button {
+    width: 32px;
+    height: 32px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    color: #666;
+}
+
+.embedded-pdf-close:hover,
+.embedded-pdf-nav-button:hover {
+    background-color: #e9ecef;
+}
+
+.embedded-pdf-nav-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.embedded-pdf-nav-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.file-counter {
+    font-size: 14px;
+    color: #666;
+    margin: 0 5px;
+}
+
+.embedded-pdf-content {
+    width: 90%;
+    height: calc(100% - 70px);
+    background-color: white;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.embedded-pdf-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: white;
+}
+
+.embedded-pdf-footer {
+    width: 100%;
+    height: 50px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
 }

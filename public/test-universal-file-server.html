@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Universal File Server</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+        button { margin: 10px 0; padding: 10px; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Test du serveur de fichiers universel</h1>
+    
+    <div class="test-section">
+        <h2>Test accès fichier</h2>
+        <label>INS: <input type="text" id="ins" value="INS011658"></label><br>
+        <label>Fichier: <input type="text" id="filename" value="EMPL_EXT.jpg"></label><br>
+        <button onclick="testFile()">Tester l'accès</button>
+        <div id="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Vérifier l'existence du fichier</h2>
+        <button onclick="checkFileServer()">Vérifier universal_file_server.php</button>
+        <div id="serverCheck"></div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:8080';
+        
+        async function testFile() {
+            const ins = document.getElementById('ins').value;
+            const filename = document.getElementById('filename').value;
+            const resultDiv = document.getElementById('result');
+            
+            const url = `${API_URL}/universal_file_server.php?ins=${encodeURIComponent(ins)}&file=${encodeURIComponent(filename)}`;
+            
+            resultDiv.innerHTML = `<p class="info">Test de : ${url}</p>`;
+            
+            try {
+                const response = await fetch(url);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML += `<p class="success">✅ Fichier accessible (Status: ${response.status})</p>`;
+                    resultDiv.innerHTML += `<p>Content-Type: ${response.headers.get('Content-Type')}</p>`;
+                    resultDiv.innerHTML += `<p>Content-Length: ${response.headers.get('Content-Length')} bytes</p>`;
+                } else {
+                    const text = await response.text();
+                    resultDiv.innerHTML += `<p class="error">❌ Erreur ${response.status}: ${text}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `<p class="error">❌ Erreur réseau: ${error.message}</p>`;
+            }
+        }
+        
+        async function checkFileServer() {
+            const resultDiv = document.getElementById('serverCheck');
+            
+            try {
+                const response = await fetch(`${API_URL}/universal_file_server.php`);
+                const text = await response.text();
+                
+                resultDiv.innerHTML = `
+                    <p class="${response.status === 400 ? 'success' : 'error'}">
+                        ${response.status === 400 ? '✅' : '❌'} 
+                        Serveur répond avec status ${response.status}
+                    </p>
+                    <p>Réponse: ${text}</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Le serveur ne répond pas: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

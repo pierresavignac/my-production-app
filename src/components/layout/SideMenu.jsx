@@ -38,6 +38,12 @@ const SideMenu = () => {
                     </Link>
                 </li>
                 <li className="side-menu-item">
+                    <Link to="/no-appointment" className="side-menu-link">
+                        <span className="link-icon">⏰</span> {/* Placeholder icône */}
+                        <span className="link-text">Sans rendez-vous</span>
+                    </Link>
+                </li>
+                <li className="side-menu-item">
                     {/* Pointer vers /admin pour la gestion des usagers */}
                     <Link to="/admin" className="side-menu-link">
                         <span className="link-icon">👥</span>

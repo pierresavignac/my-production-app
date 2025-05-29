@@ -4,6 +4,7 @@ import LoginForm from './components/auth/LoginForm';
 import UserManagement from './components/admin/UserManagement';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import SideMenu from './components/layout/SideMenu';
+import NoAppointmentView from './components/views/NoAppointmentView';
 import './App.css';
 
 function App() {
@@ -26,6 +27,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <div>Page Vue Liste (à créer)</div> 
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/no-appointment" 
+            element={
+              <ProtectedRoute>
+                <NoAppointmentView />
               </ProtectedRoute>
             } 
           />

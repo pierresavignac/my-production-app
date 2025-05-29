@@ -5,9 +5,9 @@ error_reporting(E_ALL);
 
 // Configuration de la base de données LOCALE
 define('DB_HOST', 'localhost'); // ou l'IP/nom d'hôte de votre serveur MySQL
-define('DB_NAME', 'local_calendar_db'); // <--- Correction ici
-define('DB_USER', 'root'); // L'utilisateur local
-define('DB_PASS', ''); // Essayer avec un mot de passe VIDE
+define('DB_NAME', 'vivreenl_production'); // Base de données de production
+define('DB_USER', 'vivreenl_user'); // L'utilisateur
+define('DB_PASS', 'Vl2023!'); // Le mot de passe
 
 // Génération d'une clé JWT sécurisée si elle n'existe pas
 if (!defined('JWT_SECRET')) {

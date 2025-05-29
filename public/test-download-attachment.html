@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Download Attachment API</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        button { padding: 10px; margin: 10px 0; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Test de l'API download_attachment.php</h1>
+    
+    <div class="test-section">
+        <h2>Test de téléchargement</h2>
+        <label>File ID: <input type="text" id="fileId" placeholder="ID du fichier" value=""></label><br>
+        <label>INS: <input type="text" id="ins" placeholder="Numéro INS" value="INS011658"></label><br>
+        <button onclick="testInline()">Tester Visualisation (inline)</button>
+        <button onclick="testDownload()">Tester Téléchargement</button>
+        <div id="result"></div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:8080';
+        
+        function testInline() {
+            const fileId = document.getElementById('fileId').value;
+            const ins = document.getElementById('ins').value;
+            
+            if (!fileId) {
+                alert('Veuillez entrer un ID de fichier');
+                return;
+            }
+            
+            const url = `${API_URL}/download_attachment.php?id=${fileId}&ins=${encodeURIComponent(ins)}&mode=inline`;
+            window.open(url, '_blank');
+        }
+        
+        function testDownload() {
+            const fileId = document.getElementById('fileId').value;
+            const ins = document.getElementById('ins').value;
+            
+            if (!fileId) {
+                alert('Veuillez entrer un ID de fichier');
+                return;
+            }
+            
+            const url = `${API_URL}/download_attachment.php?id=${fileId}&ins=${encodeURIComponent(ins)}&mode=attachment`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>

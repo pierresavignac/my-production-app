@@ -1,16 +1,12 @@
 <?php
-header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
-$response = [
-    'status' => 'success',
-    'message' => 'L\'API fonctionne correctement !',
-    'php_version' => PHP_VERSION,
-    'extensions' => [
-        'pdo_mysql' => extension_loaded('pdo_mysql'),
-        'json' => extension_loaded('json'),
-        'mysqli' => extension_loaded('mysqli')
-    ]
-];
-
-echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE); 
+echo json_encode([
+    'status' => 'ok',
+    'message' => 'API fonctionne correctement',
+    'timestamp' => date('Y-m-d H:i:s'),
+    'server_root' => $_SERVER['DOCUMENT_ROOT'],
+    'script_dir' => __DIR__,
+    'php_version' => phpversion()
+]);

@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Button, Row, Col, Alert, Form, Spinner } from 'react-bootstrap';
 import { useAuth } from '../../contexts/AuthContext';
 import { fetchRegions, fetchTechnicians, fetchCitiesForRegion, fetchEquipment, fetchInstallationData } from '../../utils/apiUtils';
+import { fetchFilesForInstallation } from '../../utils/progressionApi';
+import FileViewerModal from '../FileViewerModal';
 import '../../styles/WorksheetModal.css';
 
 const HOUSE_TYPES = [
@@ -93,6 +95,11 @@ const WorksheetModal = ({ show, onHide, eventData, employees = [], mode = 'works
     const [notification, setNotification] = useState({ type: '', message: '' });
     const [fetchError, setFetchError] = useState('');
     const [errors, setErrors] = useState({});
+    const [installationFiles, setInstallationFiles] = useState([]);
+    const [loadingFiles, setLoadingFiles] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [showFileViewer, setShowFileViewer] = useState(false);
+    const [currentFileIndex, setCurrentFileIndex] = useState(0);
 
     useEffect(() => {
         if (eventData) {
@@ -177,6 +184,72 @@ const WorksheetModal = ({ show, onHide, eventData, employees = [], mode = 'works
             });
         }
     }, [eventData]);
+
+    // Charger les fichiers lorsque le modal est ouvert avec un numéro d'installation
+    useEffect(() => {
+        if (show && eventData?.installation_number) {
+            loadInstallationFiles();
+        }
+    }, [show, eventData?.installation_number]);
+
+    const loadInstallationFiles = async () => {
+        if (!eventData?.installation_number) return;
+        
+        setLoadingFiles(true);
+        try {
+            console.log('🔍 Chargement des fichiers pour l\'installation:', eventData.installation_number);
+            const response = await fetchFilesForInstallation(eventData.installation_number);
+            
+            if (response && response.success && response.data) {
+                console.log(`✅ ${response.data.length} fichier(s) trouvé(s)`);
+                setInstallationFiles(response.data);
+            } else {
+                console.log('⚠️ Aucun fichier trouvé');
+                setInstallationFiles([]);
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement des fichiers:', error);
+            setInstallationFiles([]);
+        } finally {
+            setLoadingFiles(false);
+        }
+    };
+
+    const handleFilePreview = useCallback((e, file) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        if (!installationFiles || !installationFiles.length) {
+            console.warn('Aucun fichier disponible pour la prévisualisation');
+            return;
+        }
+        
+        const fileIndex = installationFiles.findIndex(f => f.id === file.id);
+        if (fileIndex === -1) {
+            console.warn('Fichier non trouvé dans la liste');
+            return;
+        }
+        
+        console.log(`👁️ Prévisualisation du fichier: ${file.name} (index ${fileIndex}/${installationFiles.length-1})`);
+        
+        setCurrentFileIndex(fileIndex);
+        setSelectedFile(file);
+        setShowFileViewer(true);
+    }, [installationFiles]);
+
+    const handleFileViewerClose = useCallback(() => {
+        setShowFileViewer(false);
+        setSelectedFile(null);
+    }, []);
+
+    const handleFileNavigate = useCallback((newIndex) => {
+        if (installationFiles && installationFiles[newIndex]) {
+            setCurrentFileIndex(newIndex);
+            setSelectedFile(installationFiles[newIndex]);
+        }
+    }, [installationFiles]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -768,6 +841,37 @@ const WorksheetModal = ({ show, onHide, eventData, employees = [], mode = 'works
                                 <Form.Check type="checkbox" id="onRoofCheck" name="particularities.onRoof" label="Sur le toit" checked={formData.particularities.onRoof} onChange={handleChange} disabled={isReadOnly} />
                                 </div>
                         </Form.Group>
+
+                        {/* Section des fichiers */}
+                        {eventData?.installation_number && (
+                            <div className="mt-3 border-top pt-3">
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 className="mb-0">Fichiers</h6>
+                                    {loadingFiles && <Spinner animation="border" size="sm" />}
+                                </div>
+                                
+                                {!loadingFiles && installationFiles.length > 0 ? (
+                                    <ul className="list-unstyled mb-0 small">
+                                        {installationFiles.map((file) => (
+                                            <li key={file.id} className="mb-1">
+                                                <Button
+                                                    variant="link"
+                                                    className="p-0 text-start text-decoration-none text-truncate d-block"
+                                                    style={{ fontSize: '0.85rem' }}
+                                                    onClick={(e) => handleFilePreview(e, file)}
+                                                    title={file.name}
+                                                >
+                                                    <i className="fas fa-file-pdf me-1"></i>
+                                                    {file.name.length > 20 ? file.name.substring(0, 20) + '...' : file.name}
+                                                </Button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : !loadingFiles && installationFiles.length === 0 ? (
+                                    <p className="text-muted mb-0 small">Aucun fichier</p>
+                                ) : null}
+                            </div>
+                        )}
                             </Col>
                         </Row>
                 </Modal.Body>
@@ -783,6 +887,18 @@ const WorksheetModal = ({ show, onHide, eventData, employees = [], mode = 'works
 
             {renderPanelManagementModal()}
             {renderAluminumManagementModal()}
+
+            {showFileViewer && selectedFile && (
+                <FileViewerModal
+                    show={showFileViewer}
+                    onHide={handleFileViewerClose}
+                    file={selectedFile}
+                    installationNumber={eventData?.installation_number}
+                    files={installationFiles}
+                    currentIndex={currentFileIndex}
+                    onNavigate={handleFileNavigate}
+                />
+            )}
         </Modal>
     );
 };

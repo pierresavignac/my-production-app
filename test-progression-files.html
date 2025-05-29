@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Fichiers ProgressionLive</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .warning { color: orange; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .file-item { padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .file-actions button { padding: 5px 10px; font-size: 12px; margin-left: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗂️ Test Fichiers ProgressionLive</h1>
+        
+        <div class="test-section">
+            <h3>1. Test de récupération des fichiers</h3>
+            <input type="text" id="installationNumber" placeholder="Numéro d'installation (ex: INS011873)" value="INS011873">
+            <button onclick="testGetFiles()">Récupérer les fichiers</button>
+            <div id="files-result" style="margin-top: 20px;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Test API direct</h3>
+            <button onclick="testAPIDirectly()">Tester get_progression_files.php</button>
+            <div id="api-result" style="margin-top: 20px;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. État de la connexion</h3>
+            <button onclick="checkProgressionStatus()">Vérifier le statut</button>
+            <div id="status-result" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testGetFiles() {
+            const installationNumber = document.getElementById('installationNumber').value;
+            const resultDiv = document.getElementById('files-result');
+            
+            if (!installationNumber) {
+                resultDiv.innerHTML = '<p class="error">Veuillez entrer un numéro d\'installation</p>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p class="info">Chargement en cours...</p>';
+            
+            try {
+                const response = await fetch(`http://localhost:8080/api/get_progression_files.php?ins=${installationNumber}`);
+                const data = await response.json();
+                
+                console.log('Réponse de l\'API:', data);
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    let html = `<p class="success">✅ ${data.data.length} fichier(s) trouvé(s)</p>`;
+                    html += '<div style="margin-top: 10px;">';
+                    
+                    data.data.forEach(file => {
+                        html += `
+                            <div class="file-item">
+                                <div>
+                                    <strong>${file.name}</strong>
+                                    <span style="color: #666; margin-left: 10px;">
+                                        ID: ${file.id} | Taille: ${formatFileSize(file.size)}
+                                    </span>
+                                </div>
+                                <div class="file-actions">
+                                    <button onclick="viewFile('${file.id}', '${installationNumber}', '${file.name}')">👁️ Voir</button>
+                                    <button onclick="downloadFile('${file.id}', '${installationNumber}', '${file.name}')">⬇️ Télécharger</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    resultDiv.innerHTML = html;
+                } else if (data.success && (!data.data || data.data.length === 0)) {
+                    resultDiv.innerHTML = '<p class="warning">⚠️ Aucun fichier trouvé pour cette installation</p>';
+                } else if (data.error === 'login_required') {
+                    resultDiv.innerHTML = '<p class="error">❌ Connexion à ProgressionLive requise</p>';
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Erreur: ${data.error || data.message || 'Erreur inconnue'}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Erreur réseau: ${error.message}</p>`;
+                console.error('Erreur:', error);
+            }
+        }
+        
+        async function testAPIDirectly() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p class="info">Test de l\'API en cours...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/get_progression_files.php?ins=INS000001');
+                const text = await response.text();
+                
+                console.log('Réponse brute:', text);
+                
+                try {
+                    const data = JSON.parse(text);
+                    resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } catch (e) {
+                    resultDiv.innerHTML = `<p class="error">Réponse non-JSON:</p><pre>${text}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Erreur: ${error.message}</p>`;
+            }
+        }
+        
+        async function checkProgressionStatus() {
+            const resultDiv = document.getElementById('status-result');
+            resultDiv.innerHTML = '<p class="info">Vérification en cours...</p>';
+            
+            let html = '';
+            
+            // Vérifier le cache localStorage
+            const cachedUser = localStorage.getItem('progressionUser');
+            if (cachedUser) {
+                try {
+                    const userData = JSON.parse(cachedUser);
+                    html += '<p class="success">✅ Cache ProgressionLive trouvé:</p>';
+                    html += `<pre>${JSON.stringify(userData, null, 2)}</pre>`;
+                } catch (e) {
+                    html += '<p class="error">❌ Erreur parsing cache</p>';
+                }
+            } else {
+                html += '<p class="warning">⚠️ Aucun cache ProgressionLive</p>';
+            }
+            
+            // Test de connexion
+            try {
+                const response = await fetch('http://localhost:8080/api/progression_login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        domain: 'garychartrand',
+                        username: 'pierre@garychartrand.com',
+                        password: 'A11gdb333!'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    html += '<p class="success">✅ Test de connexion: Réussi</p>';
+                } else {
+                    html += `<p class="error">❌ Test de connexion: ${data.message}</p>`;
+                }
+            } catch (error) {
+                html += `<p class="error">❌ Erreur test connexion: ${error.message}</p>`;
+            }
+            
+            resultDiv.innerHTML = html;
+        }
+        
+        function formatFileSize(bytes) {
+            if (!bytes || isNaN(bytes)) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB'];
+            let size = bytes;
+            let unitIndex = 0;
+            while (size >= 1024 && unitIndex < units.length - 1) {
+                size /= 1024;
+                unitIndex++;
+            }
+            return `${Math.round(size * 10) / 10} ${units[unitIndex]}`;
+        }
+        
+        function viewFile(fileId, installationNumber, fileName) {
+            const url = `/simple-viewer.html?id=${fileId}&ins=${encodeURIComponent(installationNumber)}&api=${encodeURIComponent('http://localhost:8080/api')}&name=${encodeURIComponent(fileName)}`;
+            window.open(url, `file_viewer_${fileId}`, 'width=1200,height=800,resizable=yes,scrollbars=yes');
+        }
+        
+        function downloadFile(fileId, installationNumber, fileName) {
+            const url = `http://localhost:8080/api/download_attachment.php?id=${fileId}&ins=${encodeURIComponent(installationNumber)}&filename=${encodeURIComponent(fileName)}`;
+            window.open(url, '_blank');
+        }
+        
+        // Test automatique au chargement
+        window.onload = () => {
+            checkProgressionStatus();
+        };
+    </script>
+</body>
+</html>

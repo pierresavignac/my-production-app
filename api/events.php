@@ -125,6 +125,7 @@ function handleGet($pdo) {
                 'date' => $event['date'] ?? null,
                 'installation_time' => $event['installation_time'] ?? null,
                 'status' => $event['status'] ?? null,
+                'no_appointment' => isset($event['no_appointment']) ? (bool)$event['no_appointment'] : false,
                 'full_name' => $event['full_name'] ?? null,
                 'phone' => $event['phone'] ?? null,
                 'address' => $event['address'] ?? null,
@@ -241,7 +242,8 @@ function handlePost($pdo) {
             'quote_number' => (isset($data['quote_number']) && $data['quote_number'] === '') ? null : ($data['quote_number'] ?? null),
             'representative' => (isset($data['representative']) && $data['representative'] === '') ? null : ($data['representative'] ?? null),
             'installation_number' => (isset($data['installation_number']) && $data['installation_number'] === '') ? null : ($data['installation_number'] ?? null),
-            'status' => $data['status'] ?? 'En approbation'
+            'status' => $data['status'] ?? 'En approbation',
+            'no_appointment' => isset($data['no_appointment']) ? (bool)$data['no_appointment'] : false
         ];
 
         // Construire la requête SQL
@@ -250,13 +252,13 @@ function handlePost($pdo) {
             address, city, equipment, amount, 
             technician1_id, technician2_id, technician3_id, technician4_id,
             Sommaire, Description, client_number, quote_number, 
-            representative, installation_number, status
+            representative, installation_number, status, no_appointment
         ) VALUES (
             :type, :date, :installation_time, :full_name, :phone,
             :address, :city, :equipment, :amount,
             :technician1_id, :technician2_id, :technician3_id, :technician4_id,
             :Sommaire, :Description, :client_number, :quote_number,
-            :representative, :installation_number, :status
+            :representative, :installation_number, :status, :no_appointment
         )";
 
         $stmt = $pdo->prepare($sql);
@@ -326,7 +328,8 @@ function handleUpdate($pdo) {
             'representative' => $data['representative'] ?? '',
             'client_number' => $data['client_number'] ?? '',
             'installation_number' => $data['installation_number'] ?? '',
-            'status' => $data['status'] ?? $data['installation_status'] ?? 'En approbation'
+            'status' => $data['status'] ?? $data['installation_status'] ?? 'En approbation',
+            'no_appointment' => isset($data['no_appointment']) ? (bool)$data['no_appointment'] : false
         ];
 
         // Construire la requête SQL de mise à jour
@@ -350,7 +353,8 @@ function handleUpdate($pdo) {
             representative = :representative,
             client_number = :client_number,
             installation_number = :installation_number,
-            status = :status
+            status = :status,
+            no_appointment = :no_appointment
             WHERE id = :id";
 
         $stmt = $pdo->prepare($sql);
@@ -460,7 +464,7 @@ function handlePut($pdo) {
         
         // Liste des champs attendus (existants + nouveaux)
         $allowedFields = [
-            'type', 'date', 'installation_time', 'status', 'full_name', 'phone', 'address',
+            'type', 'date', 'installation_time', 'status', 'no_appointment', 'full_name', 'phone', 'address',
              'installation_number', 'client_number', 'quote_number', 'representative', 'equipment',
              'amount', 'Sommaire', 'Description', 'technician1_id', 'technician2_id', 'technician3_id',
              'technician4_id', 'region_id', 'employee_id',
@@ -479,7 +483,7 @@ function handlePut($pdo) {
                  
                  if (in_array($field, ['technician1_id', 'technician2_id', 'technician3_id', 'technician4_id', 'region_id', 'employee_id']) && $value === '') {
                      $value = null; // Mettre à NULL si vide pour les clés étrangères
-                 } elseif ($field === 'has_visit' || $field === 'has_panel_space') {
+                 } elseif ($field === 'has_visit' || $field === 'has_panel_space' || $field === 'no_appointment') {
                      $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE); // Convertir en booléen ou NULL
                  } elseif ($field === 'particularities') {
                       // Encoder en JSON seulement si c'est un tableau/objet

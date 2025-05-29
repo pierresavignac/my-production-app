@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Button, Row, Col, Form, Alert } from 'react-bootstrap';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Modal, Button, Row, Col, Form, Alert, Spinner } from 'react-bootstrap';
 import '../../styles/Modal.css';
 import VacationActionModal from './VacationActionModal';
 import WorksheetModal from './WorksheetModal';
+import FileViewerModal from '../FileViewerModal';
 import { 
     fetchProgressionTask, 
     fetchRegions, 
@@ -11,6 +12,7 @@ import {
     fetchEquipment, 
     fetchInstallationData 
 } from '../../utils/apiUtils';
+import { fetchFilesForInstallation } from '../../utils/progressionApi';
 
 const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
     const [showVacationModal, setShowVacationModal] = useState(false);
@@ -40,12 +42,21 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [fetchError, setFetchError] = useState('');
+    const [installationFiles, setInstallationFiles] = useState([]);
+    const [loadingFiles, setLoadingFiles] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [showFileViewer, setShowFileViewer] = useState(false);
+    const [currentFileIndex, setCurrentFileIndex] = useState(0);
 
     useEffect(() => {
         if (show) {
             fetchEmployees();
+            // Charger les fichiers si on a un numéro d'installation
+            if (event?.installation_number) {
+                loadInstallationFiles();
+            }
         }
-    }, [show]);
+    }, [show, event?.installation_number]);
 
     useEffect(() => {
         if (event) {
@@ -83,6 +94,65 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
             console.error('Erreur lors du chargement des employés:', error);
         }
     };
+
+    const loadInstallationFiles = async () => {
+        if (!event?.installation_number) return;
+        
+        setLoadingFiles(true);
+        try {
+            console.log('🔍 Chargement des fichiers pour l\'installation:', event.installation_number);
+            const response = await fetchFilesForInstallation(event.installation_number);
+            
+            if (response && response.success && response.data) {
+                console.log(`✅ ${response.data.length} fichier(s) trouvé(s)`);
+                setInstallationFiles(response.data);
+            } else {
+                console.log('⚠️ Aucun fichier trouvé');
+                setInstallationFiles([]);
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement des fichiers:', error);
+            setInstallationFiles([]);
+        } finally {
+            setLoadingFiles(false);
+        }
+    };
+
+    const handleFileViewerClose = useCallback(() => {
+        setShowFileViewer(false);
+        setSelectedFile(null);
+    }, []);
+
+    const handleFileNavigate = useCallback((newIndex) => {
+        if (installationFiles && installationFiles[newIndex]) {
+            setCurrentFileIndex(newIndex);
+            setSelectedFile(installationFiles[newIndex]);
+        }
+    }, [installationFiles]);
+
+    const handleFilePreview = useCallback((e, file) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        if (!installationFiles || !installationFiles.length) {
+            console.warn('Aucun fichier disponible pour la prévisualisation');
+            return;
+        }
+        
+        const fileIndex = installationFiles.findIndex(f => f.id === file.id);
+        if (fileIndex === -1) {
+            console.warn('Fichier non trouvé dans la liste');
+            return;
+        }
+        
+        console.log(`👁️ Prévisualisation du fichier: ${file.name} (index ${fileIndex}/${installationFiles.length-1})`);
+        
+        setCurrentFileIndex(fileIndex);
+        setSelectedFile(file);
+        setShowFileViewer(true);
+    }, [installationFiles]);
 
     const handleFetchData = async () => {
         setIsLoading(true);
@@ -537,6 +607,35 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
                             </div>
                         </div>
 
+                        {/* Section des fichiers */}
+                        {event.type === 'installation' && event.installation_number && (
+                            <div className="mt-3 p-3 bg-light rounded">
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 className="mb-0">Fichiers ProgressionLive</h6>
+                                    {loadingFiles && <Spinner animation="border" size="sm" />}
+                                </div>
+                                
+                                {!loadingFiles && installationFiles.length > 0 ? (
+                                    <ul className="list-unstyled mb-0">
+                                        {installationFiles.map((file) => (
+                                            <li key={file.id} className="mb-1">
+                                                <Button
+                                                    variant="link"
+                                                    className="p-0 text-start text-decoration-none"
+                                                    onClick={(e) => handleFilePreview(e, file)}
+                                                >
+                                                    <i className="fas fa-file-pdf me-2"></i>
+                                                    {file.name}
+                                                </Button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : !loadingFiles && installationFiles.length === 0 ? (
+                                    <p className="text-muted mb-0">Aucun fichier disponible</p>
+                                ) : null}
+                            </div>
+                        )}
+
                         <div className="row mb-2">
                             <div className="col-6">
                                 <Form.Group>
@@ -608,6 +707,18 @@ const EventDetailsModal = ({ show, onHide, event, onEdit, onDelete }) => {
                     installation={event}
                     employees={employees}
                     mode="installation"
+                />
+            )}
+
+            {showFileViewer && selectedFile && (
+                <FileViewerModal
+                    show={showFileViewer}
+                    onHide={handleFileViewerClose}
+                    file={selectedFile}
+                    installationNumber={event.installation_number}
+                    files={installationFiles}
+                    currentIndex={currentFileIndex}
+                    onNavigate={handleFileNavigate}
                 />
             )}
         </>

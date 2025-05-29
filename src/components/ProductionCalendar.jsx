@@ -7,7 +7,7 @@ import '../styles/ProductionCalendar.css';
 import { jwtDecode } from 'jwt-decode';
 import { format, addWeeks, subWeeks, isSameWeek } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
-import { fetchEvents, deleteEvent } from '../utils/apiUtils';
+import { fetchEvents, deleteEvent, updateEvent } from '../utils/apiUtils';
 
 const ProductionCalendar = () => {
     const navigate = useNavigate();
@@ -92,18 +92,14 @@ const ProductionCalendar = () => {
     const handleEventSave = async (updatedEvent) => {
         try {
             console.log('Event avant sauvegarde:', updatedEvent);
-            const response = await fetch(`/api/events.php?id=${updatedEvent.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(updatedEvent),
-            });
+            const response = await updateEvent(updatedEvent);
 
-            if (response.ok) {
+            if (response && response.success) {
                 await loadEvents();
                 setShowEditModal(false);
                 setSelectedEvent(null);
+            } else {
+                console.error('Erreur lors de la modification:', response);
             }
         } catch (error) {
             console.error('Erreur lors de la modification:', error);
@@ -232,7 +228,7 @@ const ProductionCalendar = () => {
 
             <SimpleCalendar 
                 ref={calendarRef}
-                events={events}
+                events={events.filter(event => !event.no_appointment)}
                 onDateClick={handleDateClick}
                 onEventClick={handleEventClick}
                 currentDate={currentDate}

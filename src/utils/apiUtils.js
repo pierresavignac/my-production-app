@@ -2,7 +2,7 @@
 console.log('--- Chargement de apiUtils.js - Version avec logs de retour --- ');
 
 // Configuration de l'API
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 // Log pour débogage
 console.log('VITE_API_BASE_URL utilisée par apiUtils:', API_BASE_URL);
 

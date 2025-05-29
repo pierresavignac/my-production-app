@@ -1,0 +1,254 @@
+/* Styles globaux pour toutes les modales */
+.modal-dialog {
+    margin: 1.75rem auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Spécifiquement pour EventDetailsModal */
+.custom-modal-wide .modal-dialog {
+    max-width: 1120px !important; /* Réduit de 1600px à 1120px (30% de moins) */
+    width: 1120px !important;
+}
+
+.custom-modal-wide .modal-content {
+    width: 100% !important;
+    max-width: 1120px !important; /* Réduit de 1600px à 1120px */
+}
+
+/* Supprimer ou commenter ces styles qui peuvent entrer en conflit */
+/* .modal-dialog.modal-lg {
+    max-width: calc(800px * 1.25) !important;
+}
+
+.modal-dialog.modal-xl {
+    max-width: calc(1140px * 1.25) !important;
+} */
+
+.modal {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.modal-content {
+    width: 100% !important;
+}
+
+/* Styles pour les formulaires */
+.form-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    align-items: flex-end;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 0.5rem;
+}
+
+.form-label {
+    margin-bottom: 0.25rem;
+}
+
+/* Pour éviter que les longs textes ne débordent */
+.form-select {
+    text-overflow: ellipsis;
+}
+
+/* Styles pour le modal customisé */
+.custom-modal {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+.custom-modal .modal-dialog {
+    width: 800px !important;
+}
+
+.details-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.detail-item {
+    flex: 1;
+}
+
+.detail-item label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.detail-item.full-width {
+    flex: 2;
+}
+
+.detail-item span {
+    font-size: 1.1rem;
+    line-height: 1.3;
+}
+
+/* Styles pour les modales larges (EventDetailsModal et AddEventModal) */
+.custom-modal-wide {
+    max-width: 1120px !important;
+    width: 95% !important;
+}
+
+.custom-modal-wide .modal-dialog {
+    max-width: 1120px !important;
+    width: 100% !important;
+}
+
+.custom-modal-wide .modal-content {
+    width: 100% !important;
+    max-width: 1120px !important;
+}
+
+/* Pour les champs de description plus longs */
+.detail-item span {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Style pour le conteneur des informations importées */
+.imported-data-container {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.imported-data-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.imported-data-badge {
+    background-color: #6c757d;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    margin-left: 1rem;
+}
+
+.detail-item.small-width {
+    flex: 0.5; /* Réduit la largeur à la moitié d'un item normal */
+}
+
+/* Optionnel : ajuster l'alignement des items dans la première rangée */
+.detail-row:first-child {
+    justify-content: space-between;
+}
+
+/* Modifier la classe small-width pour qu'elle s'applique à tous les champs de la première rangée */
+.detail-row:first-child .detail-item {
+    flex: 0.25; /* Chaque item prend 1/4 de l'espace */
+    min-width: 150px; /* Pour éviter qu'ils deviennent trop petits */
+}
+
+/* Ajuster l'espacement entre les items de la première rangée */
+.detail-row:first-child {
+    justify-content: space-between;
+    gap: 2rem; /* Espacement uniforme entre les éléments */
+}
+
+/* Supprimer ces styles qui ne sont plus nécessaires */
+/* .detail-item.small-width {
+    flex: 0.5;
+} */
+
+.imported-data-header h5 {
+    font-size: 1.25rem;
+    margin: 0;
+    color: #495057;
+    font-weight: 600;
+}
+
+/* Ajuster l'espacement entre les items de la première rangée */
+.detail-row:first-child {
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+/* Chaque item dans la première rangée prend 1/4 de l'espace */
+.detail-row:first-child .detail-item {
+    flex: 0.25;
+    min-width: 150px;
+}
+
+/* Style spécifique pour AddEventModal */
+.modal-dialog.modal-lg {
+    max-width: 1120px !important; /* 1600px - 30% = 1120px */
+    width: 1120px !important;
+    margin: 1.75rem auto !important;
+}
+
+.modal-dialog.modal-lg .modal-content {
+    width: 1120px !important;
+    max-width: 1120px !important;
+}
+
+/* Supprimer les styles qui peuvent entrer en conflit */
+.modal-lg {
+    max-width: 1120px !important;
+    width: 1120px !important;
+}
+
+/* Style pour le bloc gris */
+.grey-block {
+    background-color: rgba(0, 0, 0, 0.03);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Style pour la zone de description avec scroll */
+.description-scroll {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+/* Ajustements des marges et espacements */
+.modal-body .form-group {
+    margin-bottom: 1rem;
+}
+
+.modal-body .row {
+    margin-bottom: 1rem;
+}
+
+/* Style pour le modal de gestion des équipements */
+.equipment-modal {
+    max-width: 1000px !important; /* Augmenter la largeur de 25% */
+    width: 90% !important;
+    margin: 1.75rem auto !important;
+}
+
+.equipment-modal .modal-content {
+    width: 100% !important;
+}
+
+/* Ajuster la largeur du champ de texte pour l'édition */
+.equipment-modal .form-control {
+    width: 300px !important; /* Augmenter la largeur du champ d'édition */
+}

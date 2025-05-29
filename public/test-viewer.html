@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Viewer</title>
+</head>
+<body>
+    <h1>Test du système de visualisation</h1>
+    
+    <h2>1. Test accès direct aux viewers</h2>
+    <ul>
+        <li><a href="/file-proxy-viewer.html" target="_blank">file-proxy-viewer.html</a> - Devrait afficher une page HTML</li>
+        <li><a href="/simple-viewer.html" target="_blank">simple-viewer.html</a> - Devrait afficher une page HTML</li>
+    </ul>
+    
+    <h2>2. Test API</h2>
+    <button onclick="testAPI()">Tester l'API</button>
+    <div id="api-result"></div>
+    
+    <h2>3. Informations de débogage</h2>
+    <pre id="debug-info"></pre>
+    
+    <script>
+        // Afficher les informations de débogage
+        document.getElementById('debug-info').textContent = JSON.stringify({
+            origin: window.location.origin,
+            pathname: window.location.pathname,
+            viteMode: import.meta?.env?.MODE || 'N/A',
+            apiUrl: 'http://localhost:8080'
+        }, null, 2);
+        
+        async function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            try {
+                const response = await fetch('http://localhost:8080/test.php');
+                const text = await response.text();
+                resultDiv.innerHTML = `<p style="color: green">✅ API accessible - Status: ${response.status}</p>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red">❌ Erreur API: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

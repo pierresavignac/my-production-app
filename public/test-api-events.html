@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Events</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+        button { margin: 10px 0; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Test de l'API Events</h1>
+    
+    <button onclick="testAPI()">Tester events.php</button>
+    <button onclick="clearResults()">Effacer</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:8080';
+        const resultsDiv = document.getElementById('results');
+        
+        async function testAPI() {
+            resultsDiv.innerHTML = '<p class="info">Test en cours...</p>';
+            
+            try {
+                console.log(`Tentative de connexion à ${API_URL}/events.php`);
+                
+                const response = await fetch(`${API_URL}/events.php`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const responseText = await response.text();
+                console.log('Réponse brute:', responseText);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${responseText}`);
+                }
+                
+                try {
+                    const data = JSON.parse(responseText);
+                    resultsDiv.innerHTML = `
+                        <p class="success">✅ Connexion réussie à events.php</p>
+                        <p>Status: ${response.status}</p>
+                        <p>Success: ${data.success}</p>
+                        <p>Nombre d'événements: ${data.data ? data.data.length : 0}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } catch (parseError) {
+                    resultsDiv.innerHTML = `
+                        <p class="error">❌ Erreur de parsing JSON</p>
+                        <p>Réponse brute:</p>
+                        <pre>${responseText}</pre>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <p class="error">❌ Erreur: ${error.message}</p>
+                    <p>Vérifiez que:</p>
+                    <ul>
+                        <li>Le serveur API est démarré: <code>cd api && php -S localhost:8080</code></li>
+                        <li>L'URL est correcte: ${API_URL}/events.php</li>
+                        <li>Le fichier events.php existe dans le dossier api/</li>
+                    </ul>
+                `;
+                console.error('Erreur:', error);
+            }
+        }
+        
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+    </script>
+</body>
+</html>

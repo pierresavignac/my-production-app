@@ -10,7 +10,8 @@ const InstallationStatusSelect = ({ value, onChange, readOnly }) => {
     { value: 'En approbation', label: 'En approbation' },
     { value: 'En installation', label: 'En installation' },
     { value: 'En facturation', label: 'En facturation' },
-    { value: 'Paiement reçu', label: 'Paiement reçu' }
+    { value: 'Paiement reçu', label: 'Paiement reçu' },
+    { value: 'Sans rendez-vous', label: 'Sans rendez-vous' }
   ];
 
   const handleChange = (e) => {

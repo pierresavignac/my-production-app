@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Connexion ProgressionLive</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin-top: 20px; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Test de connexion ProgressionLive</h1>
+    
+    <button onclick="testConnection()">Tester la connexion</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testConnection() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="result info">Test en cours...</div>';
+            
+            try {
+                // Test 1: Vérifier l'endpoint
+                const response = await fetch('/api/progression/auth.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        domain: 'garychartrand',
+                        username: 'pierre@garychartrand.com',
+                        password: 'A11gdb333!'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Connexion réussie!</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Erreur de connexion</h3>
+                            <p><strong>Message:</strong> ${data.message}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+                
+                // Test 2: Vérifier le localStorage
+                const cachedUser = localStorage.getItem('progressionUser');
+                if (cachedUser) {
+                    resultsDiv.innerHTML += `
+                        <div class="result info">
+                            <h3>📦 Données en cache:</h3>
+                            <pre>${JSON.stringify(JSON.parse(cachedUser), null, 2)}</pre>
+                            <button onclick="clearCache()">Vider le cache</button>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Erreur réseau</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function clearCache() {
+            localStorage.removeItem('progressionUser');
+            alert('Cache vidé!');
+            location.reload();
+        }
+        
+        // Test automatique au chargement
+        window.onload = function() {
+            console.log('API Base URL:', import.meta?.env?.VITE_API_BASE_URL || 'Non défini');
+        };
+    </script>
+</body>
+</html>
