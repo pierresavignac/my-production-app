@@ -64,7 +64,7 @@ const SimpleCalendar = forwardRef(({ events, onDateClick, onEventClick, currentD
                     <>
                         <div className="installation-number">{event.installation_number}</div>
                         {event.representative && (
-                            <div className="representative-name">{getFirstName(event.representative)}</div>
+                            <div className="representative-name">{event.representative}</div>
                         )}
                     </>
                 )}

@@ -199,7 +199,7 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 8px;
-  padding-right: 130px; /* Espace augmenté pour INS et représentant complet */
+  padding-right: 150px; /* Espace augmenté pour INS et prénom+nom complet */
   margin-bottom: 8px;
   border-radius: 4px;
   cursor: pointer;
@@ -227,14 +227,14 @@
   right: 8px;
   font-weight: bold;
   font-family: inherit;
-  font-size: 0.9em; /* Légèrement plus petit */
+  font-size: 0.85em; /* Légèrement réduit pour accommoder les noms plus longs */
   color: inherit;
   text-align: right;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   z-index: 10;
-  max-width: 120px; /* Largeur augmentée pour afficher les noms complets */
+  max-width: 140px; /* Largeur augmentée pour prénom + nom complets */
 }
 
 .calendar-event:hover {
