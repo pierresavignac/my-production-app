@@ -100,10 +100,19 @@ export const fetchEmployees = async () => {
       }
       throw new Error(errorMessage);
     }
-    return await response.json();
+    const data = await response.json();
+    
+    // Retourner le format attendu par DataManagementPage
+    return {
+      success: data.success || false,
+      data: data.data || []
+    };
   } catch (error) {
     console.error('Erreur:', error);
-    throw error;
+    return {
+      success: false,
+      data: []
+    };
   }
 };
 
@@ -119,11 +128,18 @@ export const fetchTechnicians = async () => {
         
         const data = await response.json();
         console.log('Données des techniciens reçues:', data);
-        // Retourner directement le tableau de techniciens s'il existe
-        return data && data.success ? data.data : []; 
+        
+        // Retourner le format attendu par DataManagementPage
+        return {
+            success: data.success || false,
+            data: data.data || []
+        };
     } catch (error) {
         console.error('Erreur lors du chargement des techniciens:', error);
-        return [];
+        return {
+            success: false,
+            data: []
+        };
     }
 };
 

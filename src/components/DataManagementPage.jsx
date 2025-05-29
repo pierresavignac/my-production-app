@@ -138,7 +138,7 @@ const DataManagementPage = () => {
             case 'technicians':
                 return 'technicians.php';
             case 'employees':
-                return 'employees_crud.php';
+                return 'employees.php';
             default:
                 return '';
         }
